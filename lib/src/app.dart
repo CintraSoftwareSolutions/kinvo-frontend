@@ -6,6 +6,7 @@ import 'features/auth/presentation/screens/login_screen.dart';
 import 'features/auth/presentation/screens/otp_screen.dart';
 import 'features/auth/presentation/screens/password_reset_screen.dart';
 import 'features/auth/presentation/screens/signup_screen.dart';
+import 'features/home/presentation/screens/home_shell.dart';
 import 'features/onboarding/presentation/screens/profile_setup_screen.dart';
 import 'features/welcome/presentation/welcome_screen.dart';
 
@@ -26,6 +27,7 @@ class KinvoApp extends StatelessWidget {
         AppRoutes.otp: (_) => const OtpScreen(),
         AppRoutes.resetPassword: (_) => const PasswordResetScreen(),
         AppRoutes.onboarding: (_) => const ProfileSetupScreen(),
+        AppRoutes.home: (_) => const HomeShell(),
       },
     );
   }

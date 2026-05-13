@@ -5,4 +5,5 @@ abstract final class AppRoutes {
   static const otp = '/otp';
   static const resetPassword = '/reset-password';
   static const onboarding = '/onboarding';
+  static const home = '/home';
 }

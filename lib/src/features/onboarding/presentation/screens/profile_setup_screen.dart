@@ -140,7 +140,7 @@ class ProfileSetupScreen extends ConsumerWidget {
                     const SnackBar(content: Text('Profile setup completed.')),
                   );
                   Navigator.of(context).pushNamedAndRemoveUntil(
-                    AppRoutes.welcome,
+                    AppRoutes.home,
                     (route) => false,
                   );
                 },

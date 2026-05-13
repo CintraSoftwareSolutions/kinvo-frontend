@@ -95,7 +95,10 @@ class _LoginContent extends ConsumerWidget {
             PrimaryActionButton(
               label: 'Sign in',
               onPressed: state.canSubmit
-                  ? () => Navigator.of(context).pushNamed(AppRoutes.onboarding)
+                  ? () => Navigator.of(context).pushNamedAndRemoveUntil(
+                        AppRoutes.home,
+                        (route) => false,
+                      )
                   : null,
             ),
             const SizedBox(height: 16),
