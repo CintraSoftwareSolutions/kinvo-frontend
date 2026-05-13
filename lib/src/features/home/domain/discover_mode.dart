@@ -184,7 +184,7 @@ abstract final class DiscoverModes {
       bio:
           'Software engineer passionate about AI and startups Always up for networking over coffee.',
       interests: ['Tech', 'AI', 'Startups', '+2 more'],
-      imageAsset: null,
+      imageAsset: AppAssets.avatarMarcus,
       imageFallbackColor: Color(0xFF4F46E5),
       status: ProfileStatus(
         kind: ProfileStatusKind.hoursAgo,

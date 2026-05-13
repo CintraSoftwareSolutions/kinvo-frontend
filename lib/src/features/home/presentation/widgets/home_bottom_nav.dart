@@ -26,14 +26,18 @@ class HomeBottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(8, 10, 8, 12),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: AppColors.divider)),
-        boxShadow: const [
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(26),
+          topRight: Radius.circular(26),
+        ),
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0F0C132A),
-            blurRadius: 18,
-            offset: Offset(0, -4),
+            color: Color(0x140C132A),
+            blurRadius: 24,
+            spreadRadius: 0,
+            offset: Offset(0, -6),
           ),
         ],
       ),
@@ -74,21 +78,20 @@ class _NavCell extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        margin: const EdgeInsets.symmetric(horizontal: 2),
-        decoration: BoxDecoration(
-          color: selected
-              ? AppColors.purpleChip.withValues(alpha: 0.6)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(14),
-        ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(
-              width: 36,
-              height: 24,
+            Container(
+              width: 44,
+              height: 36,
+              decoration: BoxDecoration(
+                color: selected
+                    ? AppColors.purpleChip.withValues(alpha: 0.65)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: Stack(
                 clipBehavior: Clip.none,
                 alignment: Alignment.center,
@@ -101,8 +104,8 @@ class _NavCell extends StatelessWidget {
                   ),
                   if (item.badge > 0)
                     Positioned(
-                      top: -4,
-                      right: 0,
+                      top: -2,
+                      right: 2,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 4,

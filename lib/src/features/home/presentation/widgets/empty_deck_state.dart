@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../../core/assets/app_assets.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/discover_mode.dart';
 import '../controllers/home_controller.dart';
@@ -41,15 +43,19 @@ class EmptyDeckState extends StatelessWidget {
           Container(
             width: 72,
             height: 72,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: AppColors.surfaceSoft,
               shape: BoxShape.circle,
             ),
             child: Center(
-              child: Icon(
-                Icons.search_off_rounded,
-                size: 32,
-                color: AppColors.textMuted,
+              child: SvgPicture.asset(
+                AppAssets.searchOff,
+                width: 32,
+                height: 32,
+                colorFilter: const ColorFilter.mode(
+                  AppColors.textMuted,
+                  BlendMode.srcIn,
+                ),
               ),
             ),
           ),

@@ -17,6 +17,7 @@ abstract final class AppAssets {
   static const bell = 'assets/icons/bell.svg';
   static const closeX = 'assets/icons/close_x.svg';
   static const starOutline = 'assets/icons/star_outline.svg';
+  static const searchOff = 'assets/icons/search_off.svg';
 
   // Bottom nav
   static const navDiscover = 'assets/icons/nav_discover.svg';
@@ -39,6 +40,7 @@ abstract final class AppAssets {
   static const avatarSarah = 'assets/images/avatars/sarah.jpg';
   static const avatarOlivia = 'assets/images/avatars/olivia.jpg';
   static const avatarNoah = 'assets/images/avatars/noah.jpg';
+  static const avatarMarcus = 'assets/images/avatars/marcus.jpg';
   static const avatarEmma = 'assets/images/avatars/emma.jpg';
   static const avatarDavid = 'assets/images/avatars/david.jpg';
   static const avatarZara = 'assets/images/avatars/zara.jpg';
