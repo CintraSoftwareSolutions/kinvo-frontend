@@ -9,6 +9,7 @@ class DiscoverHeader extends StatelessWidget {
   const DiscoverHeader({
     required this.mode,
     required this.notificationCount,
+    this.onModeTap,
     this.onFiltersTap,
     this.onNotificationsTap,
     super.key,
@@ -16,6 +17,7 @@ class DiscoverHeader extends StatelessWidget {
 
   final DiscoverMode mode;
   final int notificationCount;
+  final VoidCallback? onModeTap;
   final VoidCallback? onFiltersTap;
   final VoidCallback? onNotificationsTap;
 
@@ -25,7 +27,7 @@ class DiscoverHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
       child: Row(
         children: [
-          _ModePill(mode: mode),
+          _ModePill(mode: mode, onTap: onModeTap),
           const Spacer(),
           _CircleIconButton(
             icon: AppAssets.filters,
@@ -44,40 +46,45 @@ class DiscoverHeader extends StatelessWidget {
 }
 
 class _ModePill extends StatelessWidget {
-  const _ModePill({required this.mode});
+  const _ModePill({required this.mode, this.onTap});
 
   final DiscoverMode mode;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: AppColors.divider),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 8,
-            height: 8,
-            decoration: BoxDecoration(
-              color: mode.primary,
-              shape: BoxShape.circle,
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: AppColors.divider),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: mode.primary,
+                shape: BoxShape.circle,
+              ),
             ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            mode.label,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+            const SizedBox(width: 8),
+            Text(
+              mode.label,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

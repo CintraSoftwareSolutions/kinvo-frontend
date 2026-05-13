@@ -10,6 +10,7 @@ enum DiscoverModeId {
   petDates,
   studyBuddy,
   trading,
+  fitness,
 }
 
 enum ProfileStatusKind { online, recent, minutesAgo, hoursAgo }
@@ -56,6 +57,8 @@ class DiscoverMode {
     required this.actionLabel,
     required this.actionSubtitle,
     required this.actionIcon,
+    required this.summaryCta,
+    required this.emptyStateMessage,
     required this.primary,
     required this.primarySoft,
     required this.profile,
@@ -68,6 +71,8 @@ class DiscoverMode {
   final String actionLabel;
   final String actionSubtitle;
   final String actionIcon;
+  final String summaryCta;
+  final String emptyStateMessage;
   final Color primary;
   final Color primarySoft;
   final DiscoverProfile profile;
@@ -82,6 +87,9 @@ abstract final class DiscoverModes {
     actionLabel: 'Cozy',
     actionSubtitle: 'Warmth',
     actionIcon: AppAssets.modeCuddle,
+    summaryCta: 'Send a cozy hello',
+    emptyStateMessage:
+        'Try widening your filters or bring back the last cozy match you passed.',
     primary: Color(0xFFEC4899),
     primarySoft: Color(0xFFFCE7F0),
     profile: DiscoverProfile(
@@ -107,6 +115,9 @@ abstract final class DiscoverModes {
     actionLabel: 'Like',
     actionSubtitle: 'Match',
     actionIcon: AppAssets.heartFill,
+    summaryCta: 'Suggest a date',
+    emptyStateMessage:
+        'Try widening your filters or bring back the last person you passed.',
     primary: Color(0xFFEF4458),
     primarySoft: Color(0xFFFFE4E8),
     profile: DiscoverProfile(
@@ -132,6 +143,9 @@ abstract final class DiscoverModes {
     actionLabel: 'Taste',
     actionSubtitle: 'Table',
     actionIcon: AppAssets.modeFoodie,
+    summaryCta: 'Pick a place to eat',
+    emptyStateMessage:
+        'Try widening your filters or bring back the last foodie you passed.',
     primary: Color(0xFFF59E0B),
     primarySoft: Color(0xFFFEF3C7),
     profile: DiscoverProfile(
@@ -140,7 +154,7 @@ abstract final class DiscoverModes {
       milesAway: 3,
       bio:
           'Foodie on a mission to try every cuisine in the city. Wh wants to be my dining partner?',
-      interests: ['Food', 'Cooking', 'Wine', '+2 more'],
+      interests: ['Food', 'Cooking', 'Wine', 'Travel', 'Photography'],
       imageAsset: AppAssets.avatarOlivia,
       status: ProfileStatus(
         kind: ProfileStatusKind.online,
@@ -158,6 +172,9 @@ abstract final class DiscoverModes {
     actionLabel: 'Connect',
     actionSubtitle: 'Intro',
     actionIcon: AppAssets.modeNetworking,
+    summaryCta: 'Schedule an intro',
+    emptyStateMessage:
+        'Try widening your filters or bring back the last intro you passed.',
     primary: Color(0xFF6366F1),
     primarySoft: Color(0xFFE0E7FF),
     profile: DiscoverProfile(
@@ -185,6 +202,9 @@ abstract final class DiscoverModes {
     actionLabel: 'Paw',
     actionSubtitle: 'Playdate',
     actionIcon: AppAssets.modePet,
+    summaryCta: 'Plan a playdate',
+    emptyStateMessage:
+        'Try widening your filters or bring back the last pet pal you passed.',
     primary: Color(0xFFF97316),
     primarySoft: Color(0xFFFFEDD5),
     profile: DiscoverProfile(
@@ -211,6 +231,9 @@ abstract final class DiscoverModes {
     actionLabel: 'Study',
     actionSubtitle: 'Invite',
     actionIcon: AppAssets.modeStudy,
+    summaryCta: 'Set up a study session',
+    emptyStateMessage:
+        'Try widening your filters or bring back the last study buddy you passed.',
     primary: Color(0xFF2563EB),
     primarySoft: Color(0xFFDBEAFE),
     profile: DiscoverProfile(
@@ -228,7 +251,7 @@ abstract final class DiscoverModes {
     ),
   );
 
-  static final trading = DiscoverMode(
+  static const trading = DiscoverMode(
     id: DiscoverModeId.trading,
     label: 'Trading',
     sessionFocus: 'Signal focused',
@@ -236,9 +259,12 @@ abstract final class DiscoverModes {
     actionLabel: 'Trade',
     actionSubtitle: 'Signal',
     actionIcon: AppAssets.modeTrading,
-    primary: const Color(0xFF10B981),
-    primarySoft: const Color(0xFFD1FAE5),
-    profile: const DiscoverProfile(
+    summaryCta: 'Share a chart',
+    emptyStateMessage:
+        'Try widening your filters or bring back the last trader you passed.',
+    primary: Color(0xFF10B981),
+    primarySoft: Color(0xFFD1FAE5),
+    profile: DiscoverProfile(
       name: 'David',
       age: 29,
       milesAway: 8,
@@ -253,7 +279,36 @@ abstract final class DiscoverModes {
     ),
   );
 
-  static final all = <DiscoverMode>[
+  static const fitness = DiscoverMode(
+    id: DiscoverModeId.fitness,
+    label: 'Fitness',
+    sessionFocus: 'Workout focused',
+    modeIcon: AppAssets.modeFitness,
+    actionLabel: 'Train',
+    actionSubtitle: 'Workout',
+    actionIcon: AppAssets.modeFitness,
+    summaryCta: 'Plan a workout',
+    emptyStateMessage:
+        'Try widening your filters or bring back the last workout partner you passed.',
+    primary: Color(0xFF14B8A6),
+    primarySoft: Color(0xFFCCFBF1),
+    profile: DiscoverProfile(
+      name: 'Zara',
+      age: 26,
+      milesAway: 2,
+      bio:
+          'Early-morning runner and lifting partner looking fo someone consistent, upbeat, and serious a..',
+      interests: ['Strength', 'Run Clubs', 'Pilates', '+2 more'],
+      imageAsset: AppAssets.avatarZara,
+      imageFallbackColor: Color(0xFF0F766E),
+      status: ProfileStatus(
+        kind: ProfileStatusKind.online,
+        label: 'Online now',
+      ),
+    ),
+  );
+
+  static const all = <DiscoverMode>[
     cuddle,
     dating,
     foodie,
@@ -261,5 +316,9 @@ abstract final class DiscoverModes {
     petDates,
     studyBuddy,
     trading,
+    fitness,
   ];
+
+  static DiscoverMode byId(DiscoverModeId id) =>
+      all.firstWhere((m) => m.id == id);
 }

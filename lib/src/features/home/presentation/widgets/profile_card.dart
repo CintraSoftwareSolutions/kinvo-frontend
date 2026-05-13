@@ -7,6 +7,7 @@ import '../../domain/discover_mode.dart';
 class ProfileCard extends StatelessWidget {
   const ProfileCard({
     required this.mode,
+    this.summaryExpanded = false,
     this.onPrev,
     this.onNext,
     this.onOpenSummary,
@@ -14,6 +15,7 @@ class ProfileCard extends StatelessWidget {
   });
 
   final DiscoverMode mode;
+  final bool summaryExpanded;
   final VoidCallback? onPrev;
   final VoidCallback? onNext;
   final VoidCallback? onOpenSummary;
@@ -77,6 +79,7 @@ class ProfileCard extends StatelessWidget {
               bottom: 14,
               child: _CardBody(
                 profile: profile,
+                summaryExpanded: summaryExpanded,
                 onOpenSummary: onOpenSummary,
               ),
             ),
@@ -354,9 +357,14 @@ class _SideButton extends StatelessWidget {
 }
 
 class _CardBody extends StatelessWidget {
-  const _CardBody({required this.profile, this.onOpenSummary});
+  const _CardBody({
+    required this.profile,
+    required this.summaryExpanded,
+    this.onOpenSummary,
+  });
 
   final DiscoverProfile profile;
+  final bool summaryExpanded;
   final VoidCallback? onOpenSummary;
 
   @override
@@ -460,38 +468,40 @@ class _CardBody extends StatelessWidget {
               ),
           ],
         ),
-        const SizedBox(height: 12),
-        GestureDetector(
-          onTap: onOpenSummary,
-          behavior: HitTestBehavior.opaque,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.45),
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SvgPicture.asset(
-                  AppAssets.sparkle,
-                  width: 12,
-                  height: 12,
-                ),
-                const SizedBox(width: 8),
-                const Text(
-                  'Tap to open the full profile summary',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w500,
+        if (!summaryExpanded) ...[
+          const SizedBox(height: 12),
+          GestureDetector(
+            onTap: onOpenSummary,
+            behavior: HitTestBehavior.opaque,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.45),
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SvgPicture.asset(
+                    AppAssets.sparkle,
+                    width: 12,
+                    height: 12,
                   ),
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Tap to open the full profile summary',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
+        ],
       ],
     );
   }

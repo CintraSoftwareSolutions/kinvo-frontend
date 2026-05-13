@@ -32,6 +32,7 @@ abstract final class AppAssets {
   static const modePet = 'assets/icons/mode_pet.svg';
   static const modeStudy = 'assets/icons/mode_study.svg';
   static const modeTrading = 'assets/icons/mode_trading.svg';
+  static const modeFitness = 'assets/icons/mode_fitness.svg';
 
   // Avatars
   static const avatarMaya = 'assets/images/avatars/maya.jpg';
@@ -40,4 +41,5 @@ abstract final class AppAssets {
   static const avatarNoah = 'assets/images/avatars/noah.jpg';
   static const avatarEmma = 'assets/images/avatars/emma.jpg';
   static const avatarDavid = 'assets/images/avatars/david.jpg';
+  static const avatarZara = 'assets/images/avatars/zara.jpg';
 }
