@@ -4,10 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/assets/app_assets.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/device_preview_shell.dart';
+import '../../../connections/presentation/screens/connections_screen.dart';
+import '../../../more/presentation/screens/more_screen.dart';
+import '../../../plans/presentation/screens/plans_screen.dart';
+import '../../../profile/presentation/screens/profile_screen.dart';
 import '../controllers/home_controller.dart';
 import '../widgets/home_bottom_nav.dart';
 import 'discover_screen.dart';
-import 'placeholder_tab_screen.dart';
 
 class HomeShell extends ConsumerWidget {
   const HomeShell({super.key});
@@ -46,30 +49,10 @@ class HomeShell extends ConsumerWidget {
               index: index,
               children: const [
                 DiscoverScreen(),
-                PlaceholderTabScreen(
-                  title: 'Matches',
-                  subtitle:
-                      'Your conversations and connections will land here.',
-                  iconAsset: AppAssets.navMatches,
-                ),
-                PlaceholderTabScreen(
-                  title: 'Plans',
-                  subtitle:
-                      'Schedule meetups, study sessions, and dining plans.',
-                  iconAsset: AppAssets.navPlans,
-                ),
-                PlaceholderTabScreen(
-                  title: 'Profile',
-                  subtitle:
-                      'Manage your Kinvo profile, modes, and trust settings.',
-                  iconAsset: AppAssets.navProfile,
-                ),
-                PlaceholderTabScreen(
-                  title: 'More',
-                  subtitle:
-                      'Notifications, safety center, privacy controls and more.',
-                  iconAsset: AppAssets.navMore,
-                ),
+                ConnectionsScreen(),
+                PlansScreen(),
+                ProfileScreen(),
+                MoreScreen(),
               ],
             ),
           ),

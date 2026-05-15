@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/navigation/app_routes.dart';
 import '../controllers/home_controller.dart';
 import '../../domain/discover_mode.dart';
 import '../widgets/deck_controls.dart';
@@ -33,6 +34,8 @@ class DiscoverScreen extends ConsumerWidget {
           notificationCount: badges.notifications,
           onModeTap: () => showSelectModeSheet(context),
           onFiltersTap: () => showDiscoveryFiltersSheet(context),
+          onNotificationsTap: () =>
+              Navigator.of(context).pushNamed(AppRoutes.notifications),
         ),
         const Divider(height: 1, color: Color(0xFFEDEFF5)),
         Expanded(

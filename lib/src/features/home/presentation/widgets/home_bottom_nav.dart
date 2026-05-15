@@ -24,25 +24,23 @@ class HomeBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(8, 10, 8, 12),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(26),
-          topRight: Radius.circular(26),
+    return SafeArea(
+      top: false,
+      minimum: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(8, 10, 8, 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x140C132A),
+              blurRadius: 24,
+              spreadRadius: 0,
+              offset: Offset(0, 6),
+            ),
+          ],
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x140C132A),
-            blurRadius: 24,
-            spreadRadius: 0,
-            offset: Offset(0, -6),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
         child: Row(
           children: [
             for (int i = 0; i < items.length; i++)
@@ -78,20 +76,21 @@ class _NavCell extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 2),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+        decoration: BoxDecoration(
+          color: selected
+              ? AppColors.purpleChip.withValues(alpha: 0.65)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(18),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 44,
-              height: 36,
-              decoration: BoxDecoration(
-                color: selected
-                    ? AppColors.purpleChip.withValues(alpha: 0.65)
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(12),
-              ),
+            SizedBox(
+              width: 28,
+              height: 24,
               child: Stack(
                 clipBehavior: Clip.none,
                 alignment: Alignment.center,
@@ -104,8 +103,8 @@ class _NavCell extends StatelessWidget {
                   ),
                   if (item.badge > 0)
                     Positioned(
-                      top: -2,
-                      right: 2,
+                      top: -4,
+                      right: -6,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 4,
