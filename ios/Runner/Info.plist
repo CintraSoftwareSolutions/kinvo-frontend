@@ -24,6 +24,12 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Kinvo uses your camera so you can take profile photos and a verification selfie.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Kinvo uses your approximate location to show you people nearby. Others only see how far away you are, never where you are.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Kinvo uses your photo library so you can add profile photos and attach images to a report.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

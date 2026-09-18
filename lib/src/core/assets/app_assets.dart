@@ -78,10 +78,4 @@ abstract final class AppAssets {
   static const avatarZara = 'assets/images/avatars/zara.jpg';
   static const avatarMarcus = 'assets/images/avatars/marcus.jpg';
   static const avatarBill = 'assets/images/avatars/bill.jpg';
-
-  // Venues
-  static const venueBlueBottle = 'assets/images/venues/blue_bottle_cafe.jpg';
-  static const venueSmith = 'assets/images/venues/the_smith.jpg';
-  static const venueCentralPark = 'assets/images/venues/central_park.jpg';
-  static const venueEquinox = 'assets/images/venues/equinox_fitness.jpg';
 }

@@ -1,267 +1,325 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-import '../../../../core/assets/app_assets.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/flow_widgets.dart';
 import '../../../../core/widgets/page_header.dart';
-import '../../domain/plan.dart';
+import '../../../../core/units/distance.dart';
+import '../../../settings/presentation/controllers/settings_controllers.dart';
+import '../../domain/venue.dart';
+import '../controllers/plans_controllers.dart';
+import '../plan_presentation.dart';
 
-class VenuesScreen extends StatefulWidget {
+/// Places to meet near the user, to choose one for a plan. Closes with the
+/// place chosen.
+class VenuesScreen extends ConsumerStatefulWidget {
   const VenuesScreen({super.key});
 
   @override
-  State<VenuesScreen> createState() => _VenuesScreenState();
+  ConsumerState<VenuesScreen> createState() => _VenuesScreenState();
 }
 
-class _VenuesScreenState extends State<VenuesScreen> {
-  String _query = '';
-  final Set<String> _saved = {};
+class _VenuesScreenState extends ConsumerState<VenuesScreen> {
+  VenueQuery _query = (category: null, savedOnly: false);
 
   @override
   Widget build(BuildContext context) {
-    final results = SampleVenues.all
-        .where((v) => v.name.toLowerCase().contains(_query.toLowerCase()))
-        .toList();
-
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            PageHeader(
-              title: 'Venue Browser',
-              subtitle: 'Suggestions tuned to your shared mode and distance',
+            const PageHeader(
+              title: 'Places',
+              subtitle: 'Somewhere to meet near you',
               leading: HeaderBackButton(),
-              trailing: const Icon(
-                Icons.search_rounded,
-                color: AppColors.textPrimary,
-              ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(18, 0, 18, 12),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppColors.divider),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.search_rounded,
-                      size: 16,
-                      color: AppColors.textMuted,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: TextField(
-                        onChanged: (v) => setState(() => _query = v),
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          isDense: true,
-                          hintText: 'Search cafes, parks, study spots, or gyms',
-                          hintStyle: TextStyle(
-                            fontSize: 12.5,
-                            color: AppColors.textMuted,
-                          ),
-                        ),
-                        style: const TextStyle(
-                          fontSize: 12.5,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Expanded(
+            SizedBox(
+              height: 36,
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(18, 4, 18, 24),
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 18),
                 children: [
-                  for (final v in results) ...[
-                    _VenueCard(
-                      venue: v,
-                      saved: _saved.contains(v.id),
-                      onSaveToggle: () => setState(() {
-                        if (_saved.contains(v.id)) {
-                          _saved.remove(v.id);
-                        } else {
-                          _saved.add(v.id);
-                        }
-                      }),
-                      onSuggest: () {
-                        Navigator.of(context).pop(v);
-                      },
+                  _filter(
+                    'All',
+                    selected: _query.category == null && !_query.savedOnly,
+                    query: (category: null, savedOnly: false),
+                  ),
+                  _filter(
+                    'Saved',
+                    selected: _query.savedOnly,
+                    query: (category: null, savedOnly: true),
+                  ),
+                  for (final category in VenueCategory.searchable)
+                    _filter(
+                      category.label,
+                      selected: _query.category == category,
+                      query: (category: category, savedOnly: false),
                     ),
-                    const SizedBox(height: 12),
-                  ],
                 ],
               ),
             ),
+            const SizedBox(height: 12),
+            Expanded(child: _VenueList(query: _query)),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _filter(
+    String label, {
+    required bool selected,
+    required VenueQuery query,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: OptionChip(
+        label: label,
+        selected: selected,
+        onTap: () => setState(() => _query = query),
+      ),
+    );
+  }
+}
+
+class _VenueList extends ConsumerWidget {
+  const _VenueList({required this.query});
+
+  final VenueQuery query;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final provider = venueListProvider(query);
+    final venues = ref.watch(provider);
+
+    return switch (venues) {
+      AsyncValue(value: final venues?) when venues.isEmpty => ListView(
+        padding: const EdgeInsets.fromLTRB(18, 0, 18, 24),
+        children: [_Empty(savedOnly: query.savedOnly)],
+      ),
+      AsyncValue(value: final venues?) => ListView.separated(
+        padding: const EdgeInsets.fromLTRB(18, 0, 18, 24),
+        itemCount: venues.length,
+        separatorBuilder: (_, _) => const SizedBox(height: 10),
+        itemBuilder: (context, index) => _VenueTile(
+          venue: venues[index],
+          onSave: () async {
+            final messenger = ScaffoldMessenger.of(context);
+            final error = await ref
+                .read(provider.notifier)
+                .toggleSaved(venues[index]);
+            if (error != null) {
+              messenger
+                ..hideCurrentSnackBar()
+                ..showSnackBar(SnackBar(content: Text(error)));
+            }
+          },
+        ),
+      ),
+      AsyncValue(:final error?) => ListView(
+        padding: const EdgeInsets.fromLTRB(18, 0, 18, 24),
+        children: [
+          SurfaceCard(
+            padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
+            child: Column(
+              children: [
+                const Text(
+                  "Places didn't load",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  error is ApiException
+                      ? error.message
+                      : 'Something went wrong. Please try again.',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    height: 1.5,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                PrimaryActionButton(
+                  label: 'Try again',
+                  onPressed: () => ref.invalidate(provider),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+      _ => const Center(child: CircularProgressIndicator()),
+    };
+  }
+}
+
+class _VenueTile extends ConsumerWidget {
+  const _VenueTile({required this.venue, required this.onSave});
+
+  final Venue venue;
+  final VoidCallback onSave;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final details = [
+      venue.category.label,
+      ?distanceAway(venue.distanceMetres, ref.watch(distanceUnitProvider)),
+      if (venue.rating case final rating?) '★ ${rating.toStringAsFixed(1)}',
+      if (venue.priceLevel case final level? when level > 0) '£' * level,
+    ].join(' · ');
+
+    return Material(
+      color: Colors.white,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: AppColors.divider),
+      ),
+      child: InkWell(
+        onTap: () => context.pop(venue),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 12, 6, 12),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: AppColors.purpleSoft,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  venueIcon(venue.category),
+                  size: 22,
+                  color: AppColors.purple,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Semantics(
+                  button: true,
+                  label: 'Choose ${venue.name}, $details',
+                  excludeSemantics: true,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        venue.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        details,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      if (venue.address case final address?)
+                        Text(
+                          address,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 11.5,
+                            color: AppColors.textMuted,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: onSave,
+                tooltip: venue.isSaved ? 'Remove from saved' : 'Save place',
+                icon: Icon(
+                  venue.isSaved
+                      ? Icons.bookmark_rounded
+                      : Icons.bookmark_border_rounded,
+                  color: venue.isSaved ? AppColors.purple : AppColors.textMuted,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _VenueCard extends StatelessWidget {
-  const _VenueCard({
-    required this.venue,
-    required this.saved,
-    required this.onSaveToggle,
-    required this.onSuggest,
-  });
+class _Empty extends StatelessWidget {
+  const _Empty({required this.savedOnly});
 
-  final Venue venue;
-  final bool saved;
-  final VoidCallback onSaveToggle;
-  final VoidCallback onSuggest;
+  final bool savedOnly;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.divider),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A0C132A),
-            blurRadius: 12,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
+    return SurfaceCard(
+      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 22),
+      child: Column(
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.asset(
-              venue.image,
-              width: 76,
-              height: 76,
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => Container(
-                width: 76,
-                height: 76,
-                color: AppColors.surfaceSoft,
-              ),
+          Container(
+            width: 56,
+            height: 56,
+            decoration: const BoxDecoration(
+              color: AppColors.surfaceSoft,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              savedOnly ? Icons.bookmark_border_rounded : Icons.place_outlined,
+              size: 26,
+              color: AppColors.textMuted,
             ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        venue.name,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                    ),
-                    SvgPicture.asset(
-                      AppAssets.starFilled,
-                      width: 12,
-                      height: 12,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${venue.rating}',
-                      style: const TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  venue.type,
-                  style: const TextStyle(
-                    fontSize: 11.5,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${venue.distanceMiles.toStringAsFixed(1)} mi · ${venue.savedCount}  Save for later',
-                  style: const TextStyle(
-                    fontSize: 10.5,
-                    color: AppColors.textMuted,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    GestureDetector(
-                      onTap: onSaveToggle,
-                      behavior: HitTestBehavior.opaque,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: saved
-                              ? AppColors.purpleChip
-                              : AppColors.surfaceSoft,
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: Text(
-                          saved ? 'Saved' : 'Save',
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w700,
-                            color: saved
-                                ? AppColors.purple
-                                : AppColors.textPrimary,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    GestureDetector(
-                      onTap: onSuggest,
-                      behavior: HitTestBehavior.opaque,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.purple,
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: const Text(
-                          'Suggest',
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+          const SizedBox(height: 14),
+          Text(
+            savedOnly ? 'No saved places' : 'No places near you yet',
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
             ),
           ),
+          const SizedBox(height: 4),
+          Text(
+            savedOnly
+                ? 'Save places you like, and they wait here for your next plan.'
+                : "Kinvo's list of places doesn't reach your area yet. Type "
+                      'the place into your plan instead.',
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 12,
+              height: 1.45,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          if (!savedOnly) ...[
+            const SizedBox(height: 16),
+            PrimaryActionButton(
+              label: 'Type a place instead',
+              borderRadius: 999,
+              onPressed: () => context.pop(),
+            ),
+          ],
         ],
       ),
     );

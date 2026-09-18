@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/assets/app_assets.dart';
 import '../../../../core/navigation/app_routes.dart';
@@ -32,8 +33,7 @@ class MoreScreen extends StatelessWidget {
                   iconBg: const Color(0xFFFEF3C7),
                   title: 'Upgrade to Premium',
                   subtitle: 'Unlock multi-mode access and advanced controls.',
-                  onTap: () =>
-                      Navigator.of(context).pushNamed(AppRoutes.premium),
+                  onTap: () => context.push(AppRoutes.premium),
                 ),
                 const SizedBox(height: 10),
                 SettingsTile(
@@ -42,8 +42,7 @@ class MoreScreen extends StatelessWidget {
                   iconColor: const Color(0xFF6366F1),
                   title: 'Safety Center',
                   subtitle: 'Review trusted contacts, tips, and reports.',
-                  onTap: () =>
-                      Navigator.of(context).pushNamed(AppRoutes.safetyCenter),
+                  onTap: () => context.push(AppRoutes.safetyCenter),
                 ),
                 const SizedBox(height: 10),
                 SettingsTile(
@@ -52,18 +51,16 @@ class MoreScreen extends StatelessWidget {
                   iconColor: const Color(0xFFEF4458),
                   title: 'Notifications',
                   subtitle: 'Check match, message, and plan alerts.',
-                  onTap: () =>
-                      Navigator.of(context).pushNamed(AppRoutes.notifications),
+                  onTap: () => context.push(AppRoutes.notifications),
                 ),
                 const SizedBox(height: 10),
                 SettingsTile(
                   icon: AppAssets.settingsAlt,
                   iconBg: AppColors.surfaceSoft,
                   iconColor: AppColors.textPrimary,
-                  title: 'Privacy Settings',
-                  subtitle: 'Tune discovery, visibility, and alerts.',
-                  onTap: () =>
-                      Navigator.of(context).pushNamed(AppRoutes.modePrivacy),
+                  title: 'Privacy',
+                  subtitle: 'What others see, taking a break, and your devices.',
+                  onTap: () => context.push(AppRoutes.privacy),
                 ),
                 const SizedBox(height: 10),
                 SettingsTile(
@@ -75,8 +72,7 @@ class MoreScreen extends StatelessWidget {
                   iconBg: AppColors.surfaceSoft,
                   title: 'Support & guidelines',
                   subtitle: 'Help center, community, escalation paths.',
-                  onTap: () =>
-                      Navigator.of(context).pushNamed(AppRoutes.support),
+                  onTap: () => context.push(AppRoutes.support),
                 ),
                 const SizedBox(height: 10),
                 SettingsTile(
@@ -85,16 +81,15 @@ class MoreScreen extends StatelessWidget {
                   iconColor: AppColors.purple,
                   title: 'Theme & accessibility',
                   subtitle: 'Tune contrast, motion, text size, and dark mode.',
-                  onTap: () => Navigator.of(context).pushNamed(AppRoutes.theme),
+                  onTap: () => context.push(AppRoutes.theme),
                 ),
                 const SizedBox(height: 10),
                 SettingsTile(
                   icon: AppAssets.settingsAlt,
                   iconBg: AppColors.surfaceSoft,
                   title: 'Settings',
-                  subtitle: 'Account, distance, age range, and devices.',
-                  onTap: () =>
-                      Navigator.of(context).pushNamed(AppRoutes.settings),
+                  subtitle: 'Filters, units, notifications and your account.',
+                  onTap: () => context.push(AppRoutes.settings),
                 ),
               ],
             ),

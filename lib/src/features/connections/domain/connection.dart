@@ -1,7 +1,5 @@
 import '../../../core/assets/app_assets.dart';
 
-enum ConnectionFilter { matches, requests, archived }
-
 class Connection {
   const Connection({
     required this.id,

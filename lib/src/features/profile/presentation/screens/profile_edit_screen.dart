@@ -1,93 +1,32 @@
-import 'dart:io';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/config/server_config.dart';
+import '../../../../core/forms/form_errors.dart';
+import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/flow_widgets.dart';
 import '../../../../core/widgets/page_header.dart';
-import '../controllers/profile_controller.dart';
+import '../../../../core/widgets/settings_group.dart';
+import '../../domain/own_profile.dart';
+import '../../domain/profile_fields.dart';
+import '../../domain/profile_rules.dart';
+import '../controllers/profile_controllers.dart';
+import '../widgets/photo_editor_grid.dart';
+import '../widgets/profile_field_editors.dart';
+import '../widgets/prompt_editor_sheet.dart';
+import '../widgets/public_profile_view.dart';
 
+/// Changing the profile. Every change saves on its own, as it's made.
 class ProfileEditScreen extends ConsumerWidget {
   const ProfileEditScreen({super.key});
 
-  Future<void> _pickPhoto(BuildContext context, WidgetRef ref, int index) async {
-    final result = await showModalBottomSheet<ImageSource>(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (sheet) => SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(
-                child: Container(
-                  width: 38,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE5E7EB),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Add a photo',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 12),
-              ListTile(
-                onTap: () => Navigator.of(sheet).pop(ImageSource.camera),
-                leading: const Icon(Icons.camera_alt_outlined,
-                    color: AppColors.purple),
-                title: const Text('Take a photo'),
-                contentPadding: EdgeInsets.zero,
-              ),
-              ListTile(
-                onTap: () => Navigator.of(sheet).pop(ImageSource.gallery),
-                leading: const Icon(Icons.photo_library_outlined,
-                    color: AppColors.purple),
-                title: const Text('Choose from gallery'),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-
-    if (result == null) return;
-    try {
-      final picker = ImagePicker();
-      final picked = await picker.pickImage(source: result, imageQuality: 78);
-      if (picked != null) {
-        ref
-            .read(profileControllerProvider.notifier)
-            .setPhoto(index, picked.path);
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not pick image: $e')),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final p = ref.watch(profileControllerProvider);
-    final controller = ref.read(profileControllerProvider.notifier);
+    final profile = ref.watch(ownProfileProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE),
@@ -95,102 +34,27 @@ class ProfileEditScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            PageHeader(
-              title: 'Edit Profile',
-              subtitle: 'Update photos, bio, and the modes you want active',
+            const PageHeader(
+              title: 'Edit profile',
+              subtitle: 'Each change saves as soon as you make it',
               leading: HeaderBackButton(),
-              trailing: GestureDetector(
-                onTap: () => Navigator.of(context).maybePop(),
-                child: const Text(
-                  'Save',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.purple,
-                  ),
-                ),
-              ),
             ),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(18, 6, 18, 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+              child: switch (profile) {
+                AsyncValue(value: final profile?) => _EditForm(
+                  profile: profile,
+                ),
+                AsyncValue(:final error?) => ListView(
+                  padding: const EdgeInsets.fromLTRB(18, 6, 18, 24),
                   children: [
-                    Container(
-                      padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: AppColors.divider),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Photos',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          GridView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 3,
-                              mainAxisSpacing: 10,
-                              crossAxisSpacing: 10,
-                            ),
-                            itemCount: p.photos.length,
-                            itemBuilder: (_, i) => _PhotoTile(
-                              path: p.photos[i],
-                              onTap: () => _pickPhoto(context, ref, i),
-                              onClear: p.photos[i] != null
-                                  ? () => controller.setPhoto(i, null)
-                                  : null,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    _EditField(
-                      label: 'NAME',
-                      value: p.name,
-                      onChanged: controller.updateName,
-                    ),
-                    const SizedBox(height: 10),
-                    _EditField(
-                      label: 'LOCATION',
-                      value: p.location,
-                      onChanged: controller.updateLocation,
-                    ),
-                    const SizedBox(height: 10),
-                    _EditField(
-                      label: 'JOB TITLE',
-                      value: p.jobTitle,
-                      onChanged: controller.updateJobTitle,
-                    ),
-                    const SizedBox(height: 10),
-                    _EditField(
-                      label: 'ORGANIZATION',
-                      value: p.organization,
-                      onChanged: controller.updateOrganization,
-                    ),
-                    const SizedBox(height: 10),
-                    _EditField(
-                      label: 'BIO',
-                      value: p.bio,
-                      maxLines: 3,
-                      onChanged: controller.updateBio,
+                    LoadFailedCard(
+                      message: saveFailureMessage(error),
+                      onRetry: () => ref.invalidate(ownProfileProvider),
                     ),
                   ],
                 ),
-              ),
+                _ => const Center(child: CircularProgressIndicator()),
+              },
             ),
           ],
         ),
@@ -199,129 +63,315 @@ class ProfileEditScreen extends ConsumerWidget {
   }
 }
 
-class _PhotoTile extends StatelessWidget {
-  const _PhotoTile({required this.path, required this.onTap, this.onClear});
+class _EditForm extends ConsumerWidget {
+  const _EditForm({required this.profile});
 
-  final String? path;
+  final OwnProfile profile;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final catalogue = ref.watch(profileCatalogueProvider).value;
+    final limits = catalogue?.limits;
+
+    void edit(ProfileField field) {
+      unawaited(
+        showProfileFieldEditor(
+          context,
+          field: field,
+          current: profile.valueOf(field),
+          options: catalogue?.lifestyleOptions[field.apiName] ?? const [],
+          bioMaxLength: limits?.bioMaxLength ?? ProfileRules.maxBioLength,
+        ),
+      );
+    }
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(18, 6, 18, 32),
+      children: [
+        const SettingsSectionLabel('PHOTOS'),
+        _Photos(name: profile.displayName),
+        const SizedBox(height: 22),
+        const SettingsSectionLabel('ABOUT YOU'),
+        SettingsGroup(
+          children: [
+            for (final field in const [
+              ProfileField.displayName,
+              ProfileField.bio,
+              ProfileField.jobTitle,
+              ProfileField.organisation,
+              ProfileField.education,
+              ProfileField.heightCm,
+              ProfileField.city,
+            ])
+              _FieldRow(
+                field: field,
+                value: profile.valueOf(field),
+                onTap: () => edit(field),
+              ),
+          ],
+        ),
+        const SizedBox(height: 22),
+        const SettingsSectionLabel('LIFESTYLE'),
+        SettingsGroup(
+          children: [
+            for (final field in ProfileField.lifestyle)
+              _FieldRow(
+                field: field,
+                value: profile.valueOf(field),
+                onTap: () => edit(field),
+              ),
+          ],
+        ),
+        const SizedBox(height: 22),
+        const SettingsSectionLabel('INTERESTS'),
+        _Interests(profile: profile, maxInterests: limits?.maxInterests),
+        const SizedBox(height: 22),
+        const SettingsSectionLabel('PROMPTS'),
+        _Prompts(
+          profile: profile,
+          questions: catalogue?.prompts ?? const [],
+          maxPrompts: limits?.maxPrompts ?? ProfileLimits.defaultMaxPrompts,
+        ),
+      ],
+    );
+  }
+}
+
+class _Photos extends ConsumerWidget {
+  const _Photos({required this.name});
+
+  final String name;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final album = ref.watch(profilePhotosProvider);
+    final edits = ref.watch(photoEditsProvider);
+
+    return switch (album) {
+      AsyncValue(value: final album?) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          PhotoEditorGrid(album: album, edits: edits, name: name),
+          const SizedBox(height: 10),
+          const Text(
+            'Hold a photo and drag it to change the order, or tap it for '
+            'more. Your first photo is your main one.',
+            style: TextStyle(
+              fontSize: 12,
+              height: 1.45,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          if (edits.error case final error?) ...[
+            const SizedBox(height: 10),
+            FormErrorBanner(message: error),
+          ],
+        ],
+      ),
+      AsyncValue(:final error?) => LoadFailedCard(
+        message: saveFailureMessage(error),
+        onRetry: () => ref.invalidate(profilePhotosProvider),
+      ),
+      _ => const Padding(
+        padding: EdgeInsets.all(24),
+        child: Center(child: CircularProgressIndicator()),
+      ),
+    };
+  }
+}
+
+/// One detail and its current value, which opens its editor.
+class _FieldRow extends StatelessWidget {
+  const _FieldRow({
+    required this.field,
+    required this.value,
+    required this.onTap,
+  });
+
+  final ProfileField field;
+  final Object? value;
   final VoidCallback onTap;
-  final VoidCallback? onClear;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    final shown = switch (value) {
+      null => null,
+      final int height when field == ProfileField.heightCm => heightLabel(
+        height,
+      ),
+      final String option when field.hasOptions => profileOptionLabel(
+        field,
+        option,
+      ),
+      final String text when text.trim().isNotEmpty => text.trim(),
+      _ => null,
+    };
+
+    return ListTile(
       onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Stack(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+      title: Text(
+        field.label,
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textSecondary,
+        ),
+      ),
+      subtitle: Text(
+        shown ?? 'Add',
+        maxLines: field == ProfileField.bio ? 3 : 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: shown == null ? AppColors.purple : AppColors.textPrimary,
+        ),
+      ),
+      trailing: const Icon(
+        Icons.chevron_right_rounded,
+        color: AppColors.textMuted,
+      ),
+    );
+  }
+}
+
+class _Interests extends StatelessWidget {
+  const _Interests({required this.profile, required this.maxInterests});
+
+  final OwnProfile profile;
+  final int? maxInterests;
+
+  @override
+  Widget build(BuildContext context) {
+    final interests = profile.interests;
+    final count = maxInterests == null
+        ? '${interests.length} chosen'
+        : '${interests.length} of $maxInterests chosen';
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.divider),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppColors.surfaceSoft,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: AppColors.divider,
-                  style: path == null
-                      ? BorderStyle.solid
-                      : BorderStyle.solid,
+          if (interests.isEmpty)
+            const Text(
+              'Add interests so people can see what you have in common.',
+              style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+            )
+          else
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final interest in interests)
+                  InterestChip(label: interest.label),
+              ],
+            ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  count,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ),
-              child: path == null
-                  ? const Center(
-                      child: Icon(
-                        Icons.add_rounded,
-                        size: 22,
-                        color: AppColors.textMuted,
-                      ),
-                    )
-                  : ClipRRect(
-                      borderRadius: BorderRadius.circular(13),
-                      child: Image.file(
-                        File(path!),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-            ),
+              TextButton(
+                onPressed: () => context.push(AppRoutes.profileInterests),
+                style: TextButton.styleFrom(foregroundColor: AppColors.purple),
+                child: Text(interests.isEmpty ? 'Add interests' : 'Change'),
+              ),
+            ],
           ),
-          if (path != null && onClear != null)
-            Positioned(
-              top: 4,
-              right: 4,
-              child: GestureDetector(
-                onTap: onClear,
-                behavior: HitTestBehavior.opaque,
-                child: Container(
-                  width: 22,
-                  height: 22,
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.55),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.close_rounded,
-                    size: 12,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
         ],
       ),
     );
   }
 }
 
-class _EditField extends StatelessWidget {
-  const _EditField({
-    required this.label,
-    required this.value,
-    required this.onChanged,
-    this.maxLines = 1,
+class _Prompts extends StatelessWidget {
+  const _Prompts({
+    required this.profile,
+    required this.questions,
+    required this.maxPrompts,
   });
 
-  final String label;
-  final String value;
-  final ValueChanged<String> onChanged;
-  final int maxLines;
+  final OwnProfile profile;
+  final List<PromptOption> questions;
+  final int maxPrompts;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.divider),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 9.5,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.4,
-              color: AppColors.textMuted,
+    final answers = profile.prompts;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (final answer in answers) ...[
+          Semantics(
+            button: true,
+            label: '${answer.question} ${answer.answer}',
+            hint: 'Change or remove this prompt',
+            excludeSemantics: true,
+            child: GestureDetector(
+              onTap: () => unawaited(
+                showPromptAnswerSheet(
+                  context,
+                  answers: answers,
+                  editing: answer,
+                ),
+              ),
+              behavior: HitTestBehavior.opaque,
+              child: PromptCard(
+                question: answer.question,
+                answer: answer.answer,
+                trailing: const Icon(
+                  Icons.edit_outlined,
+                  size: 18,
+                  color: AppColors.textMuted,
+                ),
+              ),
             ),
           ),
-          const SizedBox(height: 4),
-          TextFormField(
-            initialValue: value,
-            onChanged: onChanged,
-            maxLines: maxLines,
-            style: const TextStyle(
-              fontSize: 13.5,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
-            ),
-            decoration: const InputDecoration(
-              isDense: true,
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.zero,
-            ),
-          ),
+          const SizedBox(height: 10),
         ],
-      ),
+        if (answers.length < maxPrompts)
+          OutlineActionButton(
+            label: answers.isEmpty
+                ? 'Answer a prompt'
+                : 'Add a prompt (${answers.length} of $maxPrompts)',
+            onPressed: questions.isEmpty
+                ? null
+                : () => unawaited(
+                    showAddPromptSheet(
+                      context,
+                      answers: answers,
+                      questions: questions,
+                    ),
+                  ),
+            foregroundColor: AppColors.purple,
+            borderColor: AppColors.purple,
+          )
+        else
+          Text(
+            'You have answered $maxPrompts prompts, the most a profile '
+            'shows. Tap one to change or remove it.',
+            style: const TextStyle(
+              fontSize: 12,
+              height: 1.45,
+              color: AppColors.textSecondary,
+            ),
+          ),
+      ],
     );
   }
 }

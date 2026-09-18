@@ -1,36 +1,105 @@
+/// Every location in the app.
+///
+/// Build paths with these constants and helpers rather than by hand, so a
+/// link can't drift from the route it points at.
 abstract final class AppRoutes {
-  static const welcome = '/';
-  static const signup = '/signup';
-  static const login = '/login';
-  static const otp = '/otp';
-  static const resetPassword = '/reset-password';
-  static const onboarding = '/onboarding';
-  static const home = '/home';
+  // System
+  static const splash = '/splash';
+  static const suspended = '/account-suspended';
 
-  // Connections / chat
-  static const chat = '/chat';
-  static const chatReview = '/chat-review';
-  static const videoCall = '/video-call';
+  // Signed out
+  static const welcome = '/welcome';
+  static const signup = '/signup';
+  static const otp = '/signup/verify-code';
+  static const login = '/login';
+  static const resetPassword = '/login/reset-password';
+  static const newPassword = '/login/reset-password/new-password';
+
+  // Signed in, before the app
+  static const onboarding = '/onboarding';
+
+  // Tabs, in bottom-navigation order
+  static const discover = '/discover';
+  static const matches = '/matches';
+  static const plans = '/plans';
+  static const profile = '/profile';
+  static const more = '/more';
+
+  // Discover
+  static const notifications = '/discover/notifications';
+
+  // Matches
+  static String chat(String conversationId) {
+    return '$matches/chat/${Uri.encodeComponent(conversationId)}';
+  }
+
+  /// The demo's call screen for one of its sample conversations.
+  static String videoCall(String conversationId) {
+    return '${chat(conversationId)}/call';
+  }
 
   // Plans
-  static const planComposer = '/plan-composer';
-  static const venues = '/venues';
+  static const planComposer = '/plans/new';
 
-  // Profile + verification
-  static const profileEdit = '/profile-edit';
-  static const profileReview = '/profile-review';
-  static const verificationMethods = '/verification-methods';
-  static const verificationCapture = '/verification-capture';
-  static const verificationSuccess = '/verification-success';
+  /// A new plan with the match [matchId] already chosen, as a chat opens it.
+  static String planWith(String matchId) {
+    return '$planComposer?match=${Uri.encodeQueryComponent(matchId)}';
+  }
+
+  /// Places to meet, to choose one for a plan. Returns the one chosen.
+  static const venues = '/plans/places';
+
+  static String plan(String planId) {
+    return '$plans/${Uri.encodeComponent(planId)}';
+  }
+
+  static String editPlan(String planId) => '${plan(planId)}/edit';
+
+  // Profile
+  static const profileEdit = '/profile/edit';
+  static const profileInterests = '/profile/edit/interests';
+  static const profileReview = '/profile/preview';
+  static const verificationMethods = '/profile/verification';
+  static const verificationCapture = '/profile/verification/capture';
+  static const verificationSuccess = '/profile/verification/submitted';
 
   // More
-  static const safetyCenter = '/safety-center';
-  static const trustedContacts = '/trusted-contacts';
-  static const report = '/report';
-  static const premium = '/premium';
-  static const notifications = '/notifications';
-  static const modePrivacy = '/mode-privacy';
-  static const settings = '/settings';
-  static const support = '/support';
-  static const theme = '/theme';
+  static const premium = '/more/premium';
+  static const safetyCenter = '/more/safety';
+  static const trustedContacts = '/more/safety/contacts';
+  static const privacy = '/more/privacy';
+  static const devices = '/more/privacy/devices';
+  static const support = '/more/support';
+  static const theme = '/more/theme';
+  static const settings = '/more/settings';
+  static const notificationSettings = '/more/settings/notifications';
+
+  // Reachable from several tabs
+
+  /// The report form. Push it with a `ReportTarget` as `extra` to say who
+  /// the report is about.
+  static const reportPath = '/report';
+  static const reportConnectionParameter = 'connection';
+
+  /// The report form, about the demo's sample person [connectionId] when
+  /// given.
+  static String report({String? connectionId}) {
+    return Uri(
+      path: reportPath,
+      queryParameters: connectionId == null
+          ? null
+          : {reportConnectionParameter: connectionId},
+    ).toString();
+  }
+
+  static const splashDestinationParameter = 'from';
+
+  /// The splash screen, remembering [destination] so the app can continue
+  /// there once the session is ready.
+  static String splashThen(Uri destination) {
+    return Uri(
+      path: splash,
+      queryParameters: {splashDestinationParameter: destination.toString()},
+    ).toString();
+  }
 }

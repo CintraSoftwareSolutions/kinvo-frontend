@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tints the small icon and the app name on a notification. -->
+    <color name="notification_accent">#FF6F47CB</color>
+
+    <!-- The one channel Kinvo's notifications arrive on. Created in
+         MainActivity; the id must not change once released, or the settings
+         people chose for the old channel are lost. -->
+    <string name="notification_channel_id" translatable="false">kinvo_notifications</string>
+    <string name="notification_channel_name">Matches, messages and plans</string>
+    <string name="notification_channel_description">New matches and likes, messages from your matches, plan updates and safety alerts.</string>
+</resources>

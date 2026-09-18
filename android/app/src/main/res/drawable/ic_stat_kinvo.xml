@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Kinvo heart, as the status bar shows notifications: a single colour
+     on transparent. Android only uses the shape; a full-colour icon would show
+     as a white square. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <group
+        android:translateX="4"
+        android:translateY="6">
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M34,22C36.98,19.08 40,15.58 40,11C40,8.08 38.84,5.28 36.78,3.22C34.72,1.16 31.92,0 29,0C25.48,0 23,1 20,4C17,1 14.52,0 11,0C8.08,0 5.28,1.16 3.22,3.22C1.16,5.28 0,8.08 0,11C0,15.6 3,19.1 6,22L20,36L34,22Z" />
+    </group>
+</vector>

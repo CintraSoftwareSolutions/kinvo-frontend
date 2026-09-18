@@ -1,125 +1,203 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kinvo/src/core/assets/app_assets.dart';
+import 'package:kinvo/src/core/auth/auth_providers.dart';
+import 'package:kinvo/src/core/auth/session_status.dart';
+import 'package:kinvo/src/core/demo/demo_mode.dart';
 import 'package:kinvo/src/core/navigation/app_routes.dart';
 import 'package:kinvo/src/core/theme/app_colors.dart';
-import 'package:kinvo/src/core/widgets/device_preview_shell.dart';
 import 'package:kinvo/src/core/widgets/flow_widgets.dart';
+import 'package:kinvo/src/core/widgets/gradient_scaffold.dart';
 
-import '../controllers/auth_controllers.dart';
+import '../controllers/login_controller.dart';
 
 class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return const DevicePreviewShell(
+    final form = ref.watch(loginControllerProvider);
+    final controller = ref.read(loginControllerProvider.notifier);
+    final editable = !form.isSubmitting;
+
+    // A session starting here means the details were accepted. Password
+    // managers are told now, while the fields are still on screen.
+    ref.listen(sessionStatusProvider, (_, status) {
+      if (status is SignedIn) TextInput.finishAutofillContext();
+    });
+
+    void submit() {
+      FocusScope.of(context).unfocus();
+      unawaited(controller.submit());
+    }
+
+    return GradientScaffold(
       background: AppColors.lightBackground,
-      child: _LoginContent(),
+      child: FlowPageLayout(
+        badgeText: 'Welcome back',
+        badgeIcon: Icons.favorite_rounded,
+        title: 'Log in to Kinvo',
+        subtitle:
+            'Pick up your matches, plans, and safety tools exactly where you left them.',
+        content: SurfaceCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const InfoBanner(
+                title: 'Safe sign-in',
+                description:
+                    'Keeps your preferences, premium state, and trusted contacts ready across sessions.',
+              ),
+              const SizedBox(height: 10),
+              AutofillGroup(
+                onDisposeAction: AutofillContextAction.cancel,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    AppInputCard(
+                      label: 'EMAIL',
+                      value: form.email,
+                      assetName: AppAssets.mail,
+                      keyboardType: TextInputType.emailAddress,
+                      onChanged: controller.updateEmail,
+                      errorText: form.errors[LoginField.email],
+                      enabled: editable,
+                      autocorrect: false,
+                      // The email is the username password managers file the
+                      // password under.
+                      autofillHints: const [
+                        AutofillHints.username,
+                        AutofillHints.email,
+                      ],
+                      textInputAction: TextInputAction.next,
+                    ),
+                    const SizedBox(height: 10),
+                    PasswordInputCard(
+                      label: 'PASSWORD',
+                      value: form.password,
+                      onChanged: controller.updatePassword,
+                      errorText: form.errors[LoginField.password],
+                      enabled: editable,
+                      textInputAction: TextInputAction.done,
+                      onSubmitted: (_) => submit(),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _RememberDeviceToggle(
+                      value: form.rememberDevice,
+                      onChanged: editable ? controller.setRememberDevice : null,
+                    ),
+                  ),
+                  Semantics(
+                    button: true,
+                    child: GestureDetector(
+                      // The address is carried across, so it isn't typed twice.
+                      onTap: () => context.push(AppRoutes.resetPassword),
+                      behavior: HitTestBehavior.opaque,
+                      child: Text(
+                        'Forgot password?',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: AppColors.purple,
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              if (form.formError case final message?) ...[
+                const SizedBox(height: 14),
+                FormErrorBanner(message: message),
+              ],
+              const SizedBox(height: 14),
+              PrimaryActionButton(
+                label: 'Sign in',
+                loading: form.isSubmitting,
+                onPressed: submit,
+              ),
+              const DemoOnly(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SizedBox(height: 16),
+                    SectionDivider(label: 'QUICK ACCESS'),
+                    SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: SmallInfoCard(
+                            title: 'Apple',
+                            description: 'Fast sign-in for iOS demos.',
+                          ),
+                        ),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: SmallInfoCard(
+                            title: 'Google',
+                            description: 'Use your workspace identity.',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
 
-class _LoginContent extends ConsumerWidget {
-  const _LoginContent();
+/// "Remember this device", with the whole row as the tap target.
+class _RememberDeviceToggle extends StatelessWidget {
+  const _RememberDeviceToggle({required this.value, required this.onChanged});
+
+  static const _label = 'Remember this device';
+
+  final bool value;
+
+  /// `null` while the form can't be changed.
+  final ValueChanged<bool>? onChanged;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(loginFormControllerProvider);
-    final controller = ref.read(loginFormControllerProvider.notifier);
+  Widget build(BuildContext context) {
+    final onChanged = this.onChanged;
+    final toggle = onChanged == null ? null : () => onChanged(!value);
 
-    return FlowPageLayout(
-      badgeText: 'Welcome back',
-      badgeIcon: Icons.favorite_rounded,
-      title: 'Log in to Kinvo',
-      subtitle:
-          'Pick up your matches, plans, and safety tools exactly where you left them.',
-      content: SurfaceCard(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return Semantics(
+      checked: value,
+      enabled: onChanged != null,
+      label: _label,
+      onTap: toggle,
+      excludeSemantics: true,
+      child: GestureDetector(
+        onTap: toggle,
+        behavior: HitTestBehavior.opaque,
+        child: Row(
           children: [
-            const InfoBanner(
-              title: 'Safe sign-in',
-              description:
-                  'Keeps your preferences, premium state, and trusted contacts ready across sessions.',
-            ),
-            const SizedBox(height: 10),
-            AppInputCard(
-              label: 'EMAIL',
-              value: state.email,
-              assetName: AppAssets.mail,
-              keyboardType: TextInputType.emailAddress,
-              onChanged: controller.updateEmail,
-            ),
-            const SizedBox(height: 10),
-            AppInputCard(
-              label: 'PASSWORD',
-              value: state.password,
-              assetName: AppAssets.lock,
-              obscureText: true,
-              onChanged: controller.updatePassword,
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                CircleToggle(
-                  value: state.rememberDevice,
-                  onChanged: controller.toggleRememberDevice,
+            CircleToggle(value: value, onChanged: null),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                _label,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: AppColors.textSecondary,
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w500,
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Remember this device',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: AppColors.textSecondary,
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () =>
-                      Navigator.of(context).pushNamed(AppRoutes.resetPassword),
-                  child: Text(
-                    'Forgot password?',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: AppColors.purple,
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            PrimaryActionButton(
-              label: 'Sign in',
-              onPressed: state.canSubmit
-                  ? () => Navigator.of(context).pushNamedAndRemoveUntil(
-                        AppRoutes.home,
-                        (route) => false,
-                      )
-                  : null,
-            ),
-            const SizedBox(height: 16),
-            const SectionDivider(label: 'QUICK ACCESS'),
-            const SizedBox(height: 14),
-            const Row(
-              children: [
-                Expanded(
-                  child: SmallInfoCard(
-                    title: 'Apple',
-                    description: 'Fast sign-in for iOS demos.',
-                  ),
-                ),
-                SizedBox(width: 10),
-                Expanded(
-                  child: SmallInfoCard(
-                    title: 'Google',
-                    description: 'Use your workspace identity.',
-                  ),
-                ),
-              ],
+              ),
             ),
           ],
         ),

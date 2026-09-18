@@ -1,91 +1,144 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/assets/app_assets.dart';
+import '../../../../core/auth/auth_providers.dart';
+import '../../../../core/auth/session_status.dart';
+import '../../../../core/forms/form_errors.dart';
+import '../../../../core/navigation/app_routes.dart';
+import '../../../../core/network/api_exception.dart';
+import '../../../../core/push/push_messaging.dart';
+import '../../../../core/push/push_providers.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/units/distance.dart';
+import '../../../../core/widgets/page_header.dart';
+import '../../../../core/widgets/settings_group.dart';
+import '../../../auth/presentation/delete_account_dialog.dart';
+import '../../../auth/presentation/log_out.dart';
+import '../../../discovery/presentation/controllers/discovery_modes_controller.dart';
+import '../../../discovery/presentation/widgets/filters_sheet.dart';
+import '../../../discovery/presentation/widgets/mode_picker_sheet.dart';
+import '../../../notifications/presentation/controllers/notifications_controllers.dart';
+import '../../../settings/presentation/controllers/settings_controllers.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // The demo has no account to delete.
+    final hasAccount = ref.watch(sessionStatusProvider) is SignedIn;
+    final pushPermission =
+        hasAccount && ref.watch(pushMessagingProvider).isAvailable
+        ? ref.watch(pushPermissionProvider).value
+        : null;
+    final settings = ref.watch(userSettingsProvider).value;
+    // Watched so the modes are ready when the filters are opened.
+    final modes = ref.watch(discoveryModesProvider);
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const _SettingsHeader(),
+            const PageHeader(
+              title: 'Settings',
+              subtitle: 'Discovery, notifications, privacy and your account',
+              leading: HeaderBackButton(),
+            ),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(18, 16, 18, 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const _SectionLabel(text: 'DISCOVERY PREFERENCES'),
-                    _GroupCard(
-                      rows: [
-                        _RowConfig(
-                          materialIcon: Icons.public_outlined,
-                          title: 'Distance',
-                          value: '25 miles',
-                          onTap: () {},
-                        ),
-                        _RowConfig(
-                          assetIcon: AppAssets.eye,
-                          title: 'Age Range',
-                          value: '21-45',
-                          onTap: () {},
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 22),
-                    const _SectionLabel(text: 'NOTIFICATIONS'),
-                    _GroupCard(
-                      rows: [
-                        _RowConfig(
-                          assetIcon: AppAssets.bell,
-                          title: 'Push Notifications',
-                          value: 'On',
-                          onTap: () {},
-                        ),
-                        _RowConfig(
-                          assetIcon: AppAssets.bell,
-                          title: 'Email Notifications',
-                          value: 'On',
-                          onTap: () {},
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 22),
-                    const _SectionLabel(text: 'PRIVACY'),
-                    _GroupCard(
-                      rows: [
-                        _RowConfig(
-                          assetIcon: AppAssets.lock,
-                          title: 'Show Online Status',
-                          value: 'On',
-                          onTap: () {},
-                        ),
-                        _RowConfig(
-                          assetIcon: AppAssets.eye,
-                          title: 'Show Distance',
-                          value: 'On',
-                          onTap: () {},
-                        ),
-                        _RowConfig(
-                          assetIcon: AppAssets.smartphone,
-                          title: 'Connected Devices',
-                          onTap: () {},
-                        ),
-                      ],
-                    ),
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(18, 6, 18, 24),
+                children: [
+                  const SettingsSectionLabel('DISCOVERY'),
+                  SettingsGroup(
+                    children: [
+                      SettingsLink(
+                        icon: Icons.tune_rounded,
+                        title: 'Distance and age range',
+                        description: 'Set for each mode',
+                        onTap: modes.hasValue
+                            ? () => unawaited(_openFilters(context, ref))
+                            : null,
+                      ),
+                      SettingsLink(
+                        icon: Icons.straighten_rounded,
+                        title: 'Distance units',
+                        value: switch (settings?.distanceUnit) {
+                          DistanceUnit.miles => 'Miles',
+                          DistanceUnit.kilometres => 'Kilometres',
+                          null => null,
+                        },
+                        onTap: settings == null
+                            ? null
+                            : () => unawaited(
+                                _chooseUnit(
+                                  context,
+                                  ref,
+                                  settings.distanceUnit,
+                                ),
+                              ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 22),
+                  const SettingsSectionLabel('NOTIFICATIONS'),
+                  SettingsGroup(
+                    children: [
+                      SettingsLink(
+                        icon: Icons.notifications_none_rounded,
+                        title: 'Notifications',
+                        value: switch (pushPermission) {
+                          PushPermission.granted => 'On',
+                          PushPermission.requestable ||
+                          PushPermission.blocked => 'Off',
+                          null => null,
+                        },
+                        onTap: () =>
+                            context.push(AppRoutes.notificationSettings),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 22),
+                  const SettingsSectionLabel('PRIVACY'),
+                  SettingsGroup(
+                    children: [
+                      SettingsLink(
+                        icon: Icons.lock_outline_rounded,
+                        title: 'Privacy',
+                        description:
+                            'What others see, taking a break, and your '
+                            'devices',
+                        value: (settings?.isOnBreak ?? false)
+                            ? 'On a break'
+                            : null,
+                        onTap: () => context.push(AppRoutes.privacy),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 22),
+                  const SettingsSectionLabel('ACCOUNT'),
+                  SettingsGroup(
+                    children: [
+                      SettingsLink(
+                        icon: Icons.logout_rounded,
+                        title: 'Log out',
+                        onTap: () => unawaited(confirmLogOut(context, ref)),
+                      ),
+                    ],
+                  ),
+                  if (hasAccount) ...[
                     const SizedBox(height: 18),
                     _DeleteAccountTile(
-                      onTap: () => _confirmDelete(context),
+                      onTap: () => unawaited(showDeleteAccountDialog(context)),
                     ),
                   ],
-                ),
+                ],
               ),
             ),
           ],
@@ -94,250 +147,119 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _confirmDelete(BuildContext context) {
-    return showDialog<void>(
+  /// Opens a mode's filters, asking which mode first when there are several.
+  Future<void> _openFilters(BuildContext context, WidgetRef ref) async {
+    final modes = ref.read(discoveryModesProvider).value ?? const [];
+    if (modes.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Switch a mode on first. Each mode has its own filters.',
+          ),
+        ),
+      );
+      return;
+    }
+    final active = ref.read(activeDiscoveryModeProvider).value ?? modes.first;
+    final mode = modes.length == 1
+        ? modes.single
+        : await showModePickerSheet(
+            context,
+            modes: modes,
+            activeMode: active.value,
+          );
+    if (mode == null || !context.mounted) return;
+    await showFiltersSheet(context, mode);
+  }
+
+  Future<void> _chooseUnit(
+    BuildContext context,
+    WidgetRef ref,
+    DistanceUnit current,
+  ) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final unit = await showModalBottomSheet<DistanceUnit>(
       context: context,
-      builder: (dialog) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
-        ),
-        title: const Text('Delete account?'),
-        content: const Text(
-          'This is a front-end demo. No data is actually deleted.',
-          style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialog).pop(),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialog).pop(),
-            style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFFEF4458),
-            ),
-            child: const Text('Delete'),
-          ),
-        ],
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
+      builder: (sheet) => _UnitSheet(current: current),
     );
+    if (unit == null || unit == current) return;
+    try {
+      await ref.read(userSettingsProvider.notifier).change(distanceUnit: unit);
+    } on ApiException catch (error) {
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(saveFailureMessage(error))));
+    }
   }
 }
 
-class _SettingsHeader extends StatelessWidget {
-  const _SettingsHeader();
+class _UnitSheet extends StatelessWidget {
+  const _UnitSheet({required this.current});
+
+  final DistanceUnit current;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(18, 16, 18, 0),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(14, 14, 18, 18),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.divider),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x0A0C132A),
-              blurRadius: 12,
-              offset: Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            GestureDetector(
-              onTap: () => Navigator.of(context).maybePop(),
-              behavior: HitTestBehavior.opaque,
+            Center(
               child: Container(
                 width: 38,
-                height: 38,
-                decoration: const BoxDecoration(
-                  color: AppColors.surfaceSoft,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.arrow_back_rounded,
-                  size: 20,
-                  color: AppColors.textPrimary,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.border,
+                  borderRadius: BorderRadius.circular(999),
                 ),
               ),
             ),
-            const SizedBox(width: 12),
-            const Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(top: 4),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Settings',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.5,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      'Discovery preferences, notifications, privacy, and account controls',
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        height: 1.45,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
+            const SizedBox(height: 16),
+            const Text(
+              'Distance units',
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _SectionLabel extends StatelessWidget {
-  const _SectionLabel({required this.text});
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(6, 0, 6, 10),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontSize: 10.5,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 1.4,
-          color: AppColors.textMuted,
-        ),
-      ),
-    );
-  }
-}
-
-class _RowConfig {
-  const _RowConfig({
-    required this.title,
-    required this.onTap,
-    this.value,
-    this.assetIcon,
-    this.materialIcon,
-  });
-
-  final String title;
-  final String? value;
-  final String? assetIcon;
-  final IconData? materialIcon;
-  final VoidCallback onTap;
-}
-
-class _GroupCard extends StatelessWidget {
-  const _GroupCard({required this.rows});
-
-  final List<_RowConfig> rows;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.divider),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A0C132A),
-            blurRadius: 10,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          for (int i = 0; i < rows.length; i++) ...[
-            _Row(config: rows[i]),
-            if (i < rows.length - 1)
-              const Divider(
-                height: 1,
-                color: AppColors.divider,
-                indent: 16,
-                endIndent: 16,
-              ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _Row extends StatelessWidget {
-  const _Row({required this.config});
-
-  final _RowConfig config;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: config.onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-        child: Row(
-          children: [
-            SizedBox(
-              width: 22,
-              height: 22,
-              child: Center(
-                child: config.assetIcon != null
-                    ? SvgPicture.asset(
-                        config.assetIcon!,
-                        width: 20,
-                        height: 20,
-                        colorFilter: const ColorFilter.mode(
-                          AppColors.textPrimary,
-                          BlendMode.srcIn,
-                        ),
-                      )
-                    : Icon(
-                        config.materialIcon ?? Icons.circle_outlined,
-                        size: 20,
-                        color: AppColors.textPrimary,
-                      ),
+            const SizedBox(height: 6),
+            const Text(
+              'How far away people and places are shown, on every screen.',
+              style: TextStyle(
+                fontSize: 13,
+                height: 1.45,
+                color: AppColors.textSecondary,
               ),
             ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Text(
-                config.title,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
+            const SizedBox(height: 8),
+            RadioGroup<DistanceUnit>(
+              groupValue: current,
+              onChanged: (unit) => Navigator.of(context).pop(unit),
+              child: const Column(
+                children: [
+                  RadioListTile<DistanceUnit>(
+                    value: DistanceUnit.miles,
+                    contentPadding: EdgeInsets.zero,
+                    activeColor: AppColors.purple,
+                    title: Text('Miles'),
+                  ),
+                  RadioListTile<DistanceUnit>(
+                    value: DistanceUnit.kilometres,
+                    contentPadding: EdgeInsets.zero,
+                    activeColor: AppColors.purple,
+                    title: Text('Kilometres'),
+                  ),
+                ],
               ),
-            ),
-            if (config.value != null) ...[
-              Text(
-                config.value!,
-                style: const TextStyle(
-                  fontSize: 12.5,
-                  color: AppColors.textMuted,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(width: 6),
-            ],
-            const Icon(
-              Icons.chevron_right_rounded,
-              size: 18,
-              color: AppColors.textMuted,
             ),
           ],
         ),
@@ -353,43 +275,48 @@ class _DeleteAccountTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-        decoration: BoxDecoration(
-          color: const Color(0xFFFFE4E8),
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: Row(
-          children: [
-            SvgPicture.asset(
-              AppAssets.trash,
-              width: 20,
-              height: 20,
-              colorFilter: const ColorFilter.mode(
-                Color(0xFFEF4458),
-                BlendMode.srcIn,
-              ),
-            ),
-            const SizedBox(width: 14),
-            const Expanded(
-              child: Text(
-                'Delete Account',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFFEF4458),
+    return Semantics(
+      button: true,
+      label: 'Delete account',
+      excludeSemantics: true,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+          decoration: BoxDecoration(
+            color: AppColors.dangerSoft,
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Row(
+            children: [
+              SvgPicture.asset(
+                AppAssets.trash,
+                width: 20,
+                height: 20,
+                colorFilter: const ColorFilter.mode(
+                  AppColors.danger,
+                  BlendMode.srcIn,
                 ),
               ),
-            ),
-            const Icon(
-              Icons.chevron_right_rounded,
-              size: 18,
-              color: Color(0xFFEF4458),
-            ),
-          ],
+              const SizedBox(width: 14),
+              const Expanded(
+                child: Text(
+                  'Delete Account',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.danger,
+                  ),
+                ),
+              ),
+              const Icon(
+                Icons.chevron_right_rounded,
+                size: 18,
+                color: AppColors.danger,
+              ),
+            ],
+          ),
         ),
       ),
     );

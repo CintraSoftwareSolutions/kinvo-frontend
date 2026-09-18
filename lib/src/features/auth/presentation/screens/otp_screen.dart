@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kinvo/src/core/assets/app_assets.dart';
+import 'package:kinvo/src/core/demo/demo_mode.dart';
 import 'package:kinvo/src/core/navigation/app_routes.dart';
 import 'package:kinvo/src/core/theme/app_colors.dart';
-import 'package:kinvo/src/core/widgets/device_preview_shell.dart';
+import 'package:kinvo/src/core/widgets/gradient_scaffold.dart';
 import 'package:kinvo/src/core/widgets/flow_widgets.dart';
 import 'package:pinput/pinput.dart';
 
@@ -67,7 +68,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
       ),
     );
 
-    return DevicePreviewShell(
+    return GradientScaffold(
       background: AppColors.lightBackground,
       child: FlowPageLayout(
         badgeText: 'OTP verification',
@@ -132,8 +133,11 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
               PrimaryActionButton(
                 label: 'Verify code',
                 onPressed: state.canVerify
-                    ? () =>
-                          Navigator.of(context).pushNamed(AppRoutes.onboarding)
+                    ? () => continueInDemo(
+                        context,
+                        ref,
+                        destination: AppRoutes.discover,
+                      )
                     : null,
               ),
             ],

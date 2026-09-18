@@ -248,7 +248,7 @@ class InfoBanner extends StatelessWidget {
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: backgroundColor.withOpacity(.2),
+        color: backgroundColor.withValues(alpha: .2),
         borderRadius: BorderRadius.circular(borderRadius),
       ),
       child: Row(
@@ -309,9 +309,20 @@ class AppInputCard extends StatelessWidget {
     this.keyboardType,
     this.obscureText = false,
     this.maxLines = 1,
+    this.minLines,
+    this.hintText,
     this.readOnly = false,
-    this.padding = const EdgeInsets.fromLTRB(12, 8, 12, 10),
-    this.borderRadius = 12,
+    this.enabled = true,
+    this.errorText,
+    this.autofillHints,
+    this.textInputAction,
+    this.onSubmitted,
+    this.textCapitalization = TextCapitalization.none,
+    this.autocorrect = true,
+    this.enableSuggestions = true,
+    this.trailing,
+    this.padding = _InputCard.defaultPadding,
+    this.borderRadius = _InputCard.defaultBorderRadius,
     this.labelStyle,
     this.valueStyle,
     this.iconSize = 14,
@@ -320,13 +331,35 @@ class AppInputCard extends StatelessWidget {
   });
 
   final String label;
+
+  /// The field's starting text. Later edits are reported to [onChanged].
   final String value;
   final ValueChanged<String> onChanged;
   final String? assetName;
   final TextInputType? keyboardType;
   final bool obscureText;
   final int maxLines;
+
+  /// With [maxLines], lets the field grow from this many lines as text is
+  /// entered.
+  final int? minLines;
+
+  /// Shown in the empty field.
+  final String? hintText;
   final bool readOnly;
+  final bool enabled;
+
+  /// Shown under the card, which is outlined while there's an error.
+  final String? errorText;
+  final Iterable<String>? autofillHints;
+  final TextInputAction? textInputAction;
+  final ValueChanged<String>? onSubmitted;
+  final TextCapitalization textCapitalization;
+  final bool autocorrect;
+  final bool enableSuggestions;
+
+  /// Shown at the end of the card, such as a button that reveals a password.
+  final Widget? trailing;
   final EdgeInsetsGeometry padding;
   final double borderRadius;
   final TextStyle? labelStyle;
@@ -336,64 +369,364 @@ class AppInputCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return _FieldWithError(
+      errorText: errorText,
+      child: _InputCard(
+        label: label,
+        hasError: errorText != null,
+        padding: padding,
+        borderRadius: borderRadius,
+        labelStyle: labelStyle,
+        trailing: trailing,
+        value: Row(
+          children: [
+            if (assetName != null) ...[
+              SvgPicture.asset(
+                assetName!,
+                width: iconSize,
+                height: iconSize,
+                colorFilter: const ColorFilter.mode(
+                  AppColors.textSecondary,
+                  BlendMode.srcIn,
+                ),
+              ),
+              SizedBox(width: iconGap),
+            ],
+            Expanded(
+              child: TextFormField(
+                initialValue: value,
+                onChanged: onChanged,
+                onFieldSubmitted: onSubmitted,
+                readOnly: readOnly,
+                enabled: enabled,
+                keyboardType: keyboardType,
+                textInputAction: textInputAction,
+                textCapitalization: textCapitalization,
+                autocorrect: autocorrect,
+                enableSuggestions: enableSuggestions,
+                autofillHints: autofillHints,
+                obscureText: obscureText,
+                maxLines: maxLines,
+                minLines: minLines,
+                style: valueStyle ?? _inputValueStyle(context),
+                decoration: InputDecoration(
+                  isDense: true,
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.zero,
+                  hintText: hintText,
+                  hintStyle: _inputValueStyle(context)?.copyWith(
+                    color: AppColors.textMuted,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// An [AppInputCard] for a password, with a button that shows what was typed.
+class PasswordInputCard extends StatefulWidget {
+  const PasswordInputCard({
+    required this.label,
+    required this.onChanged,
+    this.value = '',
+    this.isNewPassword = false,
+    this.errorText,
+    this.enabled = true,
+    this.textInputAction,
+    this.onSubmitted,
+    super.key,
+  });
+
+  final String label;
+  final String value;
+  final ValueChanged<String> onChanged;
+
+  /// Whether a password is being chosen rather than entered, so password
+  /// managers offer to create one instead of filling in a saved one.
+  final bool isNewPassword;
+  final String? errorText;
+  final bool enabled;
+  final TextInputAction? textInputAction;
+  final ValueChanged<String>? onSubmitted;
+
+  @override
+  State<PasswordInputCard> createState() => _PasswordInputCardState();
+}
+
+class _PasswordInputCardState extends State<PasswordInputCard> {
+  bool _hidden = true;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppInputCard(
+      label: widget.label,
+      value: widget.value,
+      onChanged: widget.onChanged,
+      assetName: AppAssets.lock,
+      obscureText: _hidden,
+      autocorrect: false,
+      enableSuggestions: false,
+      autofillHints: [
+        widget.isNewPassword
+            ? AutofillHints.newPassword
+            : AutofillHints.password,
+      ],
+      errorText: widget.errorText,
+      enabled: widget.enabled,
+      textInputAction: widget.textInputAction,
+      onSubmitted: widget.onSubmitted,
+      trailing: IconButton(
+        onPressed: () => setState(() => _hidden = !_hidden),
+        tooltip: _hidden ? 'Show password' : 'Hide password',
+        icon: Icon(
+          _hidden ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+        ),
+        iconSize: 18,
+        color: AppColors.textSecondary,
+        padding: EdgeInsets.zero,
+        // No taller than the label and value beside it, so this card is the
+        // same height as the others.
+        constraints: const BoxConstraints.tightFor(width: 40, height: 34),
+      ),
+    );
+  }
+}
+
+/// A card that looks like [AppInputCard] for a value chosen from a picker,
+/// such as a date.
+class AppPickerCard extends StatelessWidget {
+  const AppPickerCard({
+    required this.label,
+    required this.placeholder,
+    required this.onTap,
+    this.value,
+    this.icon,
+    this.errorText,
+    this.enabled = true,
+    super.key,
+  });
+
+  final String label;
+
+  /// The chosen value, or `null` to show [placeholder].
+  final String? value;
+  final String placeholder;
+  final VoidCallback onTap;
+  final IconData? icon;
+  final String? errorText;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    final value = this.value;
+    final icon = this.icon;
+    final valueStyle = _inputValueStyle(context);
+
+    return _FieldWithError(
+      errorText: errorText,
+      child: Semantics(
+        button: true,
+        enabled: enabled,
+        label: label,
+        value: value ?? placeholder,
+        onTap: enabled ? onTap : null,
+        excludeSemantics: true,
+        child: GestureDetector(
+          onTap: enabled ? onTap : null,
+          behavior: HitTestBehavior.opaque,
+          child: _InputCard(
+            label: label,
+            hasError: errorText != null,
+            value: Row(
+              children: [
+                if (icon != null) ...[
+                  Icon(icon, size: 14, color: AppColors.textSecondary),
+                  const SizedBox(width: 8),
+                ],
+                Expanded(
+                  child: Text(
+                    value ?? placeholder,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: value == null
+                        ? valueStyle?.copyWith(color: AppColors.textMuted)
+                        : valueStyle,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The rounded, labelled card behind [AppInputCard] and [AppPickerCard].
+class _InputCard extends StatelessWidget {
+  const _InputCard({
+    required this.label,
+    required this.value,
+    required this.hasError,
+    this.padding = defaultPadding,
+    this.borderRadius = defaultBorderRadius,
+    this.labelStyle,
+    this.trailing,
+  });
+
+  static const defaultPadding = EdgeInsets.fromLTRB(12, 8, 12, 10);
+  static const defaultBorderRadius = 12.0;
+
+  final String label;
+  final Widget value;
+  final bool hasError;
+  final EdgeInsetsGeometry padding;
+  final double borderRadius;
+  final TextStyle? labelStyle;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final radius = BorderRadius.circular(borderRadius);
     return Container(
       padding: padding,
       decoration: BoxDecoration(
         color: AppColors.surfaceSoft,
-        borderRadius: BorderRadius.circular(borderRadius),
+        borderRadius: radius,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      // Painted over the card, so an error doesn't change its size. Always
+      // present: adding it later would rebuild the field and close the
+      // keyboard.
+      foregroundDecoration: BoxDecoration(
+        borderRadius: radius,
+        border: Border.all(
+          color: hasError ? AppColors.danger : Colors.transparent,
+        ),
+      ),
+      child: Row(
         children: [
-          Text(
-            label,
-            style:
-                labelStyle ??
-                Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: AppColors.textMuted,
-                  fontSize: 9.5,
-                  letterSpacing: 1.4,
-                  fontWeight: FontWeight.w700,
-                ),
+          Expanded(
+            // Read out as one element: the label, then the value.
+            child: MergeSemantics(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style:
+                        labelStyle ??
+                        Theme.of(context).textTheme.labelLarge?.copyWith(
+                          color: AppColors.textMuted,
+                          fontSize: 9.5,
+                          letterSpacing: 1.4,
+                          fontWeight: FontWeight.w700,
+                        ),
+                  ),
+                  const SizedBox(height: 4),
+                  value,
+                ],
+              ),
+            ),
           ),
-          const SizedBox(height: 4),
-          Row(
-            children: [
-              if (assetName != null) ...[
-                SvgPicture.asset(
-                  assetName!,
-                  width: iconSize,
-                  height: iconSize,
-                  colorFilter: const ColorFilter.mode(
-                    AppColors.textSecondary,
-                    BlendMode.srcIn,
-                  ),
-                ),
-                SizedBox(width: iconGap),
-              ],
-              Expanded(
-                child: TextFormField(
-                  initialValue: value,
-                  onChanged: onChanged,
-                  readOnly: readOnly,
-                  keyboardType: keyboardType,
-                  obscureText: obscureText,
-                  maxLines: maxLines,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
-                  decoration: const InputDecoration(
-                    isDense: true,
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.zero,
-                  ),
+          ?trailing,
+        ],
+      ),
+    );
+  }
+}
+
+/// [child] with [errorText] underneath while there's an error.
+class _FieldWithError extends StatelessWidget {
+  const _FieldWithError({required this.child, this.errorText});
+
+  final Widget child;
+  final String? errorText;
+
+  @override
+  Widget build(BuildContext context) {
+    final errorText = this.errorText;
+    // Always a column, so an error appearing doesn't rebuild [child].
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        child,
+        if (errorText != null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 6, 4, 0),
+            child: Semantics(
+              liveRegion: true,
+              child: Text(
+                errorText,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.danger,
+                  fontSize: 11.5,
+                  height: 1.35,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-            ],
+            ),
           ),
-        ],
+      ],
+    );
+  }
+}
+
+TextStyle? _inputValueStyle(BuildContext context) {
+  return Theme.of(context).textTheme.titleLarge?.copyWith(
+    fontSize: 13.5,
+    fontWeight: FontWeight.w600,
+    color: AppColors.textPrimary,
+  );
+}
+
+/// A problem with a whole form, such as being offline, shown near its submit
+/// button.
+class FormErrorBanner extends StatelessWidget {
+  const FormErrorBanner({required this.message, super.key});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      liveRegion: true,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.dangerSoft,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.only(top: 1),
+              child: Icon(
+                Icons.error_outline_rounded,
+                size: 16,
+                color: AppColors.danger,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                message,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: AppColors.danger,
+                  fontSize: 12.5,
+                  height: 1.45,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -403,6 +736,7 @@ class PrimaryActionButton extends StatelessWidget {
   const PrimaryActionButton({
     required this.label,
     required this.onPressed,
+    this.loading = false,
     this.borderRadius = 14,
     this.padding = const EdgeInsets.symmetric(vertical: 14),
     this.minHeight = 0,
@@ -414,6 +748,10 @@ class PrimaryActionButton extends StatelessWidget {
 
   final String label;
   final VoidCallback? onPressed;
+
+  /// Shows a spinner instead of the label and ignores taps, while the action
+  /// the button started is running.
+  final bool loading;
   final double borderRadius;
   final EdgeInsetsGeometry padding;
   final double minHeight;
@@ -428,11 +766,16 @@ class PrimaryActionButton extends StatelessWidget {
       child: ConstrainedBox(
         constraints: BoxConstraints(minHeight: minHeight),
         child: FilledButton(
-          onPressed: onPressed,
+          onPressed: loading ? null : onPressed,
           style: FilledButton.styleFrom(
             backgroundColor: backgroundColor,
-            disabledBackgroundColor: backgroundColor.withValues(alpha: 0.5),
+            // A running action keeps the button's colours; only a button that
+            // can't be used yet fades.
+            disabledBackgroundColor: loading
+                ? backgroundColor
+                : backgroundColor.withValues(alpha: 0.5),
             foregroundColor: foregroundColor,
+            disabledForegroundColor: loading ? foregroundColor : null,
             elevation: 0,
             padding: padding,
             shape: RoundedRectangleBorder(
@@ -446,7 +789,26 @@ class PrimaryActionButton extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                 ),
           ),
-          child: Text(label),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Hidden rather than removed, so the button keeps its size and
+              // screen readers still hear what it does.
+              Opacity(
+                opacity: loading ? 0 : 1,
+                alwaysIncludeSemantics: true,
+                child: Text(label),
+              ),
+              if (loading)
+                SizedBox.square(
+                  dimension: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: foregroundColor,
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -527,24 +889,31 @@ class OptionChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        padding: padding,
-        decoration: BoxDecoration(
-          color: selected ? selectedBackground : unselectedBackground,
-          borderRadius: BorderRadius.circular(radius),
-        ),
-        child: Text(
-          label,
-          style:
-              textStyle ??
-              Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: selected ? selectedTextColor : unselectedTextColor,
-                fontSize: 12.5,
-                fontWeight: FontWeight.w600,
-              ),
+    // Announced as a button that is selected or not, like a toggle.
+    return MergeSemantics(
+      child: Semantics(
+        button: true,
+        selected: selected,
+        child: GestureDetector(
+          onTap: onTap,
+          behavior: HitTestBehavior.opaque,
+          child: Container(
+            padding: padding,
+            decoration: BoxDecoration(
+              color: selected ? selectedBackground : unselectedBackground,
+              borderRadius: BorderRadius.circular(radius),
+            ),
+            child: Text(
+              label,
+              style:
+                  textStyle ??
+                  Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: selected ? selectedTextColor : unselectedTextColor,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+          ),
         ),
       ),
     );
@@ -555,12 +924,15 @@ class CircleToggle extends StatelessWidget {
   const CircleToggle({required this.value, required this.onChanged, super.key});
 
   final bool value;
-  final ValueChanged<bool> onChanged;
+
+  /// `null` when something around the toggle, such as its row, handles taps.
+  final ValueChanged<bool>? onChanged;
 
   @override
   Widget build(BuildContext context) {
+    final onChanged = this.onChanged;
     return GestureDetector(
-      onTap: () => onChanged(!value),
+      onTap: onChanged == null ? null : () => onChanged(!value),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         width: 18,
@@ -726,7 +1098,7 @@ class SmallInfoCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
         decoration: BoxDecoration(
-          color: AppColors.surfaceSoft.withOpacity(.2),
+          color: AppColors.surfaceSoft.withValues(alpha: .2),
           borderRadius: BorderRadius.circular(14),
         ),
         child: Column(

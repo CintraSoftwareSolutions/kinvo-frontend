@@ -19,6 +19,8 @@ abstract final class AppColors {
   static const greenSoft = Color(0xFFDDF4EE);
   static const success = Color(0xFF15B887);
   static const blue = Color(0xFF3B82F6);
+  static const danger = Color(0xFFEF4458);
+  static const dangerSoft = Color(0xFFFFE4E8);
 
   static const lightBackground = LinearGradient(
     begin: Alignment.topCenter,

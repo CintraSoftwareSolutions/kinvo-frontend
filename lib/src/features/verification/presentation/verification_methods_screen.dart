@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/assets/app_assets.dart';
 import '../../../core/navigation/app_routes.dart';
@@ -88,9 +89,7 @@ class VerificationMethodsScreen extends StatelessWidget {
                       title: 'Photo Verification',
                       subtitle: 'Take a live selfie. Recommended and fast.',
                       meta: 'Recommended | 2 min',
-                      onTap: () => Navigator.of(context).pushNamed(
-                        AppRoutes.verificationCapture,
-                      ),
+                      onTap: () => context.push(AppRoutes.verificationCapture),
                     ),
                     const SizedBox(height: 10),
                     _MethodCard(
@@ -100,9 +99,7 @@ class VerificationMethodsScreen extends StatelessWidget {
                       title: 'ID Verification',
                       subtitle: 'Upload a government-issued ID.',
                       meta: 'Takes 3-5 min',
-                      onTap: () => Navigator.of(context).pushNamed(
-                        AppRoutes.verificationCapture,
-                      ),
+                      onTap: () => context.push(AppRoutes.verificationCapture),
                     ),
                     const SizedBox(height: 10),
                     _MethodCard(
@@ -112,9 +109,7 @@ class VerificationMethodsScreen extends StatelessWidget {
                       title: 'Social Verification',
                       subtitle: 'Link a social profile for quick validation.',
                       meta: 'Instant for networking',
-                      onTap: () => Navigator.of(context).pushNamed(
-                        AppRoutes.verificationSuccess,
-                      ),
+                      onTap: () => context.push(AppRoutes.verificationSuccess),
                     ),
                   ],
                 ),

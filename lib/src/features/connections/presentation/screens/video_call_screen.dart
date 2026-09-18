@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/assets/app_assets.dart';
 import '../../../../core/navigation/app_routes.dart';
@@ -234,10 +235,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                             : Colors.white24,
                         onTap: () {
                           setState(() => _flagged = true);
-                          Navigator.of(context).pushNamed(
-                            AppRoutes.report,
-                            arguments: c,
-                          );
+                          context.push(AppRoutes.report(connectionId: c.id));
                         },
                       ),
                       _CallButton(

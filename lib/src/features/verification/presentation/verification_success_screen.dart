@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/assets/app_assets.dart';
+import '../../../core/navigation/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/page_header.dart';
 
@@ -100,8 +102,7 @@ class VerificationSuccessScreen extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton(
-                        onPressed: () =>
-                            Navigator.of(context).popUntil((r) => r.isFirst),
+                        onPressed: () => context.go(AppRoutes.profile),
                         style: FilledButton.styleFrom(
                           backgroundColor: AppColors.purple,
                           foregroundColor: Colors.white,

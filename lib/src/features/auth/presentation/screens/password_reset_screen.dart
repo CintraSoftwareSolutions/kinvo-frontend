@@ -1,97 +1,75 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kinvo/src/core/assets/app_assets.dart';
+import 'package:kinvo/src/core/navigation/app_routes.dart';
 import 'package:kinvo/src/core/theme/app_colors.dart';
-import 'package:kinvo/src/core/widgets/device_preview_shell.dart';
 import 'package:kinvo/src/core/widgets/flow_widgets.dart';
+import 'package:kinvo/src/core/widgets/gradient_scaffold.dart';
 
-import '../controllers/auth_controllers.dart';
+import '../controllers/password_reset_controller.dart';
 
+/// Step one of a forgotten password: where to send the code.
 class PasswordResetScreen extends ConsumerWidget {
   const PasswordResetScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(passwordResetControllerProvider);
-    final controller = ref.read(passwordResetControllerProvider.notifier);
+    final form = ref.watch(resetRequestControllerProvider);
+    final controller = ref.read(resetRequestControllerProvider.notifier);
 
-    return DevicePreviewShell(
+    Future<void> submit() async {
+      FocusScope.of(context).unfocus();
+      final sent = await controller.submit();
+      if (!sent || !context.mounted) return;
+      await context.push(AppRoutes.newPassword);
+    }
+
+    return GradientScaffold(
       background: AppColors.lightBackground,
       child: FlowPageLayout(
         badgeText: 'Account recovery',
         badgeAsset: AppAssets.lock,
         title: 'Reset your password',
         subtitle:
-            'Send a secure reset link to your email so you can recover access without losing your profile setup.',
+            'Tell us the address on your account and we will email you a code '
+            'to set a new password with.',
         content: SurfaceCard(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const InfoBanner(
                 title: 'Protected recovery',
                 description:
-                    'Reset links are scoped to your email and expire quickly for safety.',
+                    'The code lasts an hour and works once. Nothing about your '
+                    'profile changes until you choose a new password.',
               ),
               const SizedBox(height: 10),
               AppInputCard(
                 label: 'EMAIL',
-                value: state.email,
+                value: form.email,
                 assetName: AppAssets.mail,
                 keyboardType: TextInputType.emailAddress,
                 onChanged: controller.updateEmail,
+                errorText: form.errors[ResetRequestField.email],
+                enabled: !form.isSubmitting,
+                autocorrect: false,
+                autofillHints: const [
+                  AutofillHints.username,
+                  AutofillHints.email,
+                ],
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => submit(),
               ),
+              if (form.formError case final message?) ...[
+                const SizedBox(height: 12),
+                FormErrorBanner(message: message),
+              ],
               const SizedBox(height: 14),
               PrimaryActionButton(
-                label: 'Send reset link',
-                onPressed: state.canSend ? controller.sendResetLink : null,
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-                decoration: BoxDecoration(
-                  color: AppColors.greenSoft.withOpacity(.2),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.only(top: 1),
-                      child: Icon(
-                        Icons.check_circle_outline_rounded,
-                        color: AppColors.green,
-                        size: 16,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Check your email',
-                            style: Theme.of(context).textTheme.titleLarge
-                                ?.copyWith(
-                                  color: AppColors.green,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'A reset link has been sent and can bring you back to login once completed.',
-                            style: Theme.of(context).textTheme.bodyLarge
-                                ?.copyWith(
-                                  color: AppColors.green,
-                                  fontSize: 11.5,
-                                  height: 1.45,
-                                ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                label: 'Send code',
+                loading: form.isSubmitting,
+                onPressed: submit,
               ),
             ],
           ),

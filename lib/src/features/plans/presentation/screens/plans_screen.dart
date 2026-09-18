@@ -1,132 +1,239 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/navigation/app_routes.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/flow_widgets.dart';
 import '../../../../core/widgets/page_header.dart';
-import '../../domain/plan.dart';
-import '../controllers/plans_controller.dart';
+import '../../data/plans_repository.dart';
+import '../controllers/plans_controllers.dart';
+import '../widgets/plan_card.dart';
 
+/// The Plans tab: plans with the user's matches, by where they stand.
 class PlansScreen extends ConsumerWidget {
   const PlansScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final plans = ref.watch(plansControllerProvider);
-    final upcoming = plans.where((p) => p.status == PlanStatus.upcoming).length;
-    final pending = plans.where((p) => p.status == PlanStatus.pending).length;
-    final history = plans
-        .where((p) =>
-            p.status == PlanStatus.completed ||
-            p.status == PlanStatus.cancelled)
-        .length;
+    final tab = ref.watch(plansTabProvider);
+    final awaiting = ref.watch(plansAwaitingAnswerProvider).value ?? 0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         PageHeader(
           title: 'Plans',
-          subtitle: 'Confirmed dates, pending invites, and drafts',
-          trailing: GestureDetector(
-            onTap: () =>
-                Navigator.of(context).pushNamed(AppRoutes.planComposer),
-            behavior: HitTestBehavior.opaque,
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: const BoxDecoration(
-                color: AppColors.purple,
-                shape: BoxShape.circle,
+          subtitle: 'Dates and meetups with your matches',
+          trailing: Tooltip(
+            message: 'New plan',
+            child: Semantics(
+              button: true,
+              label: 'New plan',
+              excludeSemantics: true,
+              child: GestureDetector(
+                onTap: () => context.push(AppRoutes.planComposer),
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: const BoxDecoration(
+                    color: AppColors.purple,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.add_rounded, color: Colors.white),
+                ),
               ),
-              child: const Icon(Icons.add_rounded, color: Colors.white),
             ),
           ),
         ),
-        Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(18, 6, 18, 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _StatusSummary(
-                  upcoming: upcoming,
-                  pending: pending,
-                  history: history,
-                ),
-                const SizedBox(height: 14),
-                for (final p in plans) ...[
-                  _PlanCard(plan: p),
-                  const SizedBox(height: 12),
-                ],
-              ],
-            ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(18, 0, 18, 12),
+          child: _Tabs(
+            selected: tab,
+            awaiting: awaiting,
+            onChanged: ref.read(plansTabProvider.notifier).select,
           ),
+        ),
+        Expanded(
+          child: _PlansList(key: ValueKey(tab), tab: tab),
         ),
       ],
     );
   }
 }
 
-class _StatusSummary extends StatelessWidget {
-  const _StatusSummary({
-    required this.upcoming,
-    required this.pending,
-    required this.history,
+class _Tabs extends StatelessWidget {
+  const _Tabs({
+    required this.selected,
+    required this.awaiting,
+    required this.onChanged,
   });
 
-  final int upcoming;
-  final int pending;
-  final int history;
+  final PlansTab selected;
+
+  /// Plans waiting on the user's answer, counted on the Pending tab.
+  final int awaiting;
+
+  final ValueChanged<PlansTab> onChanged;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.divider),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A0C132A),
-            blurRadius: 18,
-            offset: Offset(0, 6),
+    return Row(
+      children: [
+        for (final tab in PlansTab.values) ...[
+          Flexible(
+            child: Semantics(
+              button: true,
+              selected: tab == selected,
+              label: tab == PlansTab.pending && awaiting > 0
+                  ? '${_label(tab)}, $awaiting waiting for your answer'
+                  : _label(tab),
+              excludeSemantics: true,
+              child: GestureDetector(
+                onTap: () => onChanged(tab),
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: tab == selected ? Colors.white : Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: tab == selected
+                        ? const [
+                            BoxShadow(
+                              color: Color(0x14000000),
+                              blurRadius: 10,
+                              offset: Offset(0, 3),
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          _label(tab),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: tab == selected
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                            color: tab == selected
+                                ? AppColors.textPrimary
+                                : AppColors.textMuted,
+                          ),
+                        ),
+                      ),
+                      if (tab == PlansTab.pending && awaiting > 0) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 1,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.purple,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Text(
+                            '$awaiting',
+                            style: const TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ),
+          const SizedBox(width: 4),
         ],
-      ),
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+      ],
+    );
+  }
+
+  static String _label(PlansTab tab) {
+    return switch (tab) {
+      PlansTab.upcoming => 'Upcoming',
+      PlansTab.pending => 'Pending',
+      PlansTab.drafts => 'Drafts',
+      PlansTab.history => 'History',
+    };
+  }
+}
+
+class _PlansList extends ConsumerWidget {
+  const _PlansList({required this.tab, super.key});
+
+  final PlansTab tab;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final provider = plansListProvider(tab);
+    final plans = ref.watch(provider);
+    final notifier = ref.read(provider.notifier);
+
+    Future<void> refresh() async {
+      try {
+        await notifier.refresh();
+      } on Object {
+        // The failure shows in place of the list, with a way to try again.
+      }
+    }
+
+    final list = plans.value;
+    if (list == null) {
+      if (plans.hasError) {
+        return _LoadFailed(
+          message: plans.error is ApiException
+              ? (plans.error! as ApiException).message
+              : 'Something went wrong. Please try again.',
+          onRetry: () => ref.invalidate(provider),
+        );
+      }
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return RefreshIndicator(
+      onRefresh: refresh,
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (notification) {
+          if (notification.metrics.extentAfter < 400) notifier.loadMore();
+          return false;
+        },
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(18, 4, 18, 24),
           children: [
-            Expanded(
-              child: _StatusCell(
-                label: 'UPCOMING',
-                value: '$upcoming',
-                color: const Color(0xFF10B981),
-                tint: const Color(0xFFECFDF5),
-                subtitle: 'Confirmed plans ready to go.',
+            if (list.items.isEmpty)
+              _Empty(tab: tab)
+            else
+              for (final plan in list.items) ...[
+                PlanCard(plan: plan),
+                const SizedBox(height: 12),
+              ],
+            if (list.isLoadingMore)
+              const Padding(
+                padding: EdgeInsets.all(16),
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else if (list.loadMoreFailed)
+              TextButton(
+                onPressed: notifier.loadMore,
+                child: const Text("More didn't load. Try again"),
               ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _StatusCell(
-                label: 'PENDING',
-                value: '$pending',
-                color: const Color(0xFFEA580C),
-                tint: const Color(0xFFFFF7ED),
-                subtitle: 'Invites waiting on the other person.',
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _StatusCell(
-                label: 'HISTORY',
-                value: '$history',
-                color: AppColors.textSecondary,
-                tint: const Color(0xFFF6F7FB),
-                subtitle: 'Completed or closed plans.',
-              ),
-            ),
           ],
         ),
       ),
@@ -134,251 +241,133 @@ class _StatusSummary extends StatelessWidget {
   }
 }
 
-class _StatusCell extends StatelessWidget {
-  const _StatusCell({
-    required this.label,
-    required this.value,
-    required this.color,
-    required this.tint,
-    required this.subtitle,
-  });
+class _Empty extends StatelessWidget {
+  const _Empty({required this.tab});
 
-  final String label;
-  final String value;
-  final Color color;
-  final Color tint;
-  final String subtitle;
+  final PlansTab tab;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-      decoration: BoxDecoration(
-        color: tint,
-        borderRadius: BorderRadius.circular(14),
+    final (icon, title, message) = switch (tab) {
+      PlansTab.upcoming => (
+        Icons.event_available_outlined,
+        'No plans yet',
+        'Suggest a plan to one of your matches. Confirmed plans show here.',
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 9.5,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.4,
-              color: color,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
-              height: 1,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            subtitle,
-            style: const TextStyle(
-              fontSize: 10.5,
-              height: 1.35,
-              color: AppColors.textSecondary,
-            ),
-          ),
-        ],
+      PlansTab.pending => (
+        Icons.hourglass_empty_rounded,
+        'Nothing waiting',
+        'Plans you send, and plans sent to you, wait here for an answer.',
       ),
-    );
-  }
-}
+      PlansTab.drafts => (
+        Icons.edit_note_rounded,
+        'No drafts',
+        'Save a plan as a draft to finish it later. Only you can see it.',
+      ),
+      PlansTab.history => (
+        Icons.history_rounded,
+        'No past plans',
+        'Plans that happened, were declined or were called off show here.',
+      ),
+    };
 
-class _PlanCard extends StatelessWidget {
-  const _PlanCard({required this.plan});
-
-  final Plan plan;
-
-  @override
-  Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+      padding: const EdgeInsets.symmetric(vertical: 38, horizontal: 24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.divider),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A0C132A),
-            blurRadius: 14,
-            offset: Offset(0, 4),
-          ),
-        ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.asset(
-                  plan.attendeeAvatar,
-                  width: 46,
-                  height: 46,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) => Container(
-                    width: 46,
-                    height: 46,
-                    color: AppColors.purpleSoft,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Row(
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  plan.title,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Container(
-                                width: 8,
-                                height: 8,
-                                decoration: BoxDecoration(
-                                  color: Color(plan.modeColor),
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        _StatusPill(status: plan.status),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      plan.venue,
-                      style: const TextStyle(
-                        fontSize: 12.5,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '${plan.attendeeName} | ${plan.dateTime}',
-                      style: const TextStyle(
-                        fontSize: 11.5,
-                        color: AppColors.textMuted,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          Container(
+            width: 56,
+            height: 56,
+            decoration: const BoxDecoration(
+              color: AppColors.surfaceSoft,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 26, color: AppColors.textMuted),
           ),
           const SizedBox(height: 14),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () {},
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.textPrimary,
-                    side: const BorderSide(color: AppColors.divider),
-                    backgroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    textStyle: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  child: const Text('View details'),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: FilledButton(
-                  onPressed: () {},
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.purple,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    textStyle: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  child: const Text('Share plan'),
-                ),
-              ),
-            ],
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
           ),
+          const SizedBox(height: 4),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+              height: 1.45,
+            ),
+          ),
+          if (tab == PlansTab.upcoming) ...[
+            const SizedBox(height: 16),
+            PrimaryActionButton(
+              label: 'New plan',
+              borderRadius: 999,
+              onPressed: () => context.push(AppRoutes.planComposer),
+            ),
+          ],
         ],
       ),
     );
   }
 }
 
-class _StatusPill extends StatelessWidget {
-  const _StatusPill({required this.status});
+class _LoadFailed extends StatelessWidget {
+  const _LoadFailed({required this.message, required this.onRetry});
 
-  final PlanStatus status;
+  final String message;
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
-    final cfg = _config(status);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: cfg.$2,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        cfg.$1,
-        style: TextStyle(
-          fontSize: 10.5,
-          fontWeight: FontWeight.w700,
-          color: cfg.$3,
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(18, 4, 18, 24),
+      children: [
+        Container(
+          padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: AppColors.divider),
+          ),
+          child: Column(
+            children: [
+              const Text(
+                "Your plans didn't load",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 13,
+                  height: 1.5,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 18),
+              PrimaryActionButton(label: 'Try again', onPressed: onRetry),
+            ],
+          ),
         ),
-      ),
+      ],
     );
-  }
-
-  (String, Color, Color) _config(PlanStatus s) {
-    switch (s) {
-      case PlanStatus.upcoming:
-        return ('confirmed', const Color(0xFFD1FAE5), const Color(0xFF10B981));
-      case PlanStatus.pending:
-        return ('pending', const Color(0xFFFED7AA), const Color(0xFFC2410C));
-      case PlanStatus.completed:
-        return ('completed', AppColors.surfaceSoft, AppColors.textSecondary);
-      case PlanStatus.cancelled:
-        return ('cancelled', const Color(0xFFFFE4E8), const Color(0xFFEF4458));
-    }
   }
 }

@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/assets/app_assets.dart';
@@ -28,11 +30,9 @@ class _VerificationCaptureScreenState extends State<VerificationCaptureScreen> {
         preferredCameraDevice: CameraDevice.front,
         imageQuality: 80,
       );
-      if (picked != null) {
-        setState(() => _path = picked.path);
-        if (!mounted) return;
-        Navigator.of(context).pushNamed(AppRoutes.verificationSuccess);
-      }
+      if (picked == null || !mounted) return;
+      setState(() => _path = picked.path);
+      unawaited(context.push<void>(AppRoutes.verificationSuccess));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

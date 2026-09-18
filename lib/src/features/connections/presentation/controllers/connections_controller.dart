@@ -2,17 +2,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/connection.dart';
 
-final connectionFilterProvider =
-    StateProvider<ConnectionFilter>((_) => ConnectionFilter.matches);
-
-final connectionsProvider = Provider<List<Connection>>((ref) {
-  final filter = ref.watch(connectionFilterProvider);
-  switch (filter) {
-    case ConnectionFilter.matches:
-      return SampleConnections.matches;
-    case ConnectionFilter.requests:
-      return const [];
-    case ConnectionFilter.archived:
-      return const [];
+/// The sample conversation with the given id, or `null` when there's none.
+///
+/// Only the demo reaches the conversation screens, which run on sample data
+/// until chat is connected to the server.
+final connectionByIdProvider = Provider.family<Connection?, String>((ref, id) {
+  for (final connection in SampleConnections.matches) {
+    if (connection.id == id) return connection;
   }
+  return null;
 });

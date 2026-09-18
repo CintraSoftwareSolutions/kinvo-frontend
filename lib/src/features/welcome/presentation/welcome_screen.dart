@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-import '../../../core/assets/app_assets.dart';
+import '../../../core/demo/demo_mode.dart';
 import '../../../core/navigation/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/widgets/device_preview_shell.dart';
+import '../../../core/widgets/gradient_scaffold.dart';
+import '../../../core/widgets/kinvo_logo.dart';
 
-class WelcomeScreen extends StatelessWidget {
+class WelcomeScreen extends ConsumerWidget {
   const WelcomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return DevicePreviewShell(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final demoAvailable = ref.watch(demoModeAvailableProvider);
+
+    return GradientScaffold(
       background: AppColors.welcomeBackground,
       child: SafeArea(
         child: Padding(
@@ -19,7 +23,7 @@ class WelcomeScreen extends StatelessWidget {
           child: Column(
             children: [
               const Spacer(flex: 3),
-              _HeroLogo(),
+              const KinvoLogo(),
               const SizedBox(height: 28),
               Text(
                 'Connect',
@@ -75,8 +79,7 @@ class WelcomeScreen extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
-                  onPressed: () =>
-                      Navigator.of(context).pushNamed(AppRoutes.signup),
+                  onPressed: () => context.push(AppRoutes.signup),
                   style: FilledButton.styleFrom(
                     backgroundColor: Colors.white,
                     foregroundColor: AppColors.purple,
@@ -97,8 +100,7 @@ class WelcomeScreen extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
-                  onPressed: () =>
-                      Navigator.of(context).pushNamed(AppRoutes.login),
+                  onPressed: () => context.push(AppRoutes.login),
                   style: FilledButton.styleFrom(
                     backgroundColor: Colors.white.withValues(alpha: 0.2),
                     foregroundColor: Colors.white,
@@ -115,19 +117,27 @@ class WelcomeScreen extends StatelessWidget {
                   child: const Text('Log In'),
                 ),
               ),
-              const SizedBox(height: 14),
-              GestureDetector(
-                onTap: () =>
-                    Navigator.of(context).pushNamed(AppRoutes.onboarding),
-                child: Text(
-                  'Explore Demo',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
+              if (demoAvailable) ...[
+                const SizedBox(height: 14),
+                Semantics(
+                  button: true,
+                  child: GestureDetector(
+                    onTap: () => continueInDemo(
+                      context,
+                      ref,
+                      destination: AppRoutes.discover,
+                    ),
+                    child: Text(
+                      'Explore Demo',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
               const SizedBox(height: 14),
               Text(
                 'By continuing, you agree to our Terms & Privacy Policy',
@@ -140,44 +150,6 @@ class WelcomeScreen extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _HeroLogo extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 88,
-      height: 88,
-      child: Stack(
-        clipBehavior: Clip.none,
-        alignment: Alignment.center,
-        children: [
-          Container(
-            width: 78,
-            height: 78,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withValues(alpha: 0.18),
-            ),
-          ),
-          SvgPicture.asset(
-            AppAssets.heartFill,
-            width: 28,
-            height: 26,
-            colorFilter: const ColorFilter.mode(
-              Colors.white,
-              BlendMode.srcIn,
-            ),
-          ),
-          Positioned(
-            right: 2,
-            top: 0,
-            child: SvgPicture.asset(AppAssets.sparkle, width: 22, height: 22),
-          ),
-        ],
       ),
     );
   }

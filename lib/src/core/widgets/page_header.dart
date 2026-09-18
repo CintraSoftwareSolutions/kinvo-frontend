@@ -25,10 +25,7 @@ class PageHeader extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (leading != null) ...[
-            leading!,
-            const SizedBox(width: 12),
-          ],
+          if (leading != null) ...[leading!, const SizedBox(width: 12)],
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -56,10 +53,7 @@ class PageHeader extends StatelessWidget {
               ],
             ),
           ),
-          if (trailing != null) ...[
-            const SizedBox(width: 10),
-            trailing!,
-          ],
+          if (trailing != null) ...[const SizedBox(width: 10), trailing!],
         ],
       ),
     );
@@ -73,15 +67,24 @@ class HeaderBackButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap ?? () => Navigator.of(context).maybePop(),
-      behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: const EdgeInsets.only(top: 4),
-        child: Icon(
-          Icons.arrow_back_rounded,
-          size: 22,
-          color: AppColors.textPrimary,
+    final label = MaterialLocalizations.of(context).backButtonTooltip;
+    return Tooltip(
+      message: label,
+      child: Semantics(
+        button: true,
+        label: label,
+        excludeSemantics: true,
+        child: GestureDetector(
+          onTap: onTap ?? () => Navigator.of(context).maybePop(),
+          behavior: HitTestBehavior.opaque,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Icon(
+              Icons.arrow_back_rounded,
+              size: 22,
+              color: AppColors.textPrimary,
+            ),
+          ),
         ),
       ),
     );
