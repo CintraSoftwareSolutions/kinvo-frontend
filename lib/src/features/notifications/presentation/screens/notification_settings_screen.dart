@@ -11,6 +11,7 @@ import '../../../../core/push/push_providers.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/flow_widgets.dart';
 import '../../../../core/widgets/page_header.dart';
+import '../../../calls/presentation/widgets/call_ringtone_row.dart';
 import '../../domain/app_notification.dart';
 import '../controllers/notifications_controllers.dart';
 
@@ -57,6 +58,9 @@ class NotificationSettingsScreen extends ConsumerWidget {
                       child: Center(child: CircularProgressIndicator()),
                     ),
                   },
+                  const SizedBox(height: 18),
+                  const _SectionLabel('CALLS'),
+                  const CallRingtoneRow(),
                   const SizedBox(height: 12),
                   const Text(
                     'Everything still appears in your notifications list, '

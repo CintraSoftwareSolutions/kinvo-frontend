@@ -9,6 +9,7 @@ import 'core/realtime/realtime_providers.dart';
 import 'core/theme/app_theme.dart';
 import 'core/widgets/app_messenger.dart';
 import 'features/calls/presentation/call_screen_keeper.dart';
+import 'features/calls/presentation/callkit_keeper.dart';
 import 'features/notifications/presentation/push_messages.dart';
 
 class KinvoApp extends ConsumerStatefulWidget {
@@ -46,7 +47,10 @@ class _KinvoAppState extends ConsumerState<KinvoApp> {
       ..listen(pushMessagesKeeperProvider, (_, _) {})
       // A call can start from anywhere, including someone else ringing while
       // the user is reading a chat, so the screen for it opens from here.
-      ..listen(callScreenKeeperProvider, (_, _) {});
+      ..listen(callScreenKeeperProvider, (_, _) {})
+      // And a call answered on the lock screen, of a phone that was closed
+      // when it arrived, is picked up here.
+      ..listen(callkitKeeperProvider, (_, _) {});
 
     return MaterialApp.router(
       title: 'Kinvo',

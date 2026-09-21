@@ -12,6 +12,7 @@ import 'package:kinvo/src/core/network/network_providers.dart';
 import 'package:kinvo/src/core/push/push_messaging.dart';
 import 'package:kinvo/src/core/push/push_providers.dart';
 import 'package:kinvo/src/core/realtime/realtime_providers.dart';
+import 'package:kinvo/src/core/ringtone/ringtone.dart';
 import 'package:kinvo/src/core/storage/storage_providers.dart';
 import 'package:kinvo/src/core/time/clock.dart';
 
@@ -20,6 +21,7 @@ import 'device_fakes.dart';
 import 'fake_http_adapter.dart';
 import 'fake_push_messaging.dart';
 import 'fake_realtime_server.dart';
+import 'fake_ringtones.dart';
 import 'in_memory_key_value_store.dart';
 
 /// The device id sent with every request in tests.
@@ -50,6 +52,9 @@ final class TestBackend {
 
   /// The numbers the app put on its icon.
   final iconBadge = RecordingAppIconBadge();
+
+  /// The phone this test rings with. Assert on it to check a call rang.
+  final ringtones = FakeRingtones();
 
   final secureStore = InMemoryKeyValueStore();
   final preferences = InMemoryKeyValueStore();
@@ -91,6 +96,8 @@ final class TestBackend {
       realtimeSocketFactoryProvider.overrideWithValue(realtime.createSocket),
       pushMessagingProvider.overrideWithValue(push),
       appIconBadgeProvider.overrideWithValue(iconBadge),
+      // No test may reach the phone's ringtone chooser or make a sound.
+      ringtonesProvider.overrideWithValue(ringtones),
       demoModeAvailableProvider.overrideWithValue(demoAvailable),
       // The camera, photo library and location need a real device.
       photoPickerProvider.overrideWithValue(photoPicker),

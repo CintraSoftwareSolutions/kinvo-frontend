@@ -186,10 +186,29 @@ void main() {
     expect(find.text('Video call'), findsOneWidget);
     expect(find.text('Sam'), findsOneWidget);
 
+    // The phone rings while it is ringing, and only then: a caller does not
+    // hear their own phone ring at them.
+    expect(app.backend.ringtones.playing, isTrue);
+
     await tester.tap(find.text('Answer'));
     await app.pumpUntilGone(find.text('Incoming'));
 
     expect(server.calls.single.status, 'active');
+    expect(app.backend.ringtones.playing, isFalse);
+  });
+
+  testWidgets('a call going out does not ring this phone', (tester) async {
+    final server = _server();
+    _matchWithSam(server);
+    final app = await _openChat(tester, server);
+
+    await tester.tap(find.byTooltip('Video call'));
+    await app.pumpUntilFound(find.byType(CallScreen));
+
+    expect(app.backend.ringtones.playing, isFalse);
+
+    await tester.tap(find.text('End'));
+    await app.pumpUntilGone(find.byType(CallScreen));
   });
 
   testWidgets('declining an incoming call closes it for both', (tester) async {

@@ -70,6 +70,9 @@ void _announce(Ref ref, NotificationOpener opener, PushMessage message) {
       ref.read(realtimeStatusProvider) == RealtimeStatus.connected) {
     return;
   }
+  // A call rings and fills the screen; a banner saying the same thing on top
+  // of it would be the third time the phone has mentioned it.
+  if (category == NotificationCategory.call) return;
 
   final title = message.title?.trim() ?? '';
   final body = message.body?.trim() ?? '';

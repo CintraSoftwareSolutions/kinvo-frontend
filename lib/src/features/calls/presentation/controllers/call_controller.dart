@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/demo/demo_mode.dart';
 import '../../../../core/network/api_exception.dart';
+import '../../../../core/ringtone/ringtone.dart';
 import '../../../profile/domain/user_summary.dart';
 import '../../../chat/data/live_updates.dart';
 import '../../../chat/domain/live_update.dart';
@@ -12,6 +13,8 @@ import '../../data/calls_repository.dart';
 import '../../domain/call.dart';
 import '../../media/call_media.dart';
 import '../../media/livekit_call_media.dart';
+import '../incoming_call_notification.dart';
+import 'call_ringtone_controller.dart';
 
 /// How long a call rings before it counts as missed.
 ///
@@ -87,6 +90,11 @@ final class CallController extends Notifier<ActiveCall?> {
   ActiveCall? build() {
     _updates = ref.watch(liveUpdatesProvider).stream.listen(_onUpdate);
 
+    // Held now, not read later: a provider cannot be read while the container
+    // is being disposed, and that is exactly when a phone left ringing needs
+    // to be told to stop.
+    final ringtones = ref.read(ringtonesProvider);
+
     ref.onDispose(() {
       _ringTimer?.cancel();
       unawaited(_updates?.cancel());
@@ -94,12 +102,16 @@ final class CallController extends Notifier<ActiveCall?> {
       // screen went away without hanging up.
       _media?.dispose();
       _media = null;
+      unawaited(ringtones.stop());
     });
 
     return null;
   }
 
   CallsRepository get _repository => ref.read(callsRepositoryProvider);
+
+  CallRingtoneController get _ringtone =>
+      ref.read(callRingtoneProvider.notifier);
 
   /// Rings the other person in [matchId]. Returns the call, or null when the
   /// server refused; the reason is shown by whoever called this.
@@ -123,6 +135,7 @@ final class CallController extends Notifier<ActiveCall?> {
     if (current == null || !current.isIncoming) return;
 
     _ringTimer?.cancel();
+    unawaited(_ringtone.stopRinging());
 
     try {
       final answered = await _repository.answer(current.call.id);
@@ -136,12 +149,65 @@ final class CallController extends Notifier<ActiveCall?> {
     }
   }
 
+  /// Answers a call the person accepted from the lock screen.
+  ///
+  /// Nothing may be known about this call: the app may have been launched by
+  /// the notification itself, with no socket, no state and no ringing screen.
+  /// So it answers by id and builds the state from what the server gives back,
+  /// rather than from anything already held.
+  Future<void> answerFromNotification(String callId) async {
+    await _ringtone.stopRinging();
+    _ringTimer?.cancel();
+
+    // Already the live call on this device: the ordinary path handles it, and
+    // answering twice would be a second request for the same thing.
+    if (state?.call.id == callId) {
+      await answer();
+      return;
+    }
+
+    try {
+      final answered = await _repository.answer(callId);
+      _media = _mediaFor(answered);
+      state = ActiveCall(call: answered, media: _media);
+      unawaited(_connectMedia(answered));
+    } on ApiException {
+      // Answered on another phone, declined here a moment ago, or rung out.
+      // There is nothing to show: the call screen never opens.
+      await hideIncomingCall(callId);
+    }
+  }
+
+  /// Refuses a call the person declined from the lock screen.
+  Future<void> declineFromNotification(String callId) async {
+    await _ringtone.stopRinging();
+    await _declineQuietly(callId);
+    await hideIncomingCall(callId);
+
+    if (state?.call.id == callId) await _close();
+  }
+
+  /// Hangs up a call ended from the lock screen's own controls.
+  Future<void> endFromNotification(String callId) async {
+    if (state?.call.id == callId) {
+      await hangUp();
+      return;
+    }
+
+    try {
+      await _repository.end(callId);
+    } on ApiException {
+      // Already over.
+    }
+  }
+
   /// Refuses a call that is ringing on this device.
   Future<void> decline() async {
     final current = state;
     if (current == null) return;
 
     _ringTimer?.cancel();
+    unawaited(_ringtone.stopRinging());
     state = current.copyWith(ending: true);
 
     try {
@@ -248,6 +314,11 @@ final class CallController extends Notifier<ActiveCall?> {
       media: null,
     );
     _startRingTimer();
+
+    // Only for a call coming IN. The caller hears the other phone through the
+    // call itself; ringing here would be this phone ringing at the person who
+    // dialled.
+    unawaited(_ringtone.startRinging());
   }
 
   void _applyStatus(CallStatus status, int? durationSeconds) {
@@ -325,6 +396,14 @@ final class CallController extends Notifier<ActiveCall?> {
   /// sees why it stopped — "Declined", or how long it lasted — instead of
   /// being dropped back into the chat with no explanation.
   Future<void> _close({bool keepEnded = false}) async {
+    // The lock screen may still be showing this call on a phone that was
+    // closed when it arrived. It goes with everything else.
+    if (state?.call.id case final callId?) unawaited(hideIncomingCall(callId));
+
+    // Whatever ended it — the other side, a safety action, the ring timer —
+    // the phone stops ringing here, once.
+    unawaited(_ringtone.stopRinging());
+
     final media = _media;
     if (media != null) {
       await media.leave();

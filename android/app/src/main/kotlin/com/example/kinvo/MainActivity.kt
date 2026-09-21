@@ -5,11 +5,42 @@ import android.app.NotificationManager
 import android.os.Build
 import android.os.Bundle
 import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
+    private var ringtones: RingtoneBridge? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         createNotificationChannel()
+    }
+
+    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        super.configureFlutterEngine(flutterEngine)
+
+        val bridge = RingtoneBridge(applicationContext)
+        bridge.attach(this)
+        ringtones = bridge
+
+        // Registered on the ACTIVITY, not the plugin registry, because the
+        // ringtone chooser is an activity result and only an activity receives
+        // one.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, RingtoneBridge.CHANNEL)
+            .setMethodCallHandler(bridge)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: android.content.Intent?) {
+        if (ringtones?.onActivityResult(requestCode, resultCode, data) == true) return
+        super.onActivityResult(requestCode, resultCode, data)
+    }
+
+    override fun onDestroy() {
+        // Releases the ringtone player: a call screen killed mid-ring would
+        // otherwise leave the phone ringing with nothing on screen.
+        ringtones?.detach()
+        ringtones = null
+        super.onDestroy()
     }
 
     /**
