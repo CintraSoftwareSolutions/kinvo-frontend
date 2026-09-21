@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:livekit_client/livekit_client.dart' as lk;
-import 'package:permission_handler/permission_handler.dart';
 
 import 'call_media.dart';
 
@@ -57,20 +56,34 @@ final class LiveKitCallMedia extends ChangeNotifier implements CallMedia {
   @override
   Future<void> join({required Uri serverUrl, required String token}) async {
     _set(CallMediaPhase.connecting, failure: null);
+    _room.addListener(_onRoomChanged);
 
-    // Asked for HERE rather than at launch: an app that wants the camera
-    // before showing anything gets refused, and Android remembers a refusal.
-    final permissions = await [
-      Permission.camera,
-      Permission.microphone,
-    ].request();
+    try {
+      await _room.connect(serverUrl.toString(), token);
+    } catch (error) {
+      _room.removeListener(_onRoomChanged);
+      _set(
+        CallMediaPhase.failed,
+        failure:
+            'Could not connect the call. Check your connection and try again.',
+      );
+      return;
+    }
 
-    final micDenied = permissions[Permission.microphone]?.isGranted != true;
-    final cameraDenied = permissions[Permission.camera]?.isGranted != true;
-
-    if (micDenied) {
-      // Without a microphone there is no call worth joining. The camera alone
-      // being refused is survivable, and handled below.
+    // THE CAMERA AND MICROPHONE ARE ASKED FOR HERE, by turning each one on.
+    //
+    // The media plugin asks the phone at exactly this point, which is why the
+    // app carries no separate permission package: one library asking is one
+    // place for it to go wrong, and the request lands while the user is
+    // looking at a call rather than at launch, where it would be refused and
+    // remembered as refused.
+    //
+    // The microphone first, because a call nobody can hear is not a call.
+    try {
+      await _room.localParticipant?.setMicrophoneEnabled(_microphoneOn);
+    } catch (error) {
+      await _room.disconnect();
+      _room.removeListener(_onRoomChanged);
       _set(
         CallMediaPhase.permissionRefused,
         failure:
@@ -80,38 +93,22 @@ final class LiveKitCallMedia extends ChangeNotifier implements CallMedia {
       return;
     }
 
-    if (cameraDenied) {
-      _cameraOn = false;
-    }
-
-    _room.addListener(_onRoomChanged);
+    // A refused camera is survivable: the call carries on with sound only, and
+    // the screen says why there is no picture rather than showing a black
+    // square that reads as a fault in the app.
+    String? cameraFailure;
 
     try {
-      await _room.connect(serverUrl.toString(), token);
-      await _room.localParticipant?.setMicrophoneEnabled(_microphoneOn);
-      if (_cameraOn) {
-        await _room.localParticipant?.setCameraEnabled(true);
-      }
-      await lk.AudioManager.instance.setSpeakerOutputPreferred(_speakerOn);
+      await _room.localParticipant?.setCameraEnabled(_cameraOn);
     } catch (error) {
-      _room.removeListener(_onRoomChanged);
-      _set(
-        CallMediaPhase.failed,
-        failure: cameraDenied
-            ? 'Could not connect the call.'
-            : 'Could not connect the call. Check your connection and try again.',
-      );
-      return;
+      _cameraOn = false;
+      cameraFailure =
+          'Your camera is off because Kinvo was not allowed to use it.';
     }
 
-    _set(
-      CallMediaPhase.connected,
-      // Connected, but worth saying why they cannot be seen: otherwise a black
-      // square reads as a fault in the app.
-      failure: cameraDenied
-          ? 'Your camera is off because Kinvo was not allowed to use it.'
-          : null,
-    );
+    await lk.AudioManager.instance.setSpeakerOutputPreferred(_speakerOn);
+
+    _set(CallMediaPhase.connected, failure: cameraFailure);
   }
 
   @override
