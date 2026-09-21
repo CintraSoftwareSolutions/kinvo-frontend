@@ -44,6 +44,36 @@ enum CallStatus {
   bool get isLive => this == ringing || this == active;
 }
 
+/// What the caller asked for: a camera, or only a microphone.
+///
+/// The server stores it, so the ringing phone knows which kind is arriving
+/// before it answers — answering a voice call must not open the camera. Either
+/// side can still turn video on once the call is running; the kind is what it
+/// started as, which is what history should say.
+enum CallKind {
+  video('video'),
+  audio('audio'),
+
+  /// A kind added to the server after this version of the app. Treated as
+  /// video, which is the safe way round: the picture can be turned off, and a
+  /// call with no picture at all would look broken.
+  unknown('');
+
+  const CallKind(this.wireValue);
+
+  final String wireValue;
+
+  static CallKind fromWireValue(String value) {
+    for (final kind in values) {
+      if (kind != unknown && kind.wireValue == value) return kind;
+    }
+    return unknown;
+  }
+
+  /// Whether the camera goes on when the call connects.
+  bool get startsWithCamera => this != audio;
+}
+
 /// The room to join, and the credential that opens it.
 ///
 /// Both come from the server together. A token names one room and expires
@@ -103,6 +133,7 @@ final class Call {
     required this.id,
     required this.matchId,
     required this.mode,
+    required this.kind,
     required this.status,
     required this.isInitiator,
     required this.otherUser,
@@ -130,6 +161,9 @@ final class Call {
           id: id,
           matchId: matchId,
           mode: mode,
+          // Absent on a server that predates voice calls, where every call
+          // was a video call.
+          kind: CallKind.fromWireValue(json['kind'] as String? ?? 'video'),
           status: CallStatus.fromWireValue(status),
           isInitiator: isInitiator,
           otherUser: UserSummary.fromJson(otherUser),
@@ -158,6 +192,9 @@ final class Call {
   final String id;
   final String matchId;
   final String mode;
+
+  /// Video or voice, as the call started.
+  final CallKind kind;
   final CallStatus status;
 
   /// True for the person who started it. The two sides show different screens
@@ -181,6 +218,7 @@ final class Call {
       id: id,
       matchId: matchId,
       mode: mode,
+      kind: kind,
       status: status ?? this.status,
       isInitiator: isInitiator,
       otherUser: otherUser,

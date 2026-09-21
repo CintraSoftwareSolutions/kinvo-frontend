@@ -1582,6 +1582,8 @@ final class FakeKinvoServer {
       id: 'call-${calls.length + 1}',
       matchId: match.id,
       mode: match.mode,
+      // Video unless the caller asked for a voice call, like the real server.
+      kind: body['kind'] == 'audio' ? 'audio' : 'video',
       isInitiator: true,
       createdAt: now(),
     );
@@ -1671,12 +1673,16 @@ final class FakeKinvoServer {
     // A call always belongs to a match; the fallback only keeps the view total
     // for a test that unmatched in the middle of one.
     final person =
-        matches.where((match) => match.id == call.matchId).firstOrNull?.person ??
+        matches
+            .where((match) => match.id == call.matchId)
+            .firstOrNull
+            ?.person ??
         const FakePerson(id: 'unknown', name: 'Someone');
     return {
       'id': call.id,
       'match_id': call.matchId,
       'mode': call.mode,
+      'kind': call.kind,
       'status': call.status,
       'is_initiator': call.isInitiator,
       'other_user': person.compact(now()),
@@ -1692,9 +1698,7 @@ final class FakeKinvoServer {
           // Null unless a test sets one, which is what a server with no video
           // service answers. Tests that set it would need a real media server.
           'server_url': videoServerUrl,
-          'expires_at': now()
-              .add(const Duration(hours: 1))
-              .toIso8601String(),
+          'expires_at': now().add(const Duration(hours: 1)).toIso8601String(),
         },
     };
   }
@@ -2695,12 +2699,14 @@ final class FakeCall {
     required this.mode,
     required this.isInitiator,
     required this.createdAt,
+    this.kind = 'video',
     this.status = 'ringing',
   });
 
   final String id;
   final String matchId;
   final String mode;
+  final String kind;
   final bool isInitiator;
   final DateTime createdAt;
 

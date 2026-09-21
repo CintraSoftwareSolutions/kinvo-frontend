@@ -26,6 +26,7 @@ final class DemoCallsRepository implements CallsRepository {
         id: 'demo-call-1',
         matchId: 'marcus',
         mode: 'networking',
+        kind: CallKind.video,
         isInitiator: false,
         status: CallStatus.ended,
         createdAt: _clock().subtract(const Duration(days: 1, minutes: 12)),
@@ -41,7 +42,7 @@ final class DemoCallsRepository implements CallsRepository {
   final List<_DemoCall> _calls = [];
 
   @override
-  Future<Call> start(String matchId) async {
+  Future<Call> start(String matchId, {CallKind kind = CallKind.video}) async {
     final match = _inbox.find(matchId);
     if (match == null) throw _noMatch;
 
@@ -56,6 +57,7 @@ final class DemoCallsRepository implements CallsRepository {
       id: 'demo-call-${_calls.length + 1}',
       matchId: matchId,
       mode: match.mode,
+      kind: kind,
       isInitiator: true,
       status: CallStatus.ringing,
       createdAt: _clock(),
@@ -151,6 +153,7 @@ final class DemoCallsRepository implements CallsRepository {
       id: call.id,
       matchId: call.matchId,
       mode: call.mode,
+      kind: call.kind,
       status: call.status,
       isInitiator: call.isInitiator,
       otherUser: person.summaryAt(_clock()),
@@ -202,6 +205,7 @@ final class _DemoCall {
     required this.id,
     required this.matchId,
     required this.mode,
+    required this.kind,
     required this.isInitiator,
     required this.status,
     required this.createdAt,
@@ -213,6 +217,7 @@ final class _DemoCall {
   final String id;
   final String matchId;
   final String mode;
+  final CallKind kind;
   final bool isInitiator;
   final DateTime createdAt;
 

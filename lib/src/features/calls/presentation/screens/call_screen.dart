@@ -166,11 +166,20 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
+        // Both pills shrink rather than overflow: two long labels side by
+        // side ran off the edge of a narrow phone.
         Row(
           children: [
-            const _Pill(text: 'Kinvo call'),
+            Flexible(
+              child: _Pill(
+                text: call.call.kind == CallKind.audio
+                    ? 'Voice call'
+                    : 'Video call',
+              ),
+            ),
+            const SizedBox(width: 8),
             const Spacer(),
-            _Pill(text: _status(call)),
+            Flexible(child: _Pill(text: _status(call))),
           ],
         ),
         const SizedBox(height: 14),
@@ -192,7 +201,8 @@ class _Header extends StatelessWidget {
 
     return switch (call.call.status) {
       CallStatus.ringing when call.call.isInitiator => 'Calling…',
-      CallStatus.ringing => 'Incoming call',
+      // The pill beside this one already says which kind of call it is.
+      CallStatus.ringing => 'Incoming',
       CallStatus.declined => 'Declined',
       CallStatus.missed => 'No answer',
       CallStatus.ended => _ended(call.call.durationSeconds),
@@ -381,6 +391,8 @@ class _Pill extends StatelessWidget {
       ),
       child: Text(
         text,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
         style: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w600,

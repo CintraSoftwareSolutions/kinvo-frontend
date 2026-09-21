@@ -90,6 +90,9 @@ final class LiveUpdates {
         callId: callId,
         matchId: matchId,
         mode: mode,
+        // Absent on a server that predates voice calls, where every call was
+        // a video call.
+        kind: CallKind.fromWireValue(data['kind'] as String? ?? 'video'),
         from: UserSummary.fromJson(from),
       );
     }

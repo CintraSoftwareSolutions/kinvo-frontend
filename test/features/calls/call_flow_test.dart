@@ -86,6 +86,58 @@ void main() {
     expect(find.byType(ChatScreen), findsOneWidget);
   });
 
+  testWidgets('the phone button starts a voice call, not a video one', (
+    tester,
+  ) async {
+    final server = _server();
+    _matchWithSam(server);
+    final app = await _openChat(tester, server);
+
+    await tester.tap(find.byTooltip('Voice call'));
+    await app.pumpUntilFound(find.byType(CallScreen));
+
+    // The server is told which kind it is, because the other phone decides
+    // whether to open its camera and this is all it has to go on.
+    expect(server.calls.single.kind, 'audio');
+    expect(find.text('Voice call'), findsOneWidget);
+
+    await tester.tap(find.text('End'));
+    await app.pumpUntilGone(find.byType(CallScreen));
+  });
+
+  testWidgets('an incoming voice call says so before it is answered', (
+    tester,
+  ) async {
+    final server = _server();
+    final match = _matchWithSam(server);
+    final app = await _launch(tester, server);
+
+    server.calls.add(
+      FakeCall(
+        id: 'call-1',
+        matchId: match.id,
+        mode: 'dating',
+        kind: 'audio',
+        isInitiator: false,
+        createdAt: server.now(),
+      ),
+    );
+    server.realtime.push(ServerEvents.callIncoming, {
+      'call_id': 'call-1',
+      'match_id': match.id,
+      'mode': 'dating',
+      'kind': 'audio',
+      'from': _sam.compact(server.now()),
+    });
+
+    await app.pumpUntilFound(find.byType(CallScreen));
+    expect(find.text('Voice call'), findsOneWidget);
+    expect(find.text('Incoming'), findsOneWidget);
+
+    await tester.tap(find.text('Decline'));
+    await app.pumpUntilGone(find.byType(CallScreen));
+  });
+
   testWidgets('the other person answering makes it a call', (tester) async {
     final server = _server();
     _matchWithSam(server);
@@ -130,11 +182,12 @@ void main() {
     });
 
     await app.pumpUntilFound(find.byType(CallScreen));
-    expect(find.text('Incoming call'), findsOneWidget);
+    expect(find.text('Incoming'), findsOneWidget);
+    expect(find.text('Video call'), findsOneWidget);
     expect(find.text('Sam'), findsOneWidget);
 
     await tester.tap(find.text('Answer'));
-    await app.pumpUntilGone(find.text('Incoming call'));
+    await app.pumpUntilGone(find.text('Incoming'));
 
     expect(server.calls.single.status, 'active');
   });

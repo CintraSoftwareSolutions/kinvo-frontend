@@ -103,10 +103,10 @@ final class CallController extends Notifier<ActiveCall?> {
 
   /// Rings the other person in [matchId]. Returns the call, or null when the
   /// server refused; the reason is shown by whoever called this.
-  Future<Call?> start(String matchId) async {
+  Future<Call?> start(String matchId, {CallKind kind = CallKind.video}) async {
     if (state != null) return null;
 
-    final call = await _repository.start(matchId);
+    final call = await _repository.start(matchId, kind: kind);
     _media = _mediaFor(call);
     state = ActiveCall(call: call, media: _media);
     _startRingTimer();
@@ -235,6 +235,7 @@ final class CallController extends Notifier<ActiveCall?> {
         id: update.callId,
         matchId: update.matchId,
         mode: update.mode,
+        kind: update.kind,
         status: CallStatus.ringing,
         isInitiator: false,
         otherUser: update.from,
@@ -311,7 +312,11 @@ final class CallController extends Notifier<ActiveCall?> {
       state = current.copyWith(media: media);
     }
 
-    await media.join(serverUrl: video!.serverUrl!, token: video.token);
+    await media.join(
+      serverUrl: video!.serverUrl!,
+      token: video.token,
+      withCamera: call.kind.startsWithCamera,
+    );
   }
 
   /// Ends the screen's life: closes the media and clears the call.

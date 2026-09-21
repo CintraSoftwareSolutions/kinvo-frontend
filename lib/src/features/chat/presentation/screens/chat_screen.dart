@@ -13,6 +13,7 @@ import '../../../../core/time/clock.dart';
 import '../../../../core/widgets/flow_widgets.dart';
 import '../../../../core/widgets/paywall_sheet.dart';
 import '../../../../core/widgets/photo_source_sheet.dart';
+import '../../../calls/domain/call.dart';
 import '../../../calls/presentation/controllers/call_controller.dart';
 import '../../../discovery/presentation/widgets/profile_sheet.dart';
 import '../../../matches/presentation/controllers/matches_controllers.dart';
@@ -94,9 +95,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           onOpenMenu: () => _openMenu(thread),
           // A closed conversation cannot be called, for the same reason it
           // cannot be written in: unmatched, blocked, or expired. The server
-          // refuses either way; hiding the button saves a pointless refusal.
+          // refuses either way; hiding the buttons saves a pointless refusal.
           onVideoCall: conversation.isWritable
               ? () => unawaited(_startCall(conversation.matchId))
+              : null,
+          onVoiceCall: conversation.isWritable
+              ? () => unawaited(
+                  _startCall(conversation.matchId, kind: CallKind.audio),
+                )
               : null,
         ),
         const Divider(height: 1, color: AppColors.divider),
@@ -412,9 +418,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   /// Rings the other person. The call screen opens itself once the server has
   /// the call, so nothing is pushed here.
-  Future<void> _startCall(String matchId) async {
+  Future<void> _startCall(
+    String matchId, {
+    CallKind kind = CallKind.video,
+  }) async {
     try {
-      await ref.read(callControllerProvider.notifier).start(matchId);
+      await ref
+          .read(callControllerProvider.notifier)
+          .start(matchId, kind: kind);
     } on ApiException catch (error) {
       _say(switch (error) {
         ApiErrorException(:final message) => message,

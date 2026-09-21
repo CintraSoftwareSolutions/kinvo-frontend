@@ -54,7 +54,16 @@ final class LiveKitCallMedia extends ChangeNotifier implements CallMedia {
   bool get speakerOn => _speakerOn;
 
   @override
-  Future<void> join({required Uri serverUrl, required String token}) async {
+  Future<void> join({
+    required Uri serverUrl,
+    required String token,
+    bool withCamera = true,
+  }) async {
+    // A voice call starts with no camera at all. The button on the screen can
+    // still turn it on later, which is what makes this a starting state rather
+    // than a restriction.
+    _cameraOn = withCamera;
+
     _set(CallMediaPhase.connecting, failure: null);
     _room.addListener(_onRoomChanged);
 
@@ -99,7 +108,11 @@ final class LiveKitCallMedia extends ChangeNotifier implements CallMedia {
     String? cameraFailure;
 
     try {
-      await _room.localParticipant?.setCameraEnabled(_cameraOn);
+      // Skipped entirely for a voice call: never opened rather than opened
+      // and muted.
+      if (_cameraOn) {
+        await _room.localParticipant?.setCameraEnabled(true);
+      }
     } catch (error) {
       _cameraOn = false;
       cameraFailure =

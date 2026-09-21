@@ -3,6 +3,7 @@ import 'package:kinvo/src/features/calls/domain/call.dart';
 
 Map<String, Object?> _call({
   Object? status = 'ringing',
+  Object? kind = _absent,
   Object? video = _absent,
   Object? durationSeconds,
 }) {
@@ -10,6 +11,7 @@ Map<String, Object?> _call({
     'id': 'call-1',
     'match_id': 'match-1',
     'mode': 'dating',
+    if (kind != _absent) 'kind': kind,
     'status': status,
     'is_initiator': true,
     'other_user': {
@@ -52,6 +54,25 @@ void main() {
       expect(call.video?.roomName, 'kinvo-call-1');
       expect(call.video?.serverUrl, Uri.parse('wss://kinvo.livekit.cloud'));
       expect(call.video?.isConnectable, isTrue);
+      // No kind from a server that predates voice calls means it is a video
+      // call, which is what every call was then.
+      expect(call.kind, CallKind.video);
+    });
+
+    test('is a voice call when the server says so', () {
+      final call = Call.fromJson(_call(kind: 'audio'));
+
+      expect(call.kind, CallKind.audio);
+      expect(call.kind.startsWithCamera, isFalse);
+    });
+
+    test('of a kind this app does not know yet opens the camera', () {
+      // The safe way round: a picture can be turned off, and a call with no
+      // picture at all would look broken.
+      final call = Call.fromJson(_call(kind: 'hologram'));
+
+      expect(call.kind, CallKind.unknown);
+      expect(call.kind.startsWithCamera, isTrue);
     });
 
     test('from history carries no token, because there is nothing to join', () {

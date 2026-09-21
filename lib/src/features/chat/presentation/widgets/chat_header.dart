@@ -21,6 +21,7 @@ class ChatHeader extends ConsumerWidget {
     required this.onOpenProfile,
     required this.onOpenMenu,
     this.onVideoCall,
+    this.onVoiceCall,
     super.key,
   });
 
@@ -30,8 +31,13 @@ class ChatHeader extends ConsumerWidget {
   final VoidCallback onOpenProfile;
   final VoidCallback onOpenMenu;
 
-  /// Shown only where calling works.
+  /// The two call buttons, video and voice, in that order — the arrangement
+  /// every messaging app uses, so nobody has to learn it here.
+  ///
+  /// Both are hidden together: a conversation that cannot be written in cannot
+  /// be called either.
   final VoidCallback? onVideoCall;
+  final VoidCallback? onVoiceCall;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -39,7 +45,9 @@ class ChatHeader extends ConsumerWidget {
     final now = ref.watch(clockProvider)();
     final modeLabel = ref.watch(modeLabelProvider(conversation.mode));
     final status = peerIsTyping ? 'typing…' : activityLabel(user, now: now);
+    // Locals so the null checks below promote; a field cannot.
     final onVideoCall = this.onVideoCall;
+    final onVoiceCall = this.onVoiceCall;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
@@ -129,16 +137,32 @@ class ChatHeader extends ConsumerWidget {
             ),
           ),
           if (onVideoCall != null) ...[
-            const SizedBox(width: 8),
+            const SizedBox(width: 6),
             HeaderCircleButton(
               tooltip: 'Video call',
               onTap: onVideoCall,
               child: SvgPicture.asset(
                 AppAssets.video,
+                width: 19,
+                height: 19,
+                colorFilter: const ColorFilter.mode(
+                  AppColors.purple,
+                  BlendMode.srcIn,
+                ),
+              ),
+            ),
+          ],
+          if (onVoiceCall != null) ...[
+            const SizedBox(width: 6),
+            HeaderCircleButton(
+              tooltip: 'Voice call',
+              onTap: onVoiceCall,
+              child: SvgPicture.asset(
+                AppAssets.phone,
                 width: 18,
                 height: 18,
                 colorFilter: const ColorFilter.mode(
-                  AppColors.textPrimary,
+                  AppColors.purple,
                   BlendMode.srcIn,
                 ),
               ),

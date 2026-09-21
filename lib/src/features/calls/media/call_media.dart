@@ -52,7 +52,15 @@ abstract class CallMedia extends ChangeNotifier {
   /// Joins the room. Asks for the camera and microphone first; a refusal
   /// leaves [phase] at [CallMediaPhase.permissionRefused] rather than throwing,
   /// because the call itself is still worth continuing.
-  Future<void> join({required Uri serverUrl, required String token});
+  ///
+  /// [withCamera] is false for a voice call. The camera is then never opened,
+  /// not opened and muted: a phone that lights its camera indicator during a
+  /// voice call has broken the promise the call was started on.
+  Future<void> join({
+    required Uri serverUrl,
+    required String token,
+    bool withCamera = true,
+  });
 
   /// Leaves the room and releases the camera. Safe to call twice.
   Future<void> leave();

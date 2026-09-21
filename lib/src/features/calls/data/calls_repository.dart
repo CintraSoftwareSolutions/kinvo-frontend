@@ -17,8 +17,12 @@ abstract interface class CallsRepository {
   /// Starting a call names a MATCH, never a room: the server decides which
   /// room, so a token can never be asked for on a call the caller is not in.
   /// Calling a match that is already in a live call returns that call, rather
-  /// than putting the two people in different rooms.
-  Future<Call> start(String matchId);
+  /// than putting the two people in different rooms — with the kind it already
+  /// had, not the one just asked for.
+  ///
+  /// [kind] is what the call starts as. The server stores it so the other
+  /// phone knows whether to open its camera when it answers.
+  Future<Call> start(String matchId, {CallKind kind = CallKind.video});
 
   /// Picks up a call that is ringing. Only the person who did not start it
   /// may, and only while it still rings.
@@ -57,8 +61,12 @@ final class ApiCallsRepository implements CallsRepository {
   final ApiClient _api;
 
   @override
-  Future<Call> start(String matchId) {
-    return _api.post('/calls', body: {'match_id': matchId}, decode: _call);
+  Future<Call> start(String matchId, {CallKind kind = CallKind.video}) {
+    return _api.post(
+      '/calls',
+      body: {'match_id': matchId, 'kind': kind.wireValue},
+      decode: _call,
+    );
   }
 
   @override

@@ -127,12 +127,17 @@ final class CallIncoming extends LiveUpdate {
     required this.callId,
     required this.matchId,
     required this.mode,
+    required this.kind,
     required this.from,
   });
 
   final String callId;
   final String matchId;
   final String mode;
+
+  /// Video or voice. Answering a voice call must not open the camera, and this
+  /// is the only thing the ringing phone has to go on.
+  final CallKind kind;
 
   /// Who is calling, in the shape every list uses.
   final UserSummary from;
