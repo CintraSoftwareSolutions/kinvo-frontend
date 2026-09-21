@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 
+import '../../calls/domain/call.dart';
 import '../../matches/domain/match_summary.dart';
+import '../../profile/domain/user_summary.dart';
 import 'chat_message.dart';
 
 /// A change to the user's conversations or matches that screens showing them
@@ -113,4 +115,41 @@ final class PlanUpdated extends LiveUpdate {
   const PlanUpdated({this.planId});
 
   final String? planId;
+}
+
+/// Someone is calling.
+///
+/// The same call also arrives as a push notification, because a phone with the
+/// app closed has no socket. Both carry the same `callId`, so whichever gets
+/// there first wins and the second is ignored.
+final class CallIncoming extends LiveUpdate {
+  const CallIncoming({
+    required this.callId,
+    required this.matchId,
+    required this.mode,
+    required this.from,
+  });
+
+  final String callId;
+  final String matchId;
+  final String mode;
+
+  /// Who is calling, in the shape every list uses.
+  final UserSummary from;
+}
+
+/// A call the user is in changed: answered, refused, or over.
+final class CallChanged extends LiveUpdate {
+  const CallChanged({
+    required this.callId,
+    required this.status,
+    this.durationSeconds,
+  });
+
+  final String callId;
+  final CallStatus status;
+
+  /// How long the two were connected, when the server said. Null for a call
+  /// that was never answered.
+  final int? durationSeconds;
 }

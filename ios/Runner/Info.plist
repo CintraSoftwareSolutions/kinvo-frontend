@@ -25,7 +25,9 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Kinvo uses your camera so you can take profile photos and a verification selfie.</string>
+	<string>Kinvo uses your camera so you can take profile photos, a verification selfie, and video calls with your matches.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Kinvo uses your microphone so your match can hear you on a video call.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Kinvo uses your approximate location to show you people nearby. Others only see how far away you are, never where you are.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

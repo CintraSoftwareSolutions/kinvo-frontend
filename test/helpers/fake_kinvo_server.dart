@@ -108,6 +108,17 @@ final class FakeKinvoServer {
   /// Matches, newest first.
   final List<FakeMatch> matches = [];
 
+  /// Calls, oldest first.
+  final List<FakeCall> calls = [];
+
+  /// Where the app would connect for picture and sound. Null by default,
+  /// which is what a server with no video service answers, and what every
+  /// test uses: a real address would need a real media server.
+  String? videoServerUrl;
+
+  /// In-call safety actions the app sent, in order.
+  final List<({String callId, String action})> safetyActions = [];
+
   /// The boost running in each mode, by when it ends.
   final Map<String, DateTime> boostsEndingAt = {};
 
@@ -367,6 +378,13 @@ final class FakeKinvoServer {
       ('PATCH', ['safety', 'contacts', final id]) => _updateContact(id, body),
       ('DELETE', ['safety', 'contacts', final id]) => _deleteContact(id),
       ('POST', ['safety', 'emergency']) => _raiseEmergency(body),
+      ('GET', ['calls']) => _callHistory(),
+      ('POST', ['calls']) => _startCall(body),
+      ('POST', ['calls', final id, 'answer']) => _answerCall(id),
+      ('POST', ['calls', final id, 'decline']) => _declineCall(id),
+      ('POST', ['calls', final id, 'end']) => _endCall(id),
+      ('GET', ['calls', final id, 'token']) => _callToken(id),
+      ('POST', ['calls', final id, 'safety']) => _callSafetyAction(id, body),
       ('GET', ['venues']) => _venues(options),
       ('GET', ['venues', 'saved']) => _ok({
         'venues': [
@@ -1540,6 +1558,153 @@ final class FakeKinvoServer {
     return _ok({'shared': plan.sharedWith.length, 'contacts': results});
   }
 
+  // --- Calls ---------------------------------------------------------------
+
+  ResponseBody _startCall(Map<String, Object?> body) {
+    final match = matches
+        .where((match) => match.id == body['match_id'])
+        .firstOrNull;
+
+    if (match == null || !_isWritable(match)) {
+      // The same 404 for every reason, as the real server gives: blocked,
+      // unmatched and expired must not be told apart.
+      return _error(404, 'NOT_FOUND', 'That match does not exist.');
+    }
+
+    final live = calls
+        .where((call) => call.matchId == match.id && _isLive(call.status))
+        .firstOrNull;
+
+    // One live call per match, not two rooms.
+    if (live != null) return _ok({'call': _callView(live, withToken: true)});
+
+    final call = FakeCall(
+      id: 'call-${calls.length + 1}',
+      matchId: match.id,
+      mode: match.mode,
+      isInitiator: true,
+      createdAt: now(),
+    );
+    calls.add(call);
+    return _ok({'call': _callView(call, withToken: true)}, status: 201);
+  }
+
+  ResponseBody _answerCall(String id) {
+    final call = _callById(id);
+    if (call == null) return _noCall;
+    if (call.status != 'ringing') return _callNotRinging;
+
+    call
+      ..status = 'active'
+      ..answeredAt = now();
+    return _ok({'call': _callView(call, withToken: true)});
+  }
+
+  ResponseBody _declineCall(String id) {
+    final call = _callById(id);
+    if (call == null) return _noCall;
+    if (call.status != 'ringing') return _callNotRinging;
+
+    call
+      ..status = 'declined'
+      ..endedAt = now();
+    return _ok({'call': _callView(call)});
+  }
+
+  ResponseBody _endCall(String id) {
+    final call = _callById(id);
+    if (call == null) return _noCall;
+
+    // Idempotent: both apps send a hang-up.
+    if (_isLive(call.status)) {
+      final answeredAt = call.answeredAt;
+      call
+        ..status = answeredAt == null ? 'missed' : 'ended'
+        ..endedAt = now()
+        ..durationSeconds = answeredAt == null
+            ? null
+            : now().difference(answeredAt).inSeconds;
+    }
+    return _ok({'call': _callView(call)});
+  }
+
+  ResponseBody _callToken(String id) {
+    final call = _callById(id);
+    if (call == null) return _noCall;
+    if (!_isLive(call.status)) {
+      return _error(409, 'CONFLICT', 'That call is not live.');
+    }
+    return _ok({'call': _callView(call, withToken: true)});
+  }
+
+  ResponseBody _callHistory() {
+    final ordered = [...calls]
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return _list([for (final call in ordered) _callView(call)]);
+  }
+
+  ResponseBody _callSafetyAction(String id, Map<String, Object?> body) {
+    final call = _callById(id);
+    if (call == null) return _noCall;
+
+    final action = body['action'];
+    safetyActions.add((callId: id, action: '$action'));
+
+    if (action == 'end_and_report') _endCall(id);
+
+    return _ok({
+      'call_id': id,
+      'action': action,
+      'call_status': call.status,
+      'report_id': action == 'end_and_report' ? 'report-1' : null,
+    });
+  }
+
+  FakeCall? _callById(String id) {
+    return calls.where((call) => call.id == id).firstOrNull;
+  }
+
+  static bool _isLive(String status) =>
+      status == 'ringing' || status == 'active';
+
+  Map<String, Object?> _callView(FakeCall call, {bool withToken = false}) {
+    // A call always belongs to a match; the fallback only keeps the view total
+    // for a test that unmatched in the middle of one.
+    final person =
+        matches.where((match) => match.id == call.matchId).firstOrNull?.person ??
+        const FakePerson(id: 'unknown', name: 'Someone');
+    return {
+      'id': call.id,
+      'match_id': call.matchId,
+      'mode': call.mode,
+      'status': call.status,
+      'is_initiator': call.isInitiator,
+      'other_user': person.compact(now()),
+      'started_at': call.createdAt.toIso8601String(),
+      'answered_at': call.answeredAt?.toIso8601String(),
+      'ended_at': call.endedAt?.toIso8601String(),
+      'duration_seconds': call.durationSeconds,
+      'created_at': call.createdAt.toIso8601String(),
+      if (withToken)
+        'video': {
+          'room_name': 'kinvo-call-${call.id}',
+          'token': 'test-token-not-a-jwt',
+          // Null unless a test sets one, which is what a server with no video
+          // service answers. Tests that set it would need a real media server.
+          'server_url': videoServerUrl,
+          'expires_at': now()
+              .add(const Duration(hours: 1))
+              .toIso8601String(),
+        },
+    };
+  }
+
+  static ResponseBody get _noCall =>
+      _error(404, 'NOT_FOUND', 'That call does not exist.');
+
+  static ResponseBody get _callNotRinging =>
+      _error(409, 'CONFLICT', 'That call is no longer ringing.');
+
   // --- Venues --------------------------------------------------------------
 
   Map<String, Object?> _venueView(FakeVenue venue) {
@@ -2521,6 +2686,30 @@ final class FakePerson {
 }
 
 /// A match on the fake server.
+/// One call on the fake server. Mutable, because a call changes as it is
+/// answered and ended.
+final class FakeCall {
+  FakeCall({
+    required this.id,
+    required this.matchId,
+    required this.mode,
+    required this.isInitiator,
+    required this.createdAt,
+    this.status = 'ringing',
+  });
+
+  final String id;
+  final String matchId;
+  final String mode;
+  final bool isInitiator;
+  final DateTime createdAt;
+
+  String status;
+  DateTime? answeredAt;
+  DateTime? endedAt;
+  int? durationSeconds;
+}
+
 final class FakeMatch {
   FakeMatch({
     required this.id,

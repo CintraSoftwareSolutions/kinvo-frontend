@@ -187,7 +187,9 @@ void main() {
       AppRoutes.notifications,
       AppRoutes.matches,
       AppRoutes.chat('sarah'),
-      AppRoutes.videoCall('sarah'),
+      // With no call in progress this is a blank screen, which is the point:
+      // a link to it left in history can never reopen a call that has ended.
+      AppRoutes.call,
       AppRoutes.plans,
       AppRoutes.planComposer,
       AppRoutes.planWith('sarah'),

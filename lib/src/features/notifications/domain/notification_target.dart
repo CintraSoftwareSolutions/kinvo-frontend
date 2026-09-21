@@ -32,6 +32,10 @@ sealed class NotificationTarget {
       NotificationCategory.safety => const OpenSafety(),
       NotificationCategory.newMessage ||
       NotificationCategory.moderation ||
+      // Verification results have nowhere of their own to go: the app's
+      // verification screen is still a prototype. The notification itself
+      // carries the outcome.
+      NotificationCategory.verification ||
       NotificationCategory.subscription ||
       NotificationCategory.system ||
       NotificationCategory.unknown => const OpenNotifications(),

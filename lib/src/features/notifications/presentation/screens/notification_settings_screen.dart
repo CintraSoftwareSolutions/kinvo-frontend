@@ -225,7 +225,11 @@ class _CategorySwitch extends StatelessWidget {
       ),
       NotificationCategory.moderation => (
         'Your profile',
-        'Updates about your photos and verification',
+        'Updates about your photos',
+      ),
+      NotificationCategory.verification => (
+        'Verification',
+        'When your ID check is approved or turned down',
       ),
       NotificationCategory.subscription => (
         'Subscription',

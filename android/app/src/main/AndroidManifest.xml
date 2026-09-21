@@ -10,6 +10,23 @@
     <!-- Android 13 and later ask before an app may show notifications. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
+    <!-- Video calls. Asked for at the moment a call starts, never at launch:
+         a dating app that wants the camera before showing anything gets
+         refused, and the answer is remembered. -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <!-- Routing between earpiece, speaker and a headset. -->
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+    <!-- A Bluetooth headset joining mid-call. BLUETOOTH is the pre-Android 12
+         spelling and would otherwise be requested on versions that replaced
+         it. Neither is needed to call: the user may simply decline. -->
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
+    <!-- Declared not-required so the store still offers the app to devices
+         without a camera; a call on one of those is audio only. -->
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
+    <uses-feature android:name="android.hardware.microphone" android:required="false"/>
+
     <!-- The app icon badge plugin is only used on iPhone. Android shows a dot
          for unread notifications itself, so these launcher permissions the
          plugin asks for would only be unexplained entries in the store

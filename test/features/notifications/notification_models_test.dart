@@ -116,6 +116,12 @@ void main() {
       expect(target('safety', {'emergency_id': 'e1'}), const OpenSafety());
       expect(target('system', const {}), const OpenNotifications());
       expect(target('subscription', const {}), const OpenNotifications());
+      // The server added this category on 20 September; the app has no
+      // verification screen of its own yet.
+      expect(
+        target('verification', {'verification_id': 'v1'}),
+        const OpenNotifications(),
+      );
       expect(target('new_message', const {}), const OpenNotifications());
       expect(target('new_match', const {}), const OpenMatches());
     });

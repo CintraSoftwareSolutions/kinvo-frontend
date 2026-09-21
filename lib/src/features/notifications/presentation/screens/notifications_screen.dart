@@ -403,6 +403,11 @@ class _CategoryIcon extends StatelessWidget {
         AppColors.purple,
         AppColors.purpleSoft,
       ),
+      NotificationCategory.verification => (
+        Icons.verified_rounded,
+        AppColors.purple,
+        AppColors.purpleSoft,
+      ),
       NotificationCategory.subscription => (
         Icons.workspace_premium_rounded,
         const Color(0xFFD97706),

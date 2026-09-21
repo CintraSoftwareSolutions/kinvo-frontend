@@ -7,10 +7,10 @@ import '../../features/auth/presentation/screens/new_password_screen.dart';
 import '../../features/auth/presentation/screens/otp_screen.dart';
 import '../../features/auth/presentation/screens/password_reset_screen.dart';
 import '../../features/auth/presentation/screens/signup_screen.dart';
+import '../../features/calls/presentation/screens/call_screen.dart';
 import '../../features/chat/presentation/screens/chat_screen.dart';
 import '../../features/connections/domain/connection.dart';
 import '../../features/connections/presentation/controllers/connections_controller.dart';
-import '../../features/connections/presentation/screens/video_call_screen.dart';
 import '../../features/discovery/presentation/screens/discover_screen.dart';
 import '../../features/home/presentation/screens/home_shell.dart';
 import '../../features/matches/presentation/screens/matches_screen.dart';
@@ -126,6 +126,11 @@ List<RouteBase> _routes(GlobalKey<NavigatorState> rootKey, Ref ref) {
       path: AppRoutes.onboarding,
       builder: (_, _) => const OnboardingScreen(),
     ),
+    // A call covers everything, from either side: the person who started it
+    // and the person whose phone is ringing land on the same screen. It opens
+    // itself when a call begins — see `callScreenKeeperProvider` — so nothing
+    // navigates here by hand.
+    GoRoute(path: AppRoutes.call, builder: (_, _) => const CallScreen()),
     GoRoute(
       path: AppRoutes.reportPath,
       builder: (_, state) {
@@ -179,19 +184,6 @@ List<RouteBase> _routes(GlobalKey<NavigatorState> rootKey, Ref ref) {
                   builder: (_, state) => ChatScreen(
                     conversationId: _pathParameter(state, 'conversationId'),
                   ),
-                  routes: [
-                    // Calling isn't connected to the server yet: only the
-                    // demo's sample conversations have a call screen.
-                    GoRoute(
-                      path: 'call',
-                      parentNavigatorKey: rootKey,
-                      builder: (_, state) => _ConnectionPage(
-                        connectionId: _pathParameter(state, 'conversationId'),
-                        builder: (connection) =>
-                            VideoCallScreen(connection: connection),
-                      ),
-                    ),
-                  ],
                 ),
               ],
             ),

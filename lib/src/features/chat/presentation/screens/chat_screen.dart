@@ -1,8 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/demo/demo_mode.dart';
 import '../../../../core/media/photo_picker.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/network/api_error_code.dart';
@@ -12,6 +13,7 @@ import '../../../../core/time/clock.dart';
 import '../../../../core/widgets/flow_widgets.dart';
 import '../../../../core/widgets/paywall_sheet.dart';
 import '../../../../core/widgets/photo_source_sheet.dart';
+import '../../../calls/presentation/controllers/call_controller.dart';
 import '../../../discovery/presentation/widgets/profile_sheet.dart';
 import '../../../matches/presentation/controllers/matches_controllers.dart';
 import '../../../modes/presentation/mode_presentation.dart';
@@ -81,7 +83,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   Widget _conversation(ChatThread thread) {
     final conversation = thread.conversation;
-    final inDemo = ref.watch(demoSessionProvider);
 
     return Column(
       children: [
@@ -91,10 +92,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           onBack: _leave,
           onOpenProfile: () => _openProfile(thread),
           onOpenMenu: () => _openMenu(thread),
-          // Calling isn't connected to the server yet; the demo shows how it
-          // will look.
-          onVideoCall: inDemo
-              ? () => context.push(AppRoutes.videoCall(widget.conversationId))
+          // A closed conversation cannot be called, for the same reason it
+          // cannot be written in: unmatched, blocked, or expired. The server
+          // refuses either way; hiding the button saves a pointless refusal.
+          onVideoCall: conversation.isWritable
+              ? () => unawaited(_startCall(conversation.matchId))
               : null,
         ),
         const Divider(height: 1, color: AppColors.divider),
@@ -405,6 +407,19 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       context.pop();
     } else {
       context.go(AppRoutes.matches);
+    }
+  }
+
+  /// Rings the other person. The call screen opens itself once the server has
+  /// the call, so nothing is pushed here.
+  Future<void> _startCall(String matchId) async {
+    try {
+      await ref.read(callControllerProvider.notifier).start(matchId);
+    } on ApiException catch (error) {
+      _say(switch (error) {
+        ApiErrorException(:final message) => message,
+        _ => 'Could not reach Kinvo. Check your connection.',
+      });
     }
   }
 

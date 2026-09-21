@@ -11,6 +11,7 @@ enum NotificationCategory {
   newMessage('new_message'),
   planUpdate('plan_update'),
   call('call'),
+  verification('verification'),
   safety('safety'),
   moderation('moderation'),
   subscription('subscription'),

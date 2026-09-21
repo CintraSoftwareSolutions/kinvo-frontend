@@ -33,10 +33,10 @@ abstract final class AppRoutes {
     return '$matches/chat/${Uri.encodeComponent(conversationId)}';
   }
 
-  /// The demo's call screen for one of its sample conversations.
-  static String videoCall(String conversationId) {
-    return '${chat(conversationId)}/call';
-  }
+  /// The call in progress. It takes no id: only one call happens at a time,
+  /// and the screen reads it from the call controller, so a link left in
+  /// history can never reopen a call that has ended.
+  static const call = '/call';
 
   // Plans
   static const planComposer = '/plans/new';

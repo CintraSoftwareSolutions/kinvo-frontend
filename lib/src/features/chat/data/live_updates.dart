@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_envelope.dart';
 import '../../../core/realtime/realtime_events.dart';
 import '../../../core/realtime/realtime_providers.dart';
+import '../../calls/domain/call.dart';
 import '../../matches/domain/match_summary.dart';
 import '../../profile/domain/user_summary.dart';
 import '../domain/chat_message.dart';
@@ -52,6 +53,10 @@ final class LiveUpdates {
         ServerEvents.matchNew => _matchCreated(data),
         ServerEvents.entitlementsUpdated => const SubscriptionChanged(),
         ServerEvents.notificationNew => _planUpdated(data),
+        ServerEvents.callIncoming => _callIncoming(data),
+        ServerEvents.callAnswered => _callChanged(data, CallStatus.active),
+        ServerEvents.callDeclined => _callChanged(data, CallStatus.declined),
+        ServerEvents.callEnded => _callChanged(data, CallStatus.ended),
         _ => null,
       };
     } on FormatException catch (error) {
@@ -72,6 +77,36 @@ final class LiveUpdates {
       return PlanUpdated(planId: planId is String ? planId : null);
     }
     return null;
+  }
+
+  static CallIncoming _callIncoming(JsonMap data) {
+    if (data case {
+      'call_id': final String callId,
+      'match_id': final String matchId,
+      'mode': final String mode,
+      'from': final JsonMap from,
+    }) {
+      return CallIncoming(
+        callId: callId,
+        matchId: matchId,
+        mode: mode,
+        from: UserSummary.fromJson(from),
+      );
+    }
+    throw const FormatException('Expected call_id, match_id, mode and from.');
+  }
+
+  /// The three events about a call the user is already in. Each says only
+  /// which call and, when it ended, for how long — the screen knows the rest.
+  static CallChanged _callChanged(JsonMap data, CallStatus status) {
+    if (data case {'call_id': final String callId}) {
+      return CallChanged(
+        callId: callId,
+        status: status,
+        durationSeconds: data['duration_seconds'] as int?,
+      );
+    }
+    throw const FormatException('Expected call_id.');
   }
 
   static ConversationRead _conversationRead(JsonMap data) {

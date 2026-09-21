@@ -44,6 +44,20 @@ abstract final class ServerEvents {
   /// A notification was added to the user's feed.
   static const notificationNew = 'notification:new';
 
+  /// Someone is calling. Carries the call, the match and who is calling.
+  static const callIncoming = 'call:incoming';
+
+  /// The other person picked up.
+  static const callAnswered = 'call:answered';
+
+  /// The other person refused. Separate from [callEnded] on purpose: the two
+  /// say different things to whoever was calling.
+  static const callDeclined = 'call:declined';
+
+  /// The call is over, whoever ended it — including the server, when both apps
+  /// vanished without hanging up.
+  static const callEnded = 'call:ended';
+
   /// The server couldn't act on an event the app sent.
   static const error = 'error';
 }
