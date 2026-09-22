@@ -38,6 +38,7 @@ class ProfilePreviewScreen extends ConsumerWidget {
                     PublicProfilePhotoHeader(
                       user: profile.user,
                       accent: AppColors.purpleLight,
+                      photos: profile.photos,
                     ),
                     const SizedBox(height: 16),
                     PublicProfileDetails(profile: profile),

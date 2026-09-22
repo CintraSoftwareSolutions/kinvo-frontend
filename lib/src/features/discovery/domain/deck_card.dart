@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../core/network/api_envelope.dart';
+import '../../profile/domain/person_photos.dart';
 import '../../profile/domain/user_summary.dart';
 
 /// One person in today's deck for a mode.
@@ -11,6 +12,7 @@ final class DeckCard {
     required this.position,
     required this.distanceMetres,
     required this.user,
+    required this.photos,
     required this.bio,
     required this.interestSlugs,
   });
@@ -30,6 +32,7 @@ final class DeckCard {
         position: position,
         distanceMetres: distanceMetres?.toDouble(),
         user: UserSummary.fromJson(user),
+        photos: PersonPhotoRef.listFromJson(json['photos']),
         bio: bio,
         interestSlugs: interests.whereType<String>().toList(growable: false),
       );
@@ -48,6 +51,11 @@ final class DeckCard {
   final double? distanceMetres;
 
   final UserSummary user;
+
+  /// Their approved photos, in the order they arranged them. Empty for
+  /// someone with none, and the first is the one on [UserSummary.photoUrl].
+  final List<PersonPhotoRef> photos;
+
   final String? bio;
 
   /// Their interests, by slug. Labels come from `GET /config`.

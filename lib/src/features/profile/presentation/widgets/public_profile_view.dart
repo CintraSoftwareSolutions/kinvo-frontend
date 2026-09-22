@@ -7,7 +7,8 @@ import '../../../settings/presentation/controllers/settings_controllers.dart';
 import '../../domain/profile_fields.dart';
 import '../../domain/public_profile.dart';
 import '../../domain/user_summary.dart';
-import 'person_photo.dart';
+import '../../domain/person_photos.dart';
+import 'photo_gallery.dart';
 
 /// The big photo at the top of someone's full profile, with their name, age
 /// and whether they're verified.
@@ -15,11 +16,16 @@ class PublicProfilePhotoHeader extends StatelessWidget {
   const PublicProfilePhotoHeader({
     required this.user,
     required this.accent,
+    this.photos = const [],
     super.key,
   });
 
   final UserSummary user;
   final Color accent;
+
+  /// Their album. Empty until the full profile has loaded, and then the
+  /// header becomes a gallery in place.
+  final List<PersonPhotoRef> photos;
 
   @override
   Widget build(BuildContext context) {
@@ -30,18 +36,24 @@ class PublicProfilePhotoHeader extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            PersonPhoto(
-              url: user.photoUrl,
+            PhotoGallery(
+              photos: photos,
+              fallbackUrl: user.photoUrl,
               name: user.displayName,
               color: accent,
             ),
-            const DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0x00000000), Color(0xAA000000)],
-                  stops: [0.55, 1],
+            // A DecoratedBox answers hit tests inside its own shape, so the
+            // gradient would otherwise swallow every tap meant for the
+            // photos underneath it.
+            const IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0x00000000), Color(0xAA000000)],
+                    stops: [0.55, 1],
+                  ),
                 ),
               ),
             ),

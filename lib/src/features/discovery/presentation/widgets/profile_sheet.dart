@@ -72,7 +72,11 @@ class ProfileSheet extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 14),
-                  PublicProfilePhotoHeader(user: user, accent: accent),
+                  PublicProfilePhotoHeader(
+                    user: user,
+                    accent: accent,
+                    photos: profile.value?.photos ?? const [],
+                  ),
                   const SizedBox(height: 16),
                   switch (profile) {
                     AsyncData(:final value) => PublicProfileDetails(

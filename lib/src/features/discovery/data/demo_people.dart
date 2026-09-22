@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../core/assets/app_assets.dart';
+import '../../profile/domain/person_photos.dart';
 import '../../profile/domain/public_profile.dart';
 import '../../profile/domain/user_summary.dart';
 
@@ -52,6 +53,12 @@ final class DemoPerson {
   /// Photos in the demo are bundled images, addressed with an `asset:` link.
   Uri get photoUrl => Uri(scheme: 'asset', path: photoAsset);
 
+  /// The demo ships one picture per person, so a demo gallery has one photo
+  /// in it and shows no counter. Real profiles carry up to six.
+  List<PersonPhotoRef> get photos => [
+    PersonPhotoRef(id: '$id-photo', url: photoUrl),
+  ];
+
   UserSummary summaryAt(DateTime now) {
     return UserSummary(
       id: id,
@@ -68,6 +75,7 @@ final class DemoPerson {
   PublicProfile profileAt(DateTime now) {
     return PublicProfile(
       user: summaryAt(now),
+      photos: photos,
       bio: bio,
       jobTitle: null,
       organisation: null,

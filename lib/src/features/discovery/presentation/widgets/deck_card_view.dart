@@ -3,7 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/assets/app_assets.dart';
 import '../../../../core/units/distance.dart';
-import '../../../profile/presentation/widgets/person_photo.dart';
+import '../../../profile/presentation/widgets/photo_gallery.dart';
 import '../../domain/deck_card.dart';
 import '../../domain/discovery_formatting.dart';
 
@@ -58,23 +58,19 @@ class DeckCardView extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             Semantics(
-              button: true,
               label: [
                 user.displayName,
                 if (user.age case final age?) '$age',
                 ?distance,
                 if (user.isVerified) 'verified',
-                'Open full profile',
+                if (card.photos.length > 1) '${card.photos.length} photos',
               ].join(', '),
-              excludeSemantics: true,
-              child: GestureDetector(
-                onTap: onOpenProfile,
-                behavior: HitTestBehavior.opaque,
-                child: PersonPhoto(
-                  url: user.photoUrl,
-                  name: user.displayName,
-                  color: modeColor,
-                ),
+              child: PhotoGallery(
+                photos: card.photos,
+                fallbackUrl: user.photoUrl,
+                name: user.displayName,
+                color: modeColor,
+                onTapCentre: onOpenProfile,
               ),
             ),
             const IgnorePointer(

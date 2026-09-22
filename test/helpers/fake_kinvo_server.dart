@@ -485,6 +485,7 @@ final class FakeKinvoServer {
             'position': position,
             'distance_metres': person.distanceMetres,
             'user': person.compact(now()),
+            'photos': person.photos,
             'bio': person.bio,
             'interests': person.interests,
           },
@@ -684,6 +685,7 @@ final class FakeKinvoServer {
     }
     return _ok({
       'user': person.compact(now()),
+      'photos': person.photos,
       'bio': person.bio,
       'job_title': null,
       'organisation': null,
@@ -2823,6 +2825,7 @@ final class FakePerson {
     this.interests = const ['music', 'coffee'],
     this.isVerified = false,
     this.isPremium = false,
+    this.photoCount = 0,
   });
 
   final String id;
@@ -2834,14 +2837,29 @@ final class FakePerson {
   final bool isVerified;
   final bool isPremium;
 
+  /// How many approved photos they have. Zero by default, so a test that is
+  /// not about photos never waits on one loading.
+  final int photoCount;
+
+  /// Their album, as the API gives it: ordered, approved, first one primary.
+  List<Map<String, Object?>> get photos => [
+    for (var index = 0; index < photoCount; index++)
+      {
+        'id': '$id-photo-$index',
+        'url': 'https://photos.example.com/$id/$index.jpg',
+        'width': 1200,
+        'height': 1600,
+      },
+  ];
+
   /// The compact user every list in the API returns.
   Map<String, Object?> compact(DateTime now) {
     return {
       'id': id,
       'display_name': name,
       'age': age,
-      // No photo, so tests never wait on image loading.
-      'primary_photo_url': null,
+      // The first of the album, exactly as the server takes it.
+      'primary_photo_url': photos.firstOrNull?['url'],
       'is_verified': isVerified,
       'is_premium': isPremium,
       'is_online': false,

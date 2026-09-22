@@ -14,6 +14,7 @@ import '../../../core/time/clock.dart';
 import '../domain/own_profile.dart';
 import '../domain/profile_fields.dart';
 import '../domain/profile_photo.dart';
+import '../domain/person_photos.dart';
 import '../domain/public_profile.dart';
 import '../domain/user_summary.dart';
 import 'profile_repository.dart';
@@ -211,6 +212,10 @@ final class DemoProfile {
         isOnline: true,
         lastActiveAt: _clock(),
       ),
+      photos: [
+        for (final photo in photos)
+          if (photo.url case final url?) PersonPhotoRef(id: photo.id, url: url),
+      ],
       bio: bio,
       jobTitle: jobTitle,
       organisation: organisation,

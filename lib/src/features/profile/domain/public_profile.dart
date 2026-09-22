@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../core/network/api_envelope.dart';
+import 'person_photos.dart';
 import 'user_summary.dart';
 
 /// Someone else's full profile, as they chose to show it.
@@ -8,6 +9,7 @@ import 'user_summary.dart';
 final class PublicProfile {
   const PublicProfile({
     required this.user,
+    required this.photos,
     required this.bio,
     required this.jobTitle,
     required this.organisation,
@@ -36,6 +38,7 @@ final class PublicProfile {
     }) {
       return PublicProfile(
         user: UserSummary.fromJson(user),
+        photos: PersonPhotoRef.listFromJson(json['photos']),
         bio: bio,
         jobTitle: jobTitle,
         organisation: organisation,
@@ -74,6 +77,11 @@ final class PublicProfile {
   ];
 
   final UserSummary user;
+
+  /// Their approved photos, in the order they arranged them. Empty for
+  /// someone with none, and the first is the one on [UserSummary.photoUrl].
+  final List<PersonPhotoRef> photos;
+
   final String? bio;
   final String? jobTitle;
   final String? organisation;

@@ -77,6 +77,7 @@ final class DemoDiscoveryRepository implements DiscoveryRepository {
           position: index,
           distanceMetres: person.distanceMetres,
           user: person.summaryAt(now),
+          photos: person.photos,
           bio: person.bio,
           interestSlugs: person.interests,
         ),
