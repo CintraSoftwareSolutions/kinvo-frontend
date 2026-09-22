@@ -33,6 +33,9 @@ abstract final class AppRoutes {
     return '$matches/chat/${Uri.encodeComponent(conversationId)}';
   }
 
+  /// Every call so far, in More.
+  static const calls = '/more/calls';
+
   /// The call in progress. It takes no id: only one call happens at a time,
   /// and the screen reads it from the call controller, so a link left in
   /// history can never reopen a call that has ended.

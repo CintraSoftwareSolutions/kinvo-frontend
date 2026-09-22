@@ -55,11 +55,21 @@ class MoreScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 SettingsTile(
+                  icon: AppAssets.video,
+                  iconBg: AppColors.purpleSoft,
+                  iconColor: AppColors.purple,
+                  title: 'Calls',
+                  subtitle: 'Video and voice calls, and who you missed.',
+                  onTap: () => context.push(AppRoutes.calls),
+                ),
+                const SizedBox(height: 10),
+                SettingsTile(
                   icon: AppAssets.settingsAlt,
                   iconBg: AppColors.surfaceSoft,
                   iconColor: AppColors.textPrimary,
                   title: 'Privacy',
-                  subtitle: 'What others see, taking a break, and your devices.',
+                  subtitle:
+                      'What others see, taking a break, and your devices.',
                   onTap: () => context.push(AppRoutes.privacy),
                 ),
                 const SizedBox(height: 10),
@@ -209,8 +219,10 @@ class _IdentityCard extends StatelessWidget {
                 ),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.surfaceSoft,
                   borderRadius: BorderRadius.circular(999),
