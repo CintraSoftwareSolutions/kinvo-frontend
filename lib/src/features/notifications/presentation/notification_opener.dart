@@ -73,6 +73,8 @@ final class NotificationOpener {
         router.go(AppRoutes.plans);
       case OpenSafety():
         _show(router, AppRoutes.safetyCenter);
+      case OpenVerification():
+        _show(router, AppRoutes.verificationMethods);
       case OpenNotifications():
         _show(router, AppRoutes.notifications);
     }

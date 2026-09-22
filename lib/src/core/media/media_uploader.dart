@@ -18,7 +18,11 @@ enum UploadPurpose {
   chatImage('chat_image'),
 
   /// A screenshot or photo attached to a report.
-  reportEvidence('report_evidence');
+  reportEvidence('report_evidence'),
+
+  /// A selfie or an identity document, sent to be checked by a moderator.
+  /// The server keeps these in a bucket of their own, apart from photos.
+  verificationDocument('verification_document');
 
   const UploadPurpose(this.wireValue);
 

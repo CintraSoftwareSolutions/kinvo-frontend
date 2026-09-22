@@ -4,7 +4,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/assets/app_assets.dart';
-import '../../../../core/demo/demo_mode.dart';
 import '../../../../core/forms/form_errors.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -276,19 +275,15 @@ class _ProfileBody extends ConsumerWidget {
             ],
           )
         else
-          // Verification isn't connected to the server yet, so only builds
-          // with the demo lead into it.
-          DemoOnly(
-            child: SettingsGroup(
-              children: [
-                SettingsLink(
-                  icon: Icons.shield_outlined,
-                  title: 'Get verified',
-                  description: 'Show people you are who your photos say.',
-                  onTap: () => context.push(AppRoutes.verificationMethods),
-                ),
-              ],
-            ),
+          SettingsGroup(
+            children: [
+              SettingsLink(
+                icon: Icons.shield_outlined,
+                title: 'Get verified',
+                description: 'Show people you are who your photos say.',
+                onTap: () => context.push(AppRoutes.verificationMethods),
+              ),
+            ],
           ),
       ],
     );

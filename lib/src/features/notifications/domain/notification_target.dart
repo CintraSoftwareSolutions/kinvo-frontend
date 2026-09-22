@@ -30,12 +30,11 @@ sealed class NotificationTarget {
       NotificationCategory.planUpdate when planId != null => OpenPlan(planId),
       NotificationCategory.planUpdate => const OpenPlans(),
       NotificationCategory.safety => const OpenSafety(),
+      // Approved or turned down, the verification screen is where the
+      // outcome and the next step both are.
+      NotificationCategory.verification => const OpenVerification(),
       NotificationCategory.newMessage ||
       NotificationCategory.moderation ||
-      // Verification results have nowhere of their own to go: the app's
-      // verification screen is still a prototype. The notification itself
-      // carries the outcome.
-      NotificationCategory.verification ||
       NotificationCategory.subscription ||
       NotificationCategory.system ||
       NotificationCategory.unknown => const OpenNotifications(),
@@ -133,6 +132,17 @@ final class OpenSafety extends NotificationTarget {
 
   @override
   int get hashCode => (OpenSafety).hashCode;
+}
+
+/// The verification screen, which shows whatever state the check is in.
+final class OpenVerification extends NotificationTarget {
+  const OpenVerification();
+
+  @override
+  bool operator ==(Object other) => other is OpenVerification;
+
+  @override
+  int get hashCode => (OpenVerification).hashCode;
 }
 
 /// The notifications list, for notifications with nowhere more specific to go.

@@ -8,7 +8,14 @@ import 'package:image_picker/image_picker.dart';
 import 'photo_processing.dart';
 
 /// Where a photo comes from.
-enum PhotoSource { camera, library }
+enum PhotoSource {
+  camera,
+  library,
+
+  /// The camera, facing the user. Asking for a selfie and opening the rear
+  /// camera reads as the app not knowing what it asked for.
+  selfie,
+}
 
 /// Why a photo couldn't be picked.
 enum PhotoPickFailure {
@@ -60,9 +67,12 @@ final class DevicePhotoPicker implements PhotoPicker {
     try {
       file = await _imagePicker.pickImage(
         source: switch (source) {
-          PhotoSource.camera => ImageSource.camera,
+          PhotoSource.camera || PhotoSource.selfie => ImageSource.camera,
           PhotoSource.library => ImageSource.gallery,
         },
+        preferredCameraDevice: source == PhotoSource.selfie
+            ? CameraDevice.front
+            : CameraDevice.rear,
         // Scaled on the device first, which is much faster than in Dart. The
         // quality is left alone because the photo is re-encoded anyway.
         maxWidth: maxPhotoDimension.toDouble(),

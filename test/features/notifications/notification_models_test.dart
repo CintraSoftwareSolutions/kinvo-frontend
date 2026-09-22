@@ -116,11 +116,11 @@ void main() {
       expect(target('safety', {'emergency_id': 'e1'}), const OpenSafety());
       expect(target('system', const {}), const OpenNotifications());
       expect(target('subscription', const {}), const OpenNotifications());
-      // The server added this category on 20 September; the app has no
-      // verification screen of its own yet.
+      // Approved or turned down, the verification screen shows the outcome
+      // and what can be done about it.
       expect(
         target('verification', {'verification_id': 'v1'}),
-        const OpenNotifications(),
+        const OpenVerification(),
       );
       expect(target('new_message', const {}), const OpenNotifications());
       expect(target('new_match', const {}), const OpenMatches());

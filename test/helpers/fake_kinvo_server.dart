@@ -164,10 +164,16 @@ final class FakeKinvoServer {
   /// on as normal.
   Future<ResponseBody?> Function(RequestOptions options)? intercept;
 
+  /// The account's identity check, or null when there has never been one.
+  FakeVerification? verification;
+
   /// Bytes received by storage, by upload id.
   final Map<String, Uint8List> storedUploads = {};
-  final Map<String, ({String mimeType, int size, bool completed})> _uploads =
-      {};
+  final Map<
+    String,
+    ({String purpose, String mimeType, int size, bool completed})
+  >
+  _uploads = {};
 
   /// Plans with the user's matches, in the order they were made.
   final List<FakePlan> plans = [];
@@ -323,6 +329,11 @@ final class FakeKinvoServer {
         id,
       ),
       ('POST', ['media', 'photos']) => _addPhoto(body),
+      ('GET', ['verification']) => _ok(_verificationView()),
+      ('POST', ['verification']) => _startVerification(body),
+      ('POST', ['verification', final id, 'document']) =>
+        _attachVerificationDocument(id, body),
+      ('POST', ['verification', final id, 'submit']) => _submitVerification(id),
       ('DELETE', ['media', 'photos', final id]) => _deletePhoto(id),
       ('GET', ['discovery', final mode, 'deck']) => _deck(mode, options),
       ('POST', ['discovery', final mode, 'swipe']) => _swipe(mode, body),
@@ -2227,7 +2238,12 @@ final class FakeKinvoServer {
       );
     }
     final id = 'upload-${_nextId++}';
-    _uploads[id] = (mimeType: mimeType, size: size, completed: false);
+    _uploads[id] = (
+      purpose: body['purpose']! as String,
+      mimeType: mimeType,
+      size: size,
+      completed: false,
+    );
     return _ok({
       'upload_id': id,
       'purpose': body['purpose'],
@@ -2266,6 +2282,7 @@ final class FakeKinvoServer {
       );
     }
     _uploads[id] = (
+      purpose: upload.purpose,
       mimeType: upload.mimeType,
       size: upload.size,
       completed: true,
@@ -2588,6 +2605,137 @@ final class FakeKinvoServer {
     return slug;
   }
 
+  // --- Verification --------------------------------------------------------
+
+  ResponseBody _startVerification(Map<String, Object?> body) {
+    final method = body['method'];
+    if (method is! String ||
+        !const ['photo', 'government_id', 'social'].contains(method)) {
+      return _validation({
+        'method': ['Choose a supported verification method.'],
+      });
+    }
+    if (isVerified) {
+      return _error(409, 'CONFLICT', 'Your account is already verified.');
+    }
+    if (verification?.status == 'pending') {
+      return _error(
+        409,
+        'CONFLICT',
+        'You already have a verification in progress.',
+      );
+    }
+
+    verification = FakeVerification(
+      id: 'verification-${_nextId++}',
+      method: method,
+    );
+    // 201, as the real server answers a started attempt.
+    return _ok(_verificationView(), status: 201);
+  }
+
+  ResponseBody _attachVerificationDocument(
+    String id,
+    Map<String, Object?> body,
+  ) {
+    final record = verification;
+    if (record == null || record.id != id) {
+      return _error(404, 'NOT_FOUND', 'That verification does not exist.');
+    }
+    if (record.status != 'pending') {
+      return _error(
+        409,
+        'CONFLICT',
+        'That verification has already been reviewed.',
+      );
+    }
+
+    // The same check as the server's `claimAsset`, and the same answer: an
+    // upload of the wrong kind is one this user does not have, so a profile
+    // photo can never be submitted as an ID. (Verified against staging.)
+    final upload = _uploads[body['upload_id']];
+    if (upload == null || upload.purpose != 'verification_document') {
+      return _error(404, 'NOT_FOUND', 'That upload does not exist.');
+    }
+    if (!upload.completed) {
+      return _error(
+        400,
+        'BAD_REQUEST',
+        'That upload has not finished. Complete it before using it.',
+      );
+    }
+
+    record
+      ..documentUploadId = body['upload_id']! as String
+      ..currentStep = 2;
+    return _ok(_verificationView());
+  }
+
+  ResponseBody _submitVerification(String id) {
+    final record = verification;
+    if (record == null || record.id != id) {
+      return _error(404, 'NOT_FOUND', 'That verification does not exist.');
+    }
+    if (record.status != 'pending') {
+      return _error(
+        409,
+        'CONFLICT',
+        'That verification has already been reviewed.',
+      );
+    }
+    if (record.method != 'social' && record.documentUploadId == null) {
+      return _error(
+        400,
+        'BAD_REQUEST',
+        'Upload your document before submitting.',
+      );
+    }
+
+    record
+      ..currentStep = 3
+      ..submittedAt = now();
+    return _ok(_verificationView());
+  }
+
+  /// Stands in for a moderator, so a test can see what an outcome looks like.
+  void reviewVerification({required bool approve, String? reason}) {
+    final record = verification;
+    if (record == null) return;
+    record
+      ..status = approve ? 'approved' : 'rejected'
+      ..reviewedAt = now()
+      ..rejectionReason = approve ? null : reason;
+    isVerified = isVerified || approve;
+  }
+
+  Map<String, Object?> _verificationView() {
+    final record = verification;
+    if (record == null) {
+      return {
+        'id': null,
+        'method': null,
+        'status': 'not_started',
+        'current_step': 0,
+        'total_steps': 3,
+        'submitted_at': null,
+        'reviewed_at': null,
+        'rejection_reason': null,
+        'is_verified': isVerified,
+      };
+    }
+    return {
+      'id': record.id,
+      'method': record.method,
+      'status': record.status,
+      'current_step': record.currentStep,
+      'total_steps': 3,
+      'submitted_at': record.submittedAt?.toIso8601String(),
+      'reviewed_at': record.reviewedAt?.toIso8601String(),
+      'rejection_reason': record.rejectionReason,
+      'is_verified': isVerified,
+    };
+  }
+
   static ResponseBody _ok(Object? data, {int status = 200}) {
     return jsonResponse(status, successEnvelope(data));
   }
@@ -2609,6 +2757,21 @@ final class FakeKinvoServer {
       details: details,
     );
   }
+}
+
+/// An identity check in progress, as the server keeps one.
+final class FakeVerification {
+  FakeVerification({required this.id, required this.method});
+
+  final String id;
+  final String method;
+
+  String status = 'pending';
+  int currentStep = 1;
+  String? documentUploadId;
+  DateTime? submittedAt;
+  DateTime? reviewedAt;
+  String? rejectionReason;
 }
 
 /// A device signed in to the account on the fake server.
