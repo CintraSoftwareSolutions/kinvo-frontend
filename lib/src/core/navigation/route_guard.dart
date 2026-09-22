@@ -65,6 +65,7 @@ const _signedOutRoutes = {
   AppRoutes.signup,
   AppRoutes.otp,
   AppRoutes.login,
+  AppRoutes.phoneSignIn,
   AppRoutes.resetPassword,
   AppRoutes.newPassword,
 };

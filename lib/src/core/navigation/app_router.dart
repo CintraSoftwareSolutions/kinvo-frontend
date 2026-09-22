@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/new_password_screen.dart';
 import '../../features/auth/presentation/screens/otp_screen.dart';
+import '../../features/auth/presentation/screens/phone_sign_in_screen.dart';
 import '../../features/auth/presentation/screens/password_reset_screen.dart';
 import '../../features/auth/presentation/screens/signup_screen.dart';
 import '../../features/calls/presentation/screens/call_screen.dart';
@@ -106,6 +107,7 @@ List<RouteBase> _routes(GlobalKey<NavigatorState> rootKey, Ref ref) {
       path: AppRoutes.login,
       builder: (_, _) => const LoginScreen(),
       routes: [
+        GoRoute(path: 'phone', builder: (_, _) => const PhoneSignInScreen()),
         GoRoute(
           path: 'reset-password',
           builder: (_, _) => const PasswordResetScreen(),

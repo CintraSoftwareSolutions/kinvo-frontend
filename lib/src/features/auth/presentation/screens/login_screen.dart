@@ -125,6 +125,21 @@ class LoginScreen extends ConsumerWidget {
                 loading: form.isSubmitting,
                 onPressed: submit,
               ),
+              const SizedBox(height: 16),
+              const SectionDivider(label: 'OR'),
+              const SizedBox(height: 14),
+              // Real for everyone: the server texts a code through Twilio, and
+              // a number with no account gets one.
+              OutlineActionButton(
+                label: 'Continue with your phone number',
+                // The card underneath is white, and this button defaults to
+                // white on white.
+                foregroundColor: AppColors.purple,
+                borderColor: AppColors.border,
+                onPressed: editable
+                    ? () => context.push(AppRoutes.phoneSignIn)
+                    : null,
+              ),
               const DemoOnly(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,

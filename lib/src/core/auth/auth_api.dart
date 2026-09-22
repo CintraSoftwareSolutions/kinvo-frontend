@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '../network/api_client.dart';
 import '../network/api_envelope.dart';
 import '../time/calendar_date.dart';
@@ -49,6 +51,50 @@ final class AuthApi {
       '/auth/login',
       body: {'email': email, 'password': password, 'device_id': deviceId},
       decode: _readTokens,
+    );
+  }
+
+  /// Sends a sign-in code by SMS to [phone], in international format.
+  ///
+  /// Succeeds whether or not the number has an account: the server answers
+  /// identically either way, so nobody can use this to find out who has one.
+  /// The code itself is never returned — Twilio holds it, and the only way to
+  /// prove it arrived is to send it back in [verifyPhone].
+  Future<void> sendPhoneCode({required String phone}) {
+    return _client.post(
+      '/auth/otp/send',
+      body: {'phone': phone},
+      decode: ApiClient.ignoreData,
+    );
+  }
+
+  /// Signs in with the code sent to [phone], creating the account if that
+  /// number has none.
+  ///
+  /// [displayName] is used only for a number that has never signed in before;
+  /// the server ignores it for an existing account, so a returning user cannot
+  /// have their name changed by a sign-in.
+  Future<PhoneSignIn> verifyPhone({
+    required String phone,
+    required String code,
+    required String deviceId,
+    String? displayName,
+  }) {
+    return _client.post(
+      '/auth/otp/verify',
+      body: {
+        'phone': phone,
+        'code': code,
+        'device_id': deviceId,
+        if (displayName != null && displayName.trim().isNotEmpty)
+          'display_name': displayName.trim(),
+      },
+      decode: (json) => PhoneSignIn(
+        tokens: _readTokens(json),
+        // A new account has no date of birth yet, and the app must not let it
+        // past onboarding without one.
+        isNewUser: json['is_new_user'] == true,
+      ),
     );
   }
 
@@ -109,4 +155,16 @@ final class AuthApi {
   AuthTokens _readTokens(JsonMap json) {
     return AuthTokens.fromResponse(json, receivedAt: _clock());
   }
+}
+
+/// The result of signing in with a phone number.
+@immutable
+final class PhoneSignIn {
+  const PhoneSignIn({required this.tokens, required this.isNewUser});
+
+  final AuthTokens tokens;
+
+  /// True when that number had no account until now. Such an account has no
+  /// date of birth, which is what onboarding asks for first.
+  final bool isNewUser;
 }

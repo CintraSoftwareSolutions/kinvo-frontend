@@ -12,6 +12,7 @@ abstract final class AppRoutes {
   static const signup = '/signup';
   static const otp = '/signup/verify-code';
   static const login = '/login';
+  static const phoneSignIn = '/login/phone';
   static const resetPassword = '/login/reset-password';
   static const newPassword = '/login/reset-password/new-password';
 
