@@ -128,9 +128,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                         onPressed: () {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(
-                                'Upgrade flow — selected: $_plan',
-                              ),
+                              content: Text('Upgrade flow — selected: $_plan'),
                             ),
                           );
                         },
@@ -273,10 +271,7 @@ class _PlanCard extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               meta,
-              style: const TextStyle(
-                fontSize: 11,
-                color: AppColors.textMuted,
-              ),
+              style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
             ),
           ],
         ),

@@ -71,8 +71,7 @@ class _NavCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color color =
-        selected ? AppColors.purple : AppColors.textMuted;
+    final Color color = selected ? AppColors.purple : AppColors.textMuted;
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -151,4 +150,3 @@ class _NavCell extends StatelessWidget {
     );
   }
 }
-

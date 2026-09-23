@@ -94,9 +94,8 @@ class _ThemeScreenState extends State<ThemeScreen> {
                           child: _ModeToggle(
                             label: 'System',
                             selected: _mode == ThemePreviewMode.system,
-                            onTap: () => setState(
-                              () => _mode = ThemePreviewMode.system,
-                            ),
+                            onTap: () =>
+                                setState(() => _mode = ThemePreviewMode.system),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -104,9 +103,8 @@ class _ThemeScreenState extends State<ThemeScreen> {
                           child: _ModeToggle(
                             label: 'Light',
                             selected: _mode == ThemePreviewMode.light,
-                            onTap: () => setState(
-                              () => _mode = ThemePreviewMode.light,
-                            ),
+                            onTap: () =>
+                                setState(() => _mode = ThemePreviewMode.light),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -114,9 +112,8 @@ class _ThemeScreenState extends State<ThemeScreen> {
                           child: _ModeToggle(
                             label: 'Dark',
                             selected: _mode == ThemePreviewMode.dark,
-                            onTap: () => setState(
-                              () => _mode = ThemePreviewMode.dark,
-                            ),
+                            onTap: () =>
+                                setState(() => _mode = ThemePreviewMode.dark),
                           ),
                         ),
                       ],
@@ -144,8 +141,7 @@ class _ThemeScreenState extends State<ThemeScreen> {
                           'Increase separation for text, strokes, and controls.',
                       trailing: OnOffToggle(
                         value: _higherContrast,
-                        onChanged: (v) =>
-                            setState(() => _higherContrast = v),
+                        onChanged: (v) => setState(() => _higherContrast = v),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -301,10 +297,7 @@ class _DarkPreviewCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 const Text(
                   'Foodie Buddy · Verified · 3 miles away',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Color(0xFFD1D5DB),
-                  ),
+                  style: TextStyle(fontSize: 11, color: Color(0xFFD1D5DB)),
                 ),
                 const SizedBox(height: 10),
                 Row(

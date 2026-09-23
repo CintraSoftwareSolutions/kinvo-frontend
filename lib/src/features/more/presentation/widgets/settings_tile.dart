@@ -53,7 +53,8 @@ class SettingsTile extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Center(
-                  child: iconWidget ??
+                  child:
+                      iconWidget ??
                       SvgPicture.asset(
                         icon!,
                         width: 18,
@@ -106,9 +107,7 @@ class SettingsTile extends StatelessWidget {
               Icon(
                 Icons.chevron_right_rounded,
                 size: 18,
-                color: danger
-                    ? const Color(0xFFEF4458)
-                    : AppColors.textMuted,
+                color: danger ? const Color(0xFFEF4458) : AppColors.textMuted,
               ),
             ],
           ],
