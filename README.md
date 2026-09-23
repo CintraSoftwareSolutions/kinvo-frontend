@@ -186,6 +186,30 @@ Storage:
 - When the server ends a session, the app returns to the welcome screen and
   says why.
 
+Signing in without a password:
+
+- **Phone.** `PhoneAuthService` asks for a code (`POST /auth/otp/send`) and
+  signs in with it (`POST /auth/otp/verify`). Twilio makes, holds and checks
+  the code; nothing about it is stored here. The number is checked on the
+  device first, so a typo cannot buy an SMS.
+- **Google.** `SocialAuthService` carries Google's ID token to
+  `POST /auth/google` and nothing else — the server verifies it against
+  Google's keys and the client it was minted for. `GoogleIdentity` wraps the
+  vendor package so tests never talk to Google; backing out returns null
+  rather than throwing, because changing your mind is not a failure.
+- Both create an account when there is none, and the router sends it to
+  onboarding, because neither a phone number nor a Google account carries a
+  date of birth.
+- A build without `GOOGLE_SERVER_CLIENT_ID` hides the Google button instead of
+  failing when it is pressed. The value is the **web** client id from the
+  Google project (`client_type: 3` in `google-services.json`), and the server's
+  `GOOGLE_OAUTH_CLIENT_IDS` must list the same one: the app asks Google for a
+  token with it, and the server refuses a token minted for anything else.
+  Android also needs the app's signing fingerprint registered in the Firebase
+  console, or Google refuses the app itself.
+- Logging out calls `forgetGoogle()`, so the next sign-in asks which account to
+  use instead of reaching for the one that just left.
+
 Forgotten passwords:
 
 - "Forgot password?" on the log-in screen asks the server to email a six-digit
