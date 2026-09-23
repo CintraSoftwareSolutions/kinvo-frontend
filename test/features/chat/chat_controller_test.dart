@@ -263,6 +263,61 @@ void main() {
       },
     );
 
+    test('sends the same name to the server when it tries again', () async {
+      var failSend = true;
+      server.intercept = (options) async {
+        if (failSend &&
+            options.method == 'POST' &&
+            options.path.endsWith('/messages')) {
+          throw DioException(
+            requestOptions: options,
+            type: DioExceptionType.receiveTimeout,
+          );
+        }
+        return null;
+      };
+      final chat = await openChat();
+
+      expect(await chat.send('Did that send?'), isA<SendFailed>());
+      final failed = thread().outgoing.single;
+
+      failSend = false;
+      expect(await chat.retry(failed.localId), isA<Sent>());
+
+      // A send that times out has often arrived anyway. The server can only
+      // tell that this is the same message, rather than a second one, because
+      // both attempts carry the same token.
+      // Reading the history uses the same path, so only the sends count.
+      final sends = backend
+          .requestsTo('/conversations/${match.conversationId}/messages')
+          .where((request) => request.method == 'POST')
+          .map(
+            (request) =>
+                (request.data! as Map<String, Object?>)['client_token'],
+          )
+          .toList();
+      expect(sends, hasLength(2));
+      expect(sends.first, isNotNull);
+      expect(sends.last, sends.first);
+    });
+
+    test('two messages are never given the same name', () async {
+      final chat = await openChat();
+
+      expect(await chat.send('One'), isA<Sent>());
+      expect(await chat.send('Two'), isA<Sent>());
+
+      final tokens = backend
+          .requestsTo('/conversations/${match.conversationId}/messages')
+          .where((request) => request.method == 'POST')
+          .map(
+            (request) =>
+                (request.data! as Map<String, Object?>)['client_token'],
+          )
+          .toSet();
+      expect(tokens, hasLength(2));
+    });
+
     test('is refused once the conversation has closed', () async {
       match.expiresAt = server.now().subtract(const Duration(hours: 1));
       final chat = await openChat();

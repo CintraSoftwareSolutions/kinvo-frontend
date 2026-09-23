@@ -31,17 +31,27 @@ abstract interface class ChatRepository {
 
   /// Sends [text]. [moderationOverridden] records that the user sent it after
   /// being warned about it.
+  ///
+  /// [clientToken] names this message until the server gives it an id. A
+  /// send that times out has often arrived anyway, so trying again with the
+  /// same token gets the message that exists rather than sending a second.
   Future<ChatMessage> sendText(
     String conversationId,
     String text, {
     required bool moderationOverridden,
+    required String clientToken,
   });
 
   /// Uploads [photo] for sending, returning the upload's id.
   Future<String> uploadPhoto(PreparedPhoto photo);
 
-  /// Sends the photo uploaded as [uploadId].
-  Future<ChatMessage> sendPhoto(String conversationId, String uploadId);
+  /// Sends the photo uploaded as [uploadId], named by [clientToken] as
+  /// [sendText] is.
+  Future<ChatMessage> sendPhoto(
+    String conversationId,
+    String uploadId, {
+    required String clientToken,
+  });
 
   /// Marks everything in the conversation read, which the other person sees.
   Future<void> markRead(String conversationId);
@@ -95,12 +105,14 @@ final class ApiChatRepository implements ChatRepository {
     String conversationId,
     String text, {
     required bool moderationOverridden,
+    required String clientToken,
   }) {
     return _api.post(
       '${_path(conversationId)}/messages',
       body: {
         'type': MessageKind.text.wireValue,
         'body': text,
+        'client_token': clientToken,
         if (moderationOverridden) 'moderation_overridden': true,
       },
       decode: ChatMessage.fromJson,
@@ -117,10 +129,18 @@ final class ApiChatRepository implements ChatRepository {
   }
 
   @override
-  Future<ChatMessage> sendPhoto(String conversationId, String uploadId) {
+  Future<ChatMessage> sendPhoto(
+    String conversationId,
+    String uploadId, {
+    required String clientToken,
+  }) {
     return _api.post(
       '${_path(conversationId)}/messages',
-      body: {'type': MessageKind.image.wireValue, 'media_asset_id': uploadId},
+      body: {
+        'type': MessageKind.image.wireValue,
+        'media_asset_id': uploadId,
+        'client_token': clientToken,
+      },
       decode: ChatMessage.fromJson,
     );
   }

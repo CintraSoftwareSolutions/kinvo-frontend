@@ -69,7 +69,9 @@ final class DemoChatRepository implements ChatRepository {
     String conversationId,
     String text, {
     required bool moderationOverridden,
+    required String clientToken,
   }) async {
+    // The demo never times out, so it has no retry to recognise.
     return _add(conversationId, MessageKind.text, body: text);
   }
 
@@ -79,7 +81,11 @@ final class DemoChatRepository implements ChatRepository {
   }
 
   @override
-  Future<ChatMessage> sendPhoto(String conversationId, String uploadId) async {
+  Future<ChatMessage> sendPhoto(
+    String conversationId,
+    String uploadId, {
+    required String clientToken,
+  }) async {
     // The photo itself stays on the device, which shows it from there.
     return _add(conversationId, MessageKind.image);
   }

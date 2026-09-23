@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' hide AsyncError;
+import 'package:uuid/uuid.dart';
 
 import '../../../../core/entitlements/paywall.dart';
 import '../../../../core/media/photo_processing.dart';
@@ -30,6 +31,7 @@ enum OutgoingStatus { sending, failed }
 final class OutgoingMessage {
   const OutgoingMessage({
     required this.localId,
+    required this.clientToken,
     required this.status,
     this.text,
     this.photo,
@@ -40,6 +42,11 @@ final class OutgoingMessage {
 
   /// Names it on this device until the server gives it an id.
   final String localId;
+
+  /// Names it to the SERVER until then, and does not change when the send
+  /// is tried again — which is what stops a message that timed out on its
+  /// way there from arriving twice.
+  final String clientToken;
 
   final OutgoingStatus status;
 
@@ -66,6 +73,7 @@ final class OutgoingMessage {
   }) {
     return OutgoingMessage(
       localId: localId,
+      clientToken: clientToken,
       status: status ?? this.status,
       text: text,
       photo: photo,
@@ -345,6 +353,7 @@ class ChatController extends AsyncNotifier<ChatThread> {
     _stopTyping();
     final outgoing = OutgoingMessage(
       localId: _newLocalId(),
+      clientToken: _newClientToken(),
       status: OutgoingStatus.sending,
       text: body,
       moderationOverridden: reviewed,
@@ -376,6 +385,7 @@ class ChatController extends AsyncNotifier<ChatThread> {
 
     final outgoing = OutgoingMessage(
       localId: _newLocalId(),
+      clientToken: _newClientToken(),
       status: OutgoingStatus.sending,
       photo: photo,
     );
@@ -719,12 +729,17 @@ class ChatController extends AsyncNotifier<ChatThread> {
             outgoing.uploadId ?? await repository.uploadPhoto(photo);
         current = outgoing.copyWith(uploadId: uploadId);
         _replaceOutgoing(current);
-        message = await repository.sendPhoto(conversationId, uploadId);
+        message = await repository.sendPhoto(
+          conversationId,
+          uploadId,
+          clientToken: outgoing.clientToken,
+        );
       } else {
         message = await repository.sendText(
           conversationId,
           outgoing.text ?? '',
           moderationOverridden: outgoing.moderationOverridden,
+          clientToken: outgoing.clientToken,
         );
       }
 
@@ -855,6 +870,13 @@ class ChatController extends AsyncNotifier<ChatThread> {
   }
 
   String _newLocalId() => 'local-${_nextLocalId++}';
+
+  /// A name only this message will ever have, anywhere.
+  ///
+  /// Not the local id, which counts from one again every time the screen
+  /// is opened: the server remembers tokens, and a number that starts
+  /// again would eventually claim to be a message already sent.
+  String _newClientToken() => const Uuid().v4();
 
   void _fail(OutgoingMessage outgoing, String reason) {
     _replaceOutgoing(
