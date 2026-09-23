@@ -21,6 +21,10 @@ abstract interface class SettingsRepository {
     DistanceUnit? distanceUnit,
     bool? showDistance,
     bool? showLastActive,
+    AppThemeChoice? theme,
+    double? textScale,
+    bool? reduceMotion,
+    bool? highContrast,
   });
 
   /// Hides the user from Discover until [until], or until they come back when
@@ -47,11 +51,19 @@ final class ApiSettingsRepository implements SettingsRepository {
     DistanceUnit? distanceUnit,
     bool? showDistance,
     bool? showLastActive,
+    AppThemeChoice? theme,
+    double? textScale,
+    bool? reduceMotion,
+    bool? highContrast,
   }) {
     final body = {
       'distance_unit': ?distanceUnit?.wireValue,
       'show_distance': ?showDistance,
       'show_last_active': ?showLastActive,
+      'theme': ?theme?.wireValue,
+      'text_scale': ?textScale,
+      'reduce_motion': ?reduceMotion,
+      'high_contrast': ?highContrast,
     };
     if (body.isEmpty) {
       throw ArgumentError('Give at least one setting to change.');
@@ -185,11 +197,19 @@ final class DemoSettingsRepository implements SettingsRepository {
     DistanceUnit? distanceUnit,
     bool? showDistance,
     bool? showLastActive,
+    AppThemeChoice? theme,
+    double? textScale,
+    bool? reduceMotion,
+    bool? highContrast,
   }) async {
     return _demo.settings = _demo.settings.copyWith(
       distanceUnit: distanceUnit,
       showDistance: showDistance,
       showLastActive: showLastActive,
+      theme: theme,
+      textScale: textScale,
+      reduceMotion: reduceMotion,
+      highContrast: highContrast,
     );
   }
 

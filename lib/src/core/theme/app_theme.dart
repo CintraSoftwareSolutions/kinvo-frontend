@@ -12,7 +12,14 @@ import 'app_colors.dart';
 abstract final class AppTheme {
   /// The bundled family. Declared in `pubspec.yaml` with a file per weight.
   static const fontFamily = 'Inter';
-  static ThemeData light() {
+
+  /// The light theme, which is every theme there is for now.
+  ///
+  /// [reduceMotion] takes the sliding out of moving between screens. The
+  /// `disableAnimations` flag that goes with it covers what Flutter draws;
+  /// this covers what the router draws, which is the app's largest movement
+  /// by far.
+  static ThemeData light({bool reduceMotion = false}) {
     final base = ThemeData(
       useMaterial3: true,
       scaffoldBackgroundColor: AppColors.canvas,
@@ -29,6 +36,14 @@ abstract final class AppTheme {
     );
 
     return base.copyWith(
+      pageTransitionsTheme: reduceMotion
+          ? const PageTransitionsTheme(
+              builders: {
+                TargetPlatform.android: _NoTransition(),
+                TargetPlatform.iOS: _NoTransition(),
+              },
+            )
+          : base.pageTransitionsTheme,
       // Everything that paints text without reading the text theme, such
       // as a TextStyle written inline on a screen.
       typography: base.typography.copyWith(
@@ -51,5 +66,21 @@ abstract final class AppTheme {
         ),
       ),
     );
+  }
+}
+
+/// A screen that simply appears, for people who asked for less movement.
+final class _NoTransition extends PageTransitionsBuilder {
+  const _NoTransition();
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T>? route,
+    BuildContext? context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget? child,
+  ) {
+    return child ?? const SizedBox.shrink();
   }
 }

@@ -1,6 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/auth/auth_providers.dart';
+import '../../../../core/auth/session_status.dart';
+import '../../../../core/demo/demo_mode.dart';
+import '../../../../core/theme/app_appearance.dart';
 import '../../../../core/time/clock.dart';
 import '../../../../core/units/distance.dart';
 import '../../data/settings_repository.dart';
@@ -9,8 +12,8 @@ import '../../domain/user_settings.dart';
 
 /// The signed-in user's settings.
 ///
-/// Kept for the whole session: the distance unit is read on every card. Starts
-/// again when the session changes.
+/// Kept for the whole session: the distance unit is read on every card, and
+/// so is the text size. Starts again when the session changes.
 final userSettingsProvider =
     AsyncNotifierProvider<UserSettingsController, UserSettings>(
       UserSettingsController.new,
@@ -18,8 +21,17 @@ final userSettingsProvider =
 
 class UserSettingsController extends AsyncNotifier<UserSettings> {
   @override
-  Future<UserSettings> build() {
-    ref.watch(sessionStatusProvider);
+  Future<UserSettings> build() async {
+    final session = ref.watch(sessionStatusProvider);
+
+    // Nobody is signed in and the demo has not been started: there are no
+    // settings to read, and asking for them would be a request with no
+    // session behind it — which the demo, which never touches the network,
+    // would make on the welcome screen.
+    if (session is! SignedIn && !ref.watch(demoSessionProvider)) {
+      return UserSettings.defaults;
+    }
+
     return ref.watch(settingsRepositoryProvider).fetchSettings();
   }
 
@@ -29,6 +41,10 @@ class UserSettingsController extends AsyncNotifier<UserSettings> {
     DistanceUnit? distanceUnit,
     bool? showDistance,
     bool? showLastActive,
+    AppThemeChoice? theme,
+    double? textScale,
+    bool? reduceMotion,
+    bool? highContrast,
   }) async {
     final before = state.value;
     if (before == null) return;
@@ -37,6 +53,10 @@ class UserSettingsController extends AsyncNotifier<UserSettings> {
         distanceUnit: distanceUnit,
         showDistance: showDistance,
         showLastActive: showLastActive,
+        theme: theme,
+        textScale: textScale,
+        reduceMotion: reduceMotion,
+        highContrast: highContrast,
       ),
     );
     try {
@@ -46,6 +66,10 @@ class UserSettingsController extends AsyncNotifier<UserSettings> {
             distanceUnit: distanceUnit,
             showDistance: showDistance,
             showLastActive: showLastActive,
+            theme: theme,
+            textScale: textScale,
+            reduceMotion: reduceMotion,
+            highContrast: highContrast,
           );
       if (ref.mounted) state = AsyncData(saved);
     } on Object {
@@ -73,6 +97,24 @@ class UserSettingsController extends AsyncNotifier<UserSettings> {
     if (ref.mounted) state = AsyncData(saved);
   }
 }
+
+/// How the app should look and move, for the whole app to read.
+///
+/// Defaults until the settings arrive and when they can't be read, so a
+/// server that is slow or unreachable never leaves someone stuck with text
+/// they cannot see.
+final appearanceProvider = Provider<AppAppearance>((ref) {
+  final settings = ref.watch(
+    userSettingsProvider.select((settings) => settings.value),
+  );
+
+  return AppAppearance(
+    theme: settings?.theme ?? AppThemeChoice.system,
+    textScale: settings?.textScale ?? 1,
+    reduceMotion: settings?.reduceMotion ?? false,
+    highContrast: settings?.highContrast ?? false,
+  );
+});
 
 /// How distances are shown. Miles until the settings arrive, and when they
 /// can't be read.

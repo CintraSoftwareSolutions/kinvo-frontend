@@ -78,6 +78,13 @@ final class FakeKinvoServer {
   /// with no way to send email. A real production server never does this.
   bool returnsResetCode = false;
 
+  /// How the app is asked to look: appearance, text size, movement and
+  /// contrast, all kept on the server so they follow the account.
+  String theme = 'system';
+  double textScale = 1;
+  bool reduceMotion = false;
+  bool highContrast = false;
+
   /// The password the last successful reset set.
   String? passwordAfterReset;
 
@@ -2373,10 +2380,10 @@ final class FakeKinvoServer {
 
   Map<String, Object?> _settings() {
     return {
-      'theme': 'system',
-      'text_scale': 1.0,
-      'reduce_motion': false,
-      'high_contrast': false,
+      'theme': theme,
+      'text_scale': textScale,
+      'reduce_motion': reduceMotion,
+      'high_contrast': highContrast,
       'distance_unit': distanceUnit,
       'show_distance': showDistance,
       'show_last_active': showLastActive,
@@ -2399,9 +2406,19 @@ final class FakeKinvoServer {
         'distance_unit': ['Invalid enum value.'],
       });
     }
+    if (body['text_scale'] case final num scale
+        when scale < 0.8 || scale > 2.0) {
+      return _validation({
+        'text_scale': ['Text scale must be between 0.8 and 2.0.'],
+      });
+    }
     if (body['distance_unit'] case final String unit) distanceUnit = unit;
     if (body['show_distance'] case final bool show) showDistance = show;
     if (body['show_last_active'] case final bool show) showLastActive = show;
+    if (body['theme'] case final String value) theme = value;
+    if (body['text_scale'] case final num value) textScale = value.toDouble();
+    if (body['reduce_motion'] case final bool value) reduceMotion = value;
+    if (body['high_contrast'] case final bool value) highContrast = value;
     return _ok(_settings());
   }
 

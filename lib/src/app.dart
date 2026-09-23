@@ -7,6 +7,7 @@ import 'core/navigation/app_router.dart';
 import 'core/push/push_providers.dart';
 import 'core/realtime/realtime_providers.dart';
 import 'core/theme/app_theme.dart';
+import 'features/settings/presentation/controllers/settings_controllers.dart';
 import 'core/widgets/app_messenger.dart';
 import 'features/calls/presentation/call_screen_keeper.dart';
 import 'features/calls/presentation/callkit_keeper.dart';
@@ -52,12 +53,22 @@ class _KinvoAppState extends ConsumerState<KinvoApp> {
       // when it arrived, is picked up here.
       ..listen(callkitKeeperProvider, (_, _) {});
 
+    final appearance = ref.watch(appearanceProvider);
+
     return MaterialApp.router(
       title: 'Kinvo',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light(),
+      theme: AppTheme.light(reduceMotion: appearance.reduceMotion),
+      themeMode: appearance.themeMode,
       scaffoldMessengerKey: messengerKey,
       routerConfig: ref.watch(appRouterProvider),
+      // Text size and movement are the phone's business rather than the
+      // theme's, and putting them here means every screen is covered by
+      // one decision instead of each remembering to ask.
+      builder: (context, child) => MediaQuery(
+        data: appearance.applyTo(MediaQuery.of(context)),
+        child: child ?? const SizedBox.shrink(),
+      ),
     );
   }
 }
