@@ -168,20 +168,26 @@ void main() {
     semantics.dispose();
   });
 
-  testWidgets('production builds offer only email sign-in', (tester) async {
+  testWidgets('production builds offer every way in that works', (
+    tester,
+  ) async {
     final app = await pumpKinvoApp(tester, demoAvailable: false);
     await openFromWelcome(tester, app, 'Log In');
 
     expect(field('EMAIL'), findsOneWidget);
     // Resetting a password is a real flow, so it is not demo-only.
     expect(find.text('Forgot password?'), findsOneWidget);
+    expect(find.text('Continue with your phone number'), findsOneWidget);
+    expect(find.text('Continue with Google'), findsOneWidget);
+    // The prototype cards, which lead nowhere.
     expect(find.text('QUICK ACCESS'), findsNothing);
 
     app.router.go(AppRoutes.signup);
     await tester.pumpAndSettle();
 
     expect(find.byType(SignupScreen), findsOneWidget);
-    expect(find.text('Continue with Google'), findsNothing);
+    expect(find.text('Continue with Google'), findsOneWidget);
+    // Apple needs a paid developer account and a Mac, so it stays a prop.
     expect(find.text('Continue with Apple'), findsNothing);
   });
 

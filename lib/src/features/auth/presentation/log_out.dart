@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/auth/auth_providers.dart';
 import '../../../core/demo/demo_mode.dart';
 import '../../../core/theme/app_colors.dart';
+import '../data/social_auth_service.dart';
 
 /// Asks whether to log out and, if the user agrees, logs out.
 Future<void> confirmLogOut(BuildContext context, WidgetRef ref) async {
@@ -34,6 +35,12 @@ Future<void> confirmLogOut(BuildContext context, WidgetRef ref) async {
 Future<void> logOut(WidgetRef ref) async {
   // Read before anything changes: leaving the demo closes the current screen.
   final session = ref.read(sessionManagerProvider);
+  final social = ref.read(socialAuthServiceProvider);
   ref.read(demoSessionProvider.notifier).end();
   await session.signOut();
+
+  // Google is told too, so the next sign-in asks which account to use
+  // rather than reaching for the one that just left. It cannot fail in a
+  // way that matters: the Kinvo session has already ended.
+  await social.forgetGoogle();
 }

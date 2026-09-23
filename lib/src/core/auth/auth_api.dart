@@ -74,7 +74,7 @@ final class AuthApi {
   /// [displayName] is used only for a number that has never signed in before;
   /// the server ignores it for an existing account, so a returning user cannot
   /// have their name changed by a sign-in.
-  Future<PhoneSignIn> verifyPhone({
+  Future<SignInResult> verifyPhone({
     required String phone,
     required String code,
     required String deviceId,
@@ -89,10 +89,35 @@ final class AuthApi {
         if (displayName != null && displayName.trim().isNotEmpty)
           'display_name': displayName.trim(),
       },
-      decode: (json) => PhoneSignIn(
+      decode: (json) => SignInResult(
         tokens: _readTokens(json),
         // A new account has no date of birth yet, and the app must not let it
         // past onboarding without one.
+        isNewUser: json['is_new_user'] == true,
+      ),
+    );
+  }
+
+  /// Signs in with a Google ID token the app obtained from Google.
+  ///
+  /// The token is proof, not a claim: the server checks it against Google
+  /// own keys and the audience it was minted for, so a token meant for
+  /// another application is refused.
+  Future<SignInResult> signInWithGoogle({
+    required String idToken,
+    required String deviceId,
+    String? displayName,
+  }) {
+    return _client.post(
+      '/auth/google',
+      body: {
+        'id_token': idToken,
+        'device_id': deviceId,
+        if (displayName != null && displayName.trim().isNotEmpty)
+          'display_name': displayName.trim(),
+      },
+      decode: (json) => SignInResult(
+        tokens: _readTokens(json),
         isNewUser: json['is_new_user'] == true,
       ),
     );
@@ -157,14 +182,15 @@ final class AuthApi {
   }
 }
 
-/// The result of signing in with a phone number.
+/// What came of signing in a way that can also create the account.
 @immutable
-final class PhoneSignIn {
-  const PhoneSignIn({required this.tokens, required this.isNewUser});
+final class SignInResult {
+  const SignInResult({required this.tokens, required this.isNewUser});
 
   final AuthTokens tokens;
 
-  /// True when that number had no account until now. Such an account has no
-  /// date of birth, which is what onboarding asks for first.
+  /// True when there was no account until now. A new account made this way
+  /// has no date of birth, which is what onboarding asks for first — neither
+  /// a phone number nor Google carries one.
   final bool isNewUser;
 }

@@ -15,6 +15,7 @@ import 'package:kinvo/src/core/widgets/flow_widgets.dart';
 import 'package:kinvo/src/core/widgets/gradient_scaffold.dart';
 
 import '../controllers/signup_controller.dart';
+import '../controllers/social_sign_in_controller.dart';
 import '../date_of_birth_picker.dart';
 
 class SignupScreen extends ConsumerWidget {
@@ -26,6 +27,8 @@ class SignupScreen extends ConsumerWidget {
     final controller = ref.read(signupControllerProvider.notifier);
     final editable = !form.isSubmitting;
     final dateOfBirth = form.dateOfBirth;
+    final googleState = ref.watch(socialSignInControllerProvider);
+    final social = ref.read(socialSignInControllerProvider.notifier);
 
     // A session starting here means the new details were accepted. Password
     // managers are told now, while the fields are still on screen.
@@ -45,17 +48,30 @@ class SignupScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Real for everyone: Google proves who they are, the server
+              // decides what that means here, and an account is made if
+              // there is none.
+              if (social.canUseGoogle) ...[
+                SocialActionCard(
+                  title: 'Continue with Google',
+                  subtitle: 'No password to choose or remember.',
+                  assetName: AppAssets.googleLogo,
+                  onTap: googleState.isBusy
+                      ? null
+                      : () => unawaited(social.signInWithGoogle()),
+                ),
+                if (googleState.error case final message?) ...[
+                  const SizedBox(height: 12),
+                  FormErrorBanner(message: message),
+                ],
+                const SizedBox(height: 16),
+                const SectionDivider(label: 'OR USE EMAIL'),
+                const SizedBox(height: 12),
+              ],
               DemoOnly(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    SocialActionCard(
-                      title: 'Continue with Google',
-                      subtitle: 'Fast signup for demos and imports.',
-                      assetName: AppAssets.googleLogo,
-                      onTap: () => context.push(AppRoutes.otp),
-                    ),
-                    const SizedBox(height: 8),
                     SocialActionCard(
                       title: 'Continue with Apple',
                       subtitle:

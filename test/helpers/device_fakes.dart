@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:kinvo/src/core/location/geo_point.dart';
 import 'package:kinvo/src/core/location/location_service.dart';
+import 'package:kinvo/src/core/auth/google_identity.dart';
 import 'package:kinvo/src/core/media/photo_picker.dart';
 import 'package:kinvo/src/core/media/photo_processing.dart';
 
@@ -34,6 +35,37 @@ final class FakePhotoPicker implements PhotoPicker {
     if (nextError case final error?) throw error;
     return nextPhoto;
   }
+}
+
+/// Stands in for Google's own sign-in screen.
+final class FakeGoogleIdentity implements GoogleIdentity {
+  /// Whether the build offers Google at all.
+  bool available = true;
+
+  /// Who comes back from Google. `null` means the person backed out.
+  GoogleAccount? nextAccount = const GoogleAccount(
+    idToken: 'google-id-token',
+    displayName: 'Sam Google',
+  );
+
+  /// When set, signing in throws this instead.
+  GoogleSignInRefused? nextRefusal;
+
+  int signInCount = 0;
+  int signOutCount = 0;
+
+  @override
+  bool get isAvailable => available;
+
+  @override
+  Future<GoogleAccount?> signIn() async {
+    signInCount++;
+    if (nextRefusal case final refusal?) throw refusal;
+    return nextAccount;
+  }
+
+  @override
+  Future<void> signOut() async => signOutCount++;
 }
 
 /// Stands in for the device's location services.

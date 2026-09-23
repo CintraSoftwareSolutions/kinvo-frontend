@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kinvo/src/core/auth/google_identity.dart';
 import 'package:kinvo/src/core/auth/token_store.dart';
 import 'package:kinvo/src/core/demo/demo_mode.dart';
 import 'package:kinvo/src/core/device/client_info.dart';
@@ -59,6 +60,7 @@ final class TestBackend {
   final secureStore = InMemoryKeyValueStore();
   final preferences = InMemoryKeyValueStore();
   final photoPicker = FakePhotoPicker();
+  final googleIdentity = FakeGoogleIdentity();
   final locationService = FakeLocationService();
   late final FakeHttpAdapter adapter;
 
@@ -101,6 +103,7 @@ final class TestBackend {
       demoModeAvailableProvider.overrideWithValue(demoAvailable),
       // The camera, photo library and location need a real device.
       photoPickerProvider.overrideWithValue(photoPicker),
+      googleIdentityProvider.overrideWithValue(googleIdentity),
       locationServiceProvider.overrideWithValue(locationService),
       if (clock != null) clockProvider.overrideWithValue(clock),
     ];

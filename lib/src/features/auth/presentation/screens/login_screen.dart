@@ -14,6 +14,7 @@ import 'package:kinvo/src/core/widgets/flow_widgets.dart';
 import 'package:kinvo/src/core/widgets/gradient_scaffold.dart';
 
 import '../controllers/login_controller.dart';
+import '../controllers/social_sign_in_controller.dart';
 
 class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
@@ -23,6 +24,8 @@ class LoginScreen extends ConsumerWidget {
     final form = ref.watch(loginControllerProvider);
     final controller = ref.read(loginControllerProvider.notifier);
     final editable = !form.isSubmitting;
+    final googleState = ref.watch(socialSignInControllerProvider);
+    final social = ref.read(socialSignInControllerProvider.notifier);
 
     // A session starting here means the details were accepted. Password
     // managers are told now, while the fields are still on screen.
@@ -140,6 +143,24 @@ class LoginScreen extends ConsumerWidget {
                     ? () => context.push(AppRoutes.phoneSignIn)
                     : null,
               ),
+              // Google proves who they are; the server decides what that
+              // means here. A Google account with no Kinvo account gets
+              // one, the same as a new phone number does.
+              if (social.canUseGoogle) ...[
+                const SizedBox(height: 10),
+                SocialActionCard(
+                  title: 'Continue with Google',
+                  subtitle: 'No password to remember.',
+                  assetName: AppAssets.googleLogo,
+                  onTap: googleState.isBusy || !editable
+                      ? null
+                      : () => unawaited(social.signInWithGoogle()),
+                ),
+                if (googleState.error case final message?) ...[
+                  const SizedBox(height: 12),
+                  FormErrorBanner(message: message),
+                ],
+              ],
               const DemoOnly(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
