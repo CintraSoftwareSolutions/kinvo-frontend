@@ -102,4 +102,45 @@ void main() {
     expect(find.byType(PasswordResetScreen), findsOneWidget);
     expect(find.byType(NewPasswordScreen), findsNothing);
   });
+
+  testWidgets('a server that cannot send email says so, and stays put', (
+    tester,
+  ) async {
+    const refusal =
+        'We cannot send email at the moment. Please try again '
+        'shortly.';
+    final backend = respond();
+
+    // What a deployment whose mail transport is down answers. It is the honest
+    // alternative to the generic "a code is on its way", which sends somebody
+    // to refresh an inbox nothing was ever sent to — and it says nothing about
+    // the address, because the server refuses every address this way.
+    final app = await pumpKinvoApp(
+      tester,
+      respond: (options) async {
+        if (options.uri.path == '/api/v1/auth/forgot-password') {
+          return jsonResponse(
+            503,
+            errorEnvelope('SERVICE_UNAVAILABLE', refusal),
+          );
+        }
+        return backend(options);
+      },
+    );
+
+    await app.pumpUntilFound(find.text('Log In'));
+    await tester.tap(find.text('Log In'));
+    await tester.pumpAndSettle();
+    await tester.enterText(field('EMAIL'), 'sam@example.com');
+    await tester.tap(find.text('Forgot password?'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Send code'));
+
+    await app.pumpUntilFound(find.text(refusal));
+    // Still on the step that sends a code: a form for a code that is not
+    // coming can only waste the user's time.
+    expect(find.byType(PasswordResetScreen), findsOneWidget);
+    expect(find.byType(NewPasswordScreen), findsNothing);
+    await app.pumpUntilLoaded();
+  });
 }
