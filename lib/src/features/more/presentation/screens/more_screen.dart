@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/assets/app_assets.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../premium/domain/plans.dart';
+import '../../../premium/presentation/controllers/premium_controllers.dart';
+import '../../../profile/presentation/controllers/profile_controllers.dart';
 import '../widgets/settings_tile.dart';
 
 class MoreScreen extends StatelessWidget {
@@ -22,19 +26,9 @@ class MoreScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _IdentityCard(),
+                const _IdentityCard(),
                 const SizedBox(height: 14),
-                SettingsTile(
-                  iconWidget: const Icon(
-                    Icons.workspace_premium_rounded,
-                    size: 22,
-                    color: Color(0xFFD97706),
-                  ),
-                  iconBg: const Color(0xFFFEF3C7),
-                  title: 'Upgrade to Premium',
-                  subtitle: 'Unlock multi-mode access and advanced controls.',
-                  onTap: () => context.push(AppRoutes.premium),
-                ),
+                const _PlanTile(),
                 const SizedBox(height: 10),
                 SettingsTile(
                   icon: AppAssets.shield,
@@ -159,9 +153,65 @@ class _MoreHeader extends StatelessWidget {
   }
 }
 
-class _IdentityCard extends StatelessWidget {
+/// The way into the plans: an offer while the account is free, and the plan
+/// it is on once it has one.
+class _PlanTile extends ConsumerWidget {
+  const _PlanTile();
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final live = ref.watch(currentPlanProvider).value?.live;
+    final until = live == null
+        ? null
+        : MaterialLocalizations.of(
+            context,
+          ).formatMediumDate(live.periodEnd.toLocal());
+
+    return SettingsTile(
+      iconWidget: const Icon(
+        Icons.workspace_premium_rounded,
+        size: 22,
+        color: Color(0xFFD97706),
+      ),
+      iconBg: const Color(0xFFFEF3C7),
+      title: live == null
+          ? 'Upgrade to Premium'
+          : 'Your plan: ${live.tier?.label ?? 'Paid plan'}',
+      subtitle: live == null
+          ? 'Unlock multi-mode access and advanced controls.'
+          : [
+              if (live.renews) 'Renews $until' else 'Until $until',
+              if (live.isTest) 'test plan',
+            ].join(' · '),
+      onTap: () => context.push(AppRoutes.premium),
+    );
+  }
+}
+
+/// Who is signed in, whether they are verified, and what plan they are on.
+class _IdentityCard extends ConsumerWidget {
+  const _IdentityCard();
+
+  /// "Premium member", "Free plan" — or nothing while the plan is loading,
+  /// rather than a guess.
+  static String? _planLine(CurrentPlan? plan) {
+    if (plan == null) return null;
+    return switch (plan.tier) {
+      PlanTier.free => 'Free plan',
+      final PlanTier tier => '${tier.label} member',
+      null => 'Member',
+    };
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final profile = ref.watch(ownProfileProvider).value;
+    final plan = ref.watch(currentPlanProvider).value;
+    final details = [
+      if (profile?.isVerified ?? false) 'Verified profile',
+      ?_planLine(plan),
+    ].join(' | ');
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -198,23 +248,27 @@ class _IdentityCard extends StatelessWidget {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text(
-                      'Alex Johnson',
-                      style: TextStyle(
+                      profile?.displayName ?? 'Your profile',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
                       ),
                     ),
-                    SizedBox(height: 2),
-                    Text(
-                      'Verified profile | Premium member',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
+                    if (details.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        details,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),

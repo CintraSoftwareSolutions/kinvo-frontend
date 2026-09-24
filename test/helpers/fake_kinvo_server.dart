@@ -85,6 +85,20 @@ final class FakeKinvoServer {
   bool reduceMotion = false;
   bool highContrast = false;
 
+  /// How plans can be bought here: `test` as on staging, `none` as
+  /// anywhere real users pay until RevenueCat.
+  String purchaseMode = 'test';
+
+  /// The account's latest subscription, live or not, or null when it has
+  /// never had one.
+  FakeSubscription? subscription;
+
+  /// Plans bought by test purchase, by slug, in order.
+  final List<String> testPurchases = [];
+
+  /// How many times a test plan was ended.
+  int testPlansEnded = 0;
+
   /// The password the last successful reset set.
   String? passwordAfterReset;
 
@@ -336,6 +350,13 @@ final class FakeKinvoServer {
         id,
       ),
       ('POST', ['media', 'photos']) => _addPhoto(body),
+      ('GET', ['subscriptions', 'products']) => _ok({
+        'products': planCatalogue,
+        'purchase_mode': purchaseMode,
+      }),
+      ('GET', ['subscriptions', 'me']) => _ok(_currentPlanView()),
+      ('POST', ['subscriptions', 'test-purchase']) => _testPurchase(body),
+      ('DELETE', ['subscriptions', 'test-purchase']) => _endTestPlan(),
       ('GET', ['verification']) => _ok(_verificationView()),
       ('POST', ['verification']) => _startVerification(body),
       ('POST', ['verification', final id, 'document']) =>
@@ -2755,6 +2776,135 @@ final class FakeKinvoServer {
     };
   }
 
+  /// The plans on sale, word for word as staging's catalogue lists them.
+  static const planCatalogue = [
+    {
+      'slug': 'basic_monthly',
+      'name': 'Kinvo Basic — Monthly',
+      'tier': 'basic',
+      'billing_cycle': 'monthly',
+      'price': {'amount_minor': 999, 'currency': 'USD'},
+      'features': basicFeatures,
+    },
+    {
+      'slug': 'basic_yearly',
+      'name': 'Kinvo Basic — Yearly',
+      'tier': 'basic',
+      'billing_cycle': 'yearly',
+      'price': {'amount_minor': 7999, 'currency': 'USD'},
+      'features': basicFeatures,
+    },
+    {
+      'slug': 'advanced_monthly',
+      'name': 'Kinvo Premium — Monthly',
+      'tier': 'advanced',
+      'billing_cycle': 'monthly',
+      'price': {'amount_minor': 1999, 'currency': 'USD'},
+      'features': premiumFeatures,
+    },
+    {
+      'slug': 'advanced_yearly',
+      'name': 'Kinvo Premium — Yearly',
+      'tier': 'advanced',
+      'billing_cycle': 'yearly',
+      'price': {'amount_minor': 15999, 'currency': 'USD'},
+      'features': premiumFeatures,
+    },
+  ];
+
+  static const basicFeatures = [
+    'Unlimited likes',
+    'Unlimited messages',
+    'Filter by interests and goals',
+    'Undo your last swipe',
+    'Up to 5 modes at once',
+    'No ads',
+  ];
+
+  static const premiumFeatures = [
+    'Unlimited likes',
+    'Unlimited messages',
+    'See who liked you',
+    'Filter by interests and goals',
+    'Undo your last swipe',
+    'Boost your profile',
+    'Extend a match before it expires',
+    'Every mode at once',
+    'No ads',
+  ];
+
+  Map<String, Object?> _currentPlanView() {
+    final current = subscription;
+    return {
+      'tier': current != null && current.isActive ? current.tier : 'free',
+      'subscription': current == null
+          ? null
+          : {
+              'id': 'subscription-1',
+              'tier': current.tier,
+              'billing_cycle': current.cycle,
+              'product_slug': current.productSlug,
+              'status': current.isActive ? 'active' : 'expired',
+              'source': current.source,
+              'current_period_start': current.periodStart.toIso8601String(),
+              'current_period_end': current.periodEnd.toIso8601String(),
+              'auto_renew': current.source != 'test',
+              'is_active': current.isActive,
+              'cancelled_at': null,
+              'created_at': current.periodStart.toIso8601String(),
+            },
+    };
+  }
+
+  /// Grants the plan named in [body] at once, as staging's test purchase
+  /// does — and answers as a path that does not exist where it is off.
+  ResponseBody _testPurchase(Map<String, Object?> body) {
+    if (purchaseMode != 'test') {
+      return _error(404, 'NOT_FOUND', 'That endpoint does not exist.');
+    }
+
+    final product = planCatalogue
+        .where((plan) => plan['slug'] == body['product'])
+        .firstOrNull;
+    if (product == null) {
+      return _validation({
+        'product': ['That plan is not on sale.'],
+      });
+    }
+
+    final start = now().toUtc();
+    final months = product['billing_cycle'] == 'yearly' ? 12 : 1;
+    subscription = FakeSubscription(
+      productSlug: product['slug']! as String,
+      tier: product['tier']! as String,
+      cycle: product['billing_cycle']! as String,
+      source: 'test',
+      periodStart: start,
+      periodEnd: DateTime.utc(
+        start.year,
+        start.month + months,
+        start.day,
+        start.hour,
+        start.minute,
+      ),
+    );
+    testPurchases.add(product['slug']! as String);
+    return _ok(_currentPlanView(), status: 201);
+  }
+
+  ResponseBody _endTestPlan() {
+    if (purchaseMode != 'test') {
+      return _error(404, 'NOT_FOUND', 'That endpoint does not exist.');
+    }
+
+    final current = subscription;
+    if (current != null && current.source == 'test' && current.isActive) {
+      current.isActive = false;
+      testPlansEnded++;
+    }
+    return _ok(_currentPlanView());
+  }
+
   static ResponseBody _ok(Object? data, {int status = 200}) {
     return jsonResponse(status, successEnvelope(data));
   }
@@ -2776,6 +2926,32 @@ final class FakeKinvoServer {
       details: details,
     );
   }
+}
+
+/// A subscription, as the server keeps one.
+final class FakeSubscription {
+  FakeSubscription({
+    required this.productSlug,
+    required this.tier,
+    required this.cycle,
+    required this.source,
+    required this.periodStart,
+    required this.periodEnd,
+  });
+
+  final String productSlug;
+
+  /// The server's name for it: `basic` or `advanced`.
+  final String tier;
+
+  final String cycle;
+
+  /// `test` for a test purchase; `apple` or `google` for a store's.
+  final String source;
+
+  final DateTime periodStart;
+  final DateTime periodEnd;
+  bool isActive = true;
 }
 
 /// An identity check in progress, as the server keeps one.

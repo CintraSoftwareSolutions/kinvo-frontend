@@ -30,6 +30,9 @@ void main() {
     await app.pumpUntilLoaded();
     app.router.go(AppRoutes.theme);
     await app.pumpUntilFound(find.byType(ThemeScreen));
+    // The More screen underneath loads the profile and the plan; a test that
+    // ends with those in flight leaves timers behind.
+    await app.pumpUntilLoaded();
     return app;
   }
 

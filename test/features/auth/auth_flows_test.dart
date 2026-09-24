@@ -272,7 +272,12 @@ void main() {
 
     await app.pumpUntilFound(find.text('Create Account'));
     expect(find.text('Your account has been deleted.'), findsOneWidget);
-    expect(app.backend.requestsTo('/users/me').single.method, 'DELETE');
+    // The More screen reads the profile from the same path; the deletion is
+    // the one DELETE.
+    expect(
+      app.backend.requestsTo('/users/me').where((r) => r.method == 'DELETE'),
+      hasLength(1),
+    );
     expect(await app.backend.tokenStore.read(), isNull);
   });
 

@@ -17,7 +17,7 @@ import '../../features/discovery/presentation/screens/discover_screen.dart';
 import '../../features/home/presentation/screens/home_shell.dart';
 import '../../features/matches/presentation/screens/matches_screen.dart';
 import '../../features/more/presentation/screens/more_screen.dart';
-import '../../features/more/presentation/screens/premium_screen.dart';
+import '../../features/premium/presentation/screens/premium_screen.dart';
 import '../../features/more/presentation/screens/report_screen.dart';
 import '../../features/more/presentation/screens/safety_center_screen.dart';
 import '../../features/more/presentation/screens/settings_screen.dart';
