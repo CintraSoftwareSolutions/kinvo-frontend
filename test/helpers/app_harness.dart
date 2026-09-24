@@ -9,6 +9,7 @@ import 'package:kinvo/src/core/push/push_messaging.dart';
 import 'package:kinvo/src/core/time/clock.dart';
 
 import 'auth_fixtures.dart';
+import 'fake_call_notifications.dart';
 import 'fake_http_adapter.dart';
 import 'fake_realtime_server.dart';
 import 'test_backend.dart';
@@ -114,6 +115,7 @@ Future<AppHarness> pumpKinvoApp(
   FakeResponder? respond,
   FakeRealtimeServer? realtime,
   PushMessaging? push,
+  FakeCallNotifications? callNotifications,
   bool demoAvailable = true,
   Clock? clock,
 }) async {
@@ -122,7 +124,12 @@ Future<AppHarness> pumpKinvoApp(
     ..devicePixelRatio = 3;
   addTearDown(tester.view.reset);
 
-  final backend = TestBackend(respond: respond, realtime: realtime, push: push);
+  final backend = TestBackend(
+    respond: respond,
+    realtime: realtime,
+    push: push,
+    callNotifications: callNotifications,
+  );
   if (savedSession != null) {
     await backend.tokenStore.write(savedSession);
   }

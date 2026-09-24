@@ -12,6 +12,12 @@ import '../domain/call.dart';
 /// The call screen a closed phone shows: full screen, over the lock screen,
 /// with Answer and Decline.
 ///
+/// This file is the BACKGROUND ISOLATE's half of calling. The app's own half
+/// — hearing what was done on that screen, and taking it away again — is
+/// `call_notifications.dart`, behind an interface, because it runs where
+/// there are providers to read and tests to satisfy. There is nothing to read
+/// here: an isolate woken by a push has no app around it.
+///
 /// WHY THIS IS NOT THE APP'S OWN SCREEN. A closed app has nothing running to
 /// draw with. Android wakes it for a data-only push, and what runs is this —
 /// a separate isolate with no widgets, no providers and no session. All it can
@@ -73,20 +79,6 @@ Future<bool> showIncomingCallFromPush(Map<String, String> data) async {
   );
 
   return true;
-}
-
-/// Takes the call screen away — answered elsewhere, cancelled, or rung out.
-Future<void> hideIncomingCall(String callId) async {
-  try {
-    await FlutterCallkitIncoming.endCall(callId);
-  } on Object catch (error, stackTrace) {
-    developer.log(
-      'Could not close the incoming call notification.',
-      name: 'kinvo.calls',
-      error: error,
-      stackTrace: stackTrace,
-    );
-  }
 }
 
 /// Runs in its own isolate when a push arrives at a phone whose app is closed.

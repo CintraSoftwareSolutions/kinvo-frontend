@@ -13,7 +13,7 @@ import '../../data/calls_repository.dart';
 import '../../domain/call.dart';
 import '../../media/call_media.dart';
 import '../../media/livekit_call_media.dart';
-import '../incoming_call_notification.dart';
+import '../call_notifications.dart';
 import 'call_ringtone_controller.dart';
 
 /// How long a call rings before it counts as missed.
@@ -86,6 +86,21 @@ final class CallController extends Notifier<ActiveCall?> {
   /// when the camera most needs releasing.
   CallMedia? _media;
 
+  /// Calls this app has already answered, or already ended, itself.
+  ///
+  /// The phone's own call screen and this app both report the same things:
+  /// answering on the lock screen of a phone that was awake raises an event
+  /// AND is remembered by the platform for a phone that was not, and closing
+  /// that screen raises the ending it was told about. Without this, a call
+  /// would be answered twice — and the server, rightly, refuses the second.
+  final Set<String> _answered = {};
+  final Set<String> _ended = {};
+
+  /// How many of those to keep. A phone can only be in one call at a time, so
+  /// a handful of recent ids covers every echo there can be, and an app left
+  /// open for weeks does not collect them for ever.
+  static const _rememberedCalls = 8;
+
   @override
   ActiveCall? build() {
     _updates = ref.watch(liveUpdatesProvider).stream.listen(_onUpdate);
@@ -113,6 +128,8 @@ final class CallController extends Notifier<ActiveCall?> {
   CallRingtoneController get _ringtone =>
       ref.read(callRingtoneProvider.notifier);
 
+  CallNotifications get _notifications => ref.read(callNotificationsProvider);
+
   /// Rings the other person in [matchId]. Returns the call, or null when the
   /// server refused; the reason is shown by whoever called this.
   Future<Call?> start(String matchId, {CallKind kind = CallKind.video}) async {
@@ -137,9 +154,17 @@ final class CallController extends Notifier<ActiveCall?> {
     _ringTimer?.cancel();
     unawaited(_ringtone.stopRinging());
 
+    // Answering twice is the server's 409, and there is nothing to tell the
+    // user about a call that is already theirs.
+    if (!_remember(_answered, current.call.id)) return;
+
     try {
       final answered = await _repository.answer(current.call.id);
       state = current.copyWith(call: answered, clearFailure: true);
+      // The phone may still be showing its own incoming call — answered in
+      // the app while the lock screen was up. It becomes an ongoing call
+      // rather than one still asking to be answered.
+      unawaited(_notifications.markConnected(answered.id));
       unawaited(_connectMedia(answered));
     } on ApiException catch (error) {
       // Answering a call that stopped ringing, most often because the other
@@ -166,29 +191,41 @@ final class CallController extends Notifier<ActiveCall?> {
       return;
     }
 
+    if (!_remember(_answered, callId)) return;
+
     try {
-      final answered = await _repository.answer(callId);
-      _media = _mediaFor(answered);
-      state = ActiveCall(call: answered, media: _media);
-      unawaited(_connectMedia(answered));
+      _begin(await _repository.answer(callId));
     } on ApiException {
-      // Answered on another phone, declined here a moment ago, or rung out.
-      // There is nothing to show: the call screen never opens.
-      await hideIncomingCall(callId);
+      // The server will not let it be answered. Most often that is because it
+      // already has been — from the lock screen of a phone that then started
+      // this app, so the answer reached the server before there was anything
+      // here to know about it. Joining a call that is already live is a
+      // matter of asking for a token, not answering again.
+      if (!await _joinAnswered(callId)) {
+        // Genuinely over: answered on another phone, declined, or rung out.
+        await _notifications.hide(callId);
+      }
     }
   }
 
   /// Refuses a call the person declined from the lock screen.
   Future<void> declineFromNotification(String callId) async {
     await _ringtone.stopRinging();
+    _remember(_ended, callId);
     await _declineQuietly(callId);
-    await hideIncomingCall(callId);
+    await _notifications.hide(callId);
 
     if (state?.call.id == callId) await _close();
   }
 
   /// Hangs up a call ended from the lock screen's own controls.
+  ///
+  /// Closing that screen is itself an ending, and this app closes it whenever
+  /// a call finishes — so an ending for a call this app has already finished
+  /// with is its own echo, not something to tell the server about again.
   Future<void> endFromNotification(String callId) async {
+    if (!_remember(_ended, callId)) return;
+
     if (state?.call.id == callId) {
       await hangUp();
       return;
@@ -362,6 +399,48 @@ final class CallController extends Notifier<ActiveCall?> {
     });
   }
 
+  /// Puts a call this device has just joined on screen, from nothing.
+  ///
+  /// Used where there is no ringing state to build on: the app may have been
+  /// started by the notification itself, so everything shown comes from what
+  /// the server just gave back.
+  void _begin(Call call) {
+    _media = _mediaFor(call);
+    state = ActiveCall(call: call, media: _media);
+    // The phone is still showing its own incoming call — this app is only
+    // running because somebody answered it.
+    unawaited(_notifications.markConnected(call.id));
+    unawaited(_connectMedia(call));
+  }
+
+  /// Joins a call the server already considers live, without answering it a
+  /// second time. Returns whether there was one to join.
+  ///
+  /// Asking for a token is the whole difference: answering is the moment a
+  /// ringing call becomes a live one, and that moment has passed.
+  Future<bool> _joinAnswered(String callId) async {
+    final Call call;
+    try {
+      call = await _repository.refreshToken(callId);
+    } on ApiException {
+      return false;
+    }
+
+    // A call this device started is not one to answer, and a call that is
+    // over is not one to show.
+    if (!call.status.isLive || call.isInitiator) return false;
+
+    _begin(call);
+    return true;
+  }
+
+  /// Remembers [callId], and returns false when it was already known.
+  static bool _remember(Set<String> into, String callId) {
+    if (!into.add(callId)) return false;
+    if (into.length > _rememberedCalls) into.remove(into.first);
+    return true;
+  }
+
   CallMedia? _mediaFor(Call call) {
     // No address means no video service configured — staging, or the demo. The
     // call itself still works, and the screen says why there is no picture.
@@ -397,8 +476,13 @@ final class CallController extends Notifier<ActiveCall?> {
   /// being dropped back into the chat with no explanation.
   Future<void> _close({bool keepEnded = false}) async {
     // The lock screen may still be showing this call on a phone that was
-    // closed when it arrived. It goes with everything else.
-    if (state?.call.id case final callId?) unawaited(hideIncomingCall(callId));
+    // closed when it arrived. It goes with everything else — and closing it
+    // is itself an ending, which comes back as an event this call has already
+    // been through.
+    if (state?.call.id case final callId?) {
+      _remember(_ended, callId);
+      unawaited(_notifications.hide(callId));
+    }
 
     // Whatever ended it — the other side, a safety action, the ring timer —
     // the phone stops ringing here, once.

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kinvo/src/core/auth/google_identity.dart';
+import 'package:kinvo/src/features/calls/presentation/call_notifications.dart';
 import 'package:kinvo/src/core/auth/token_store.dart';
 import 'package:kinvo/src/core/demo/demo_mode.dart';
 import 'package:kinvo/src/core/device/client_info.dart';
@@ -22,6 +23,7 @@ import 'device_fakes.dart';
 import 'fake_http_adapter.dart';
 import 'fake_push_messaging.dart';
 import 'fake_realtime_server.dart';
+import 'fake_call_notifications.dart';
 import 'fake_ringtones.dart';
 import 'in_memory_key_value_store.dart';
 
@@ -35,9 +37,12 @@ final class TestBackend {
     FakeResponder? respond,
     FakeRealtimeServer? realtime,
     PushMessaging? push,
+    FakeCallNotifications? callNotifications,
   }) : respond = respond ?? _notFound,
        realtime = realtime ?? FakeRealtimeServer(),
-       push = push ?? const UnavailablePushMessaging() {
+       push = push ?? const UnavailablePushMessaging(),
+       callNotifications =
+           callNotifications ?? FakeCallNotifications(available: false) {
     adapter = FakeHttpAdapter((options) => this.respond(options));
   }
 
@@ -56,6 +61,10 @@ final class TestBackend {
 
   /// The phone this test rings with. Assert on it to check a call rang.
   final ringtones = FakeRingtones();
+
+  /// The call screen the phone draws for itself. Off unless a test asks
+  /// for one, as on a build with no push settings.
+  final FakeCallNotifications callNotifications;
 
   final secureStore = InMemoryKeyValueStore();
   final preferences = InMemoryKeyValueStore();
@@ -100,6 +109,7 @@ final class TestBackend {
       appIconBadgeProvider.overrideWithValue(iconBadge),
       // No test may reach the phone's ringtone chooser or make a sound.
       ringtonesProvider.overrideWithValue(ringtones),
+      callNotificationsProvider.overrideWithValue(callNotifications),
       demoModeAvailableProvider.overrideWithValue(demoAvailable),
       // The camera, photo library and location need a real device.
       photoPickerProvider.overrideWithValue(photoPicker),
