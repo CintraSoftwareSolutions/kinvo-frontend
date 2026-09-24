@@ -11,6 +11,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/flow_widgets.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../../../core/widgets/settings_group.dart';
+import '../../../discovery/presentation/controllers/deck_controller.dart';
 import '../../domain/user_settings.dart';
 import '../controllers/settings_controllers.dart';
 import '../widgets/take_break_sheet.dart';
@@ -104,6 +105,54 @@ class _Settings extends ConsumerWidget {
                     .read(userSettingsProvider.notifier)
                     .change(showLastActive: show),
               ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 22),
+        const SettingsSectionLabel('WHO YOU MEET'),
+        SettingsGroup(
+          children: [
+            SettingsSwitch(
+              title: 'Incognito',
+              description:
+                  'Only people you like can see you in Discover. Your '
+                  'matches still can.',
+              value: settings.incognito,
+              onChanged: (on) => _change(
+                context,
+                ref,
+                () => ref
+                    .read(userSettingsProvider.notifier)
+                    .change(incognito: on),
+              ),
+            ),
+            SettingsSwitch(
+              title: 'Pause new matches',
+              description:
+                  "Stay visible, but don't match with anyone new. Likes wait "
+                  "for you, and any you've both given become matches when "
+                  'you come back.',
+              value: settings.pauseNewMatches,
+              onChanged: (on) => _change(
+                context,
+                ref,
+                () => ref
+                    .read(userSettingsProvider.notifier)
+                    .change(pauseNewMatches: on),
+              ),
+            ),
+            SettingsSwitch(
+              title: 'Verified people only',
+              description: 'Show only verified people, in every mode.',
+              value: settings.verifiedOnlyEverywhere,
+              onChanged: (on) => _change(context, ref, () async {
+                await ref
+                    .read(userSettingsProvider.notifier)
+                    .change(verifiedOnlyEverywhere: on);
+                // The server rebuilds today's cards for the new rule; the ones
+                // already on this phone go with it.
+                ref.invalidate(deckControllerProvider);
+              }),
             ),
           ],
         ),

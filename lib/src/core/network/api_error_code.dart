@@ -30,6 +30,10 @@ enum ApiErrorCode {
   notFound('NOT_FOUND'),
   conflict('CONFLICT'),
 
+  /// A like refused because the account has paused new matches. Offer to
+  /// turn the pause off.
+  newMatchesPaused('NEW_MATCHES_PAUSED'),
+
   fileTooLarge('FILE_TOO_LARGE'),
   unsupportedMediaType('UNSUPPORTED_MEDIA_TYPE'),
 

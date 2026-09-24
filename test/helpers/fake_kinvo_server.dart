@@ -46,6 +46,12 @@ final class FakeKinvoServer {
   bool showDistance = true;
   bool showLastActive = true;
 
+  /// Who you meet, as the server applies it: incognito, verified people only
+  /// in every mode, and new matches paused.
+  bool incognito = false;
+  bool verifiedOnlyEverywhere = false;
+  bool pauseNewMatches = false;
+
   /// When the user's break from Discover ends: `null` with [isSnoozed] for
   /// a break until they come back.
   bool isSnoozed = false;
@@ -502,7 +508,10 @@ final class FakeKinvoServer {
         int.tryParse('${options.queryParameters['cursor'] ?? ''}') ?? -1;
     final remaining = [
       for (final card in _deckFor(mode))
-        if (card.$1 > after) card,
+        // Verified people only, everywhere: the server rebuilds the deck
+        // without anyone unverified.
+        if (card.$1 > after && (!verifiedOnlyEverywhere || card.$2.isVerified))
+          card,
     ];
     final page = remaining.take(limit).toList();
     final hasMore = remaining.length > page.length;
@@ -528,6 +537,15 @@ final class FakeKinvoServer {
     if (_requireEnabled(mode) case final refused?) return refused;
     final userId = body['target_id'] as String?;
     final action = body['action'] as String?;
+    // As the server does: a like from someone who has paused new matches is
+    // refused before anything else; a pass still goes through.
+    if (pauseNewMatches && (action == 'like' || action == 'super_like')) {
+      return _error(
+        409,
+        'NEW_MATCHES_PAUSED',
+        'You have paused new matches. Turn that off to like people again.',
+      );
+    }
     final person = [
       ...?decks[mode],
       ...?likesYou[mode],
@@ -2409,9 +2427,9 @@ final class FakeKinvoServer {
       'distance_unit': distanceUnit,
       'show_distance': showDistance,
       'show_last_active': showLastActive,
-      'incognito': false,
-      'global_verified_only': false,
-      'pause_new_matches': false,
+      'incognito': incognito,
+      'global_verified_only': verifiedOnlyEverywhere,
+      'pause_new_matches': pauseNewMatches,
       'language': 'en',
       'snooze': {
         'is_snoozed': isSnoozed,
@@ -2441,6 +2459,13 @@ final class FakeKinvoServer {
     if (body['text_scale'] case final num value) textScale = value.toDouble();
     if (body['reduce_motion'] case final bool value) reduceMotion = value;
     if (body['high_contrast'] case final bool value) highContrast = value;
+    if (body['incognito'] case final bool value) incognito = value;
+    if (body['global_verified_only'] case final bool value) {
+      verifiedOnlyEverywhere = value;
+    }
+    if (body['pause_new_matches'] case final bool value) {
+      pauseNewMatches = value;
+    }
     return _ok(_settings());
   }
 

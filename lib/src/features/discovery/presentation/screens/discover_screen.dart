@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/ads/ads_controller.dart';
+import '../../../../core/forms/form_errors.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -61,6 +62,7 @@ class DiscoverScreen extends ConsumerWidget {
           onNotificationsTap: () => context.push(AppRoutes.notifications),
         ),
         const Divider(height: 1, color: Color(0xFFEDEFF5)),
+        const _PausedBanner(),
         Expanded(
           child: active.hasValue
               ? switch (mode) {
@@ -355,6 +357,8 @@ class _DeckBody extends ConsumerWidget {
         }
       case SwipeNeedsUpgrade(:final paywall):
         await showPaywallSheet(context, paywall);
+      case SwipePaused():
+        await _offerToResume(context, ref);
       case SwipeFailed(:final message):
         _tell(context, message);
       case Swiped():
@@ -503,6 +507,91 @@ String _messageFor(Object? error) {
   return error is ApiException
       ? error.message
       : 'Something went wrong. Please try again.';
+}
+
+/// The like that just failed was refused because new matches are paused:
+/// say so, and offer to turn the pause off rather than leave a dead button.
+Future<void> _offerToResume(BuildContext context, WidgetRef ref) async {
+  final resume = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: const Text('New matches are paused'),
+      content: const Text(
+        "You won't match with anyone new while this is on. Anyone who likes "
+        "you waits for you, and likes you've both given become matches when "
+        'you resume.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: const Text('Keep paused'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          child: const Text('Resume matching'),
+        ),
+      ],
+    ),
+  );
+  if (resume == true && context.mounted) await _resumeMatching(context, ref);
+}
+
+Future<void> _resumeMatching(BuildContext context, WidgetRef ref) async {
+  try {
+    await ref
+        .read(userSettingsProvider.notifier)
+        .change(pauseNewMatches: false);
+    if (context.mounted) _tell(context, 'Matching is back on.');
+  } on ApiException catch (error) {
+    if (context.mounted) _tell(context, saveFailureMessage(error));
+  }
+}
+
+/// While new matches are paused, a line under the header says so — before a
+/// like is refused, not only after.
+class _PausedBanner extends ConsumerWidget {
+  const _PausedBanner();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final paused = ref.watch(
+      userSettingsProvider.select(
+        (settings) => settings.value?.pauseNewMatches ?? false,
+      ),
+    );
+    if (!paused) return const SizedBox.shrink();
+
+    return Material(
+      color: AppColors.purpleSoft,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 6, 8, 6),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.pause_circle_outline_rounded,
+              size: 18,
+              color: AppColors.purple,
+            ),
+            const SizedBox(width: 8),
+            const Expanded(
+              child: Text(
+                'New matches are paused',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.purple,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () => _resumeMatching(context, ref),
+              child: const Text('Resume'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 void _tell(BuildContext context, String message) {

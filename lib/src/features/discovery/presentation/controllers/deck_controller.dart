@@ -98,6 +98,14 @@ final class SwipeNeedsUpgrade extends SwipeOutcome {
   final Paywall paywall;
 }
 
+/// A like refused because the user has paused new matches. The card stays
+/// on show; offer to turn the pause off.
+final class SwipePaused extends SwipeOutcome {
+  const SwipePaused(this.message);
+
+  final String message;
+}
+
 /// The swipe didn't reach the server or wasn't accepted. The card stays on
 /// show, so the user can try again.
 final class SwipeFailed extends SwipeOutcome {
@@ -215,6 +223,9 @@ class DeckController extends AsyncNotifier<DeckState> {
       ApiErrorException(code: ApiErrorCode.badRequest, :final details)
           when details?['is_enabled'] == false =>
         _modeSwitchedOff(error.message),
+      ApiErrorException(code: ApiErrorCode.newMatchesPaused) => SwipePaused(
+        error.message,
+      ),
       _ => SwipeFailed(error.message),
     };
   }

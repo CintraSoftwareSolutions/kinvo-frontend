@@ -45,6 +45,9 @@ class UserSettingsController extends AsyncNotifier<UserSettings> {
     double? textScale,
     bool? reduceMotion,
     bool? highContrast,
+    bool? incognito,
+    bool? verifiedOnlyEverywhere,
+    bool? pauseNewMatches,
   }) async {
     final before = state.value;
     if (before == null) return;
@@ -57,6 +60,9 @@ class UserSettingsController extends AsyncNotifier<UserSettings> {
         textScale: textScale,
         reduceMotion: reduceMotion,
         highContrast: highContrast,
+        incognito: incognito,
+        verifiedOnlyEverywhere: verifiedOnlyEverywhere,
+        pauseNewMatches: pauseNewMatches,
       ),
     );
     try {
@@ -70,6 +76,9 @@ class UserSettingsController extends AsyncNotifier<UserSettings> {
             textScale: textScale,
             reduceMotion: reduceMotion,
             highContrast: highContrast,
+            incognito: incognito,
+            verifiedOnlyEverywhere: verifiedOnlyEverywhere,
+            pauseNewMatches: pauseNewMatches,
           );
       if (ref.mounted) state = AsyncData(saved);
     } on Object {

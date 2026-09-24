@@ -25,6 +25,9 @@ abstract interface class SettingsRepository {
     double? textScale,
     bool? reduceMotion,
     bool? highContrast,
+    bool? incognito,
+    bool? verifiedOnlyEverywhere,
+    bool? pauseNewMatches,
   });
 
   /// Hides the user from Discover until [until], or until they come back when
@@ -55,6 +58,9 @@ final class ApiSettingsRepository implements SettingsRepository {
     double? textScale,
     bool? reduceMotion,
     bool? highContrast,
+    bool? incognito,
+    bool? verifiedOnlyEverywhere,
+    bool? pauseNewMatches,
   }) {
     final body = {
       'distance_unit': ?distanceUnit?.wireValue,
@@ -64,6 +70,9 @@ final class ApiSettingsRepository implements SettingsRepository {
       'text_scale': ?textScale,
       'reduce_motion': ?reduceMotion,
       'high_contrast': ?highContrast,
+      'incognito': ?incognito,
+      'global_verified_only': ?verifiedOnlyEverywhere,
+      'pause_new_matches': ?pauseNewMatches,
     };
     if (body.isEmpty) {
       throw ArgumentError('Give at least one setting to change.');
@@ -201,6 +210,9 @@ final class DemoSettingsRepository implements SettingsRepository {
     double? textScale,
     bool? reduceMotion,
     bool? highContrast,
+    bool? incognito,
+    bool? verifiedOnlyEverywhere,
+    bool? pauseNewMatches,
   }) async {
     return _demo.settings = _demo.settings.copyWith(
       distanceUnit: distanceUnit,
@@ -210,28 +222,24 @@ final class DemoSettingsRepository implements SettingsRepository {
       textScale: textScale,
       reduceMotion: reduceMotion,
       highContrast: highContrast,
+      incognito: incognito,
+      verifiedOnlyEverywhere: verifiedOnlyEverywhere,
+      pauseNewMatches: pauseNewMatches,
     );
   }
 
+  // Every other setting carried across: rebuilding the settings here once
+  // dropped the demo's theme and text size whenever a break began or ended.
   @override
   Future<UserSettings> takeBreak({DateTime? until}) async {
-    final settings = _demo.settings;
-    return _demo.settings = UserSettings(
-      distanceUnit: settings.distanceUnit,
-      showDistance: settings.showDistance,
-      showLastActive: settings.showLastActive,
-      snooze: Snooze(endsAt: until),
+    return _demo.settings = _demo.settings.copyWith(
+      snooze: () => Snooze(endsAt: until),
     );
   }
 
   @override
   Future<UserSettings> endBreak() async {
-    final settings = _demo.settings;
-    return _demo.settings = UserSettings(
-      distanceUnit: settings.distanceUnit,
-      showDistance: settings.showDistance,
-      showLastActive: settings.showLastActive,
-    );
+    return _demo.settings = _demo.settings.copyWith(snooze: () => null);
   }
 }
 

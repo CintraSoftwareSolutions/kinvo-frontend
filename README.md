@@ -565,9 +565,14 @@ new phone. `userSettingsProvider` holds them for the session.
     app version and when it was last used. Signing one out, or all but this
     one, stops it working at once.
 - Switches change at once and go back, with the reason, if saving fails.
-- Incognito, "verified people only everywhere" and "pause new matches" are
-  stored by the server but not applied yet, so the app doesn't offer them.
-  Theme and accessibility is still a sample screen.
+  - **Who you meet** (`incognito`, `pause_new_matches`,
+    `global_verified_only` on `/settings`), applied by the server:
+    incognito shows the user only to people they have liked and to their
+    matches; a pause keeps them visible but refuses their likes with
+    `NEW_MATCHES_PAUSED` — Discover shows a "paused" line with Resume, and a
+    refused like offers the same — and makes held matches on resume;
+    verified people only applies in every mode, and the deck is refetched
+    after it changes.
 
 ## Ads
 

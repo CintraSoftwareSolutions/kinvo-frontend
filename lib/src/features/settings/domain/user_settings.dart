@@ -37,6 +37,9 @@ final class UserSettings {
     this.textScale = 1,
     this.reduceMotion = false,
     this.highContrast = false,
+    this.incognito = false,
+    this.verifiedOnlyEverywhere = false,
+    this.pauseNewMatches = false,
     this.snooze,
   });
 
@@ -75,6 +78,11 @@ final class UserSettings {
         },
         reduceMotion: json['reduce_motion'] == true,
         highContrast: json['high_contrast'] == true,
+        // Off unless the server says on, in as many words: none of these may
+        // be switched on by a server too old to know them.
+        incognito: json['incognito'] == true,
+        verifiedOnlyEverywhere: json['global_verified_only'] == true,
+        pauseNewMatches: json['pause_new_matches'] == true,
         snooze: isSnoozed
             ? Snooze(endsAt: endsAt == null ? null : DateTime.tryParse(endsAt))
             : null,
@@ -115,6 +123,17 @@ final class UserSettings {
   /// Whether other people see when the user is online or was last active.
   final bool showLastActive;
 
+  /// Only people the user has liked, and their matches, see them in
+  /// Discover.
+  final bool incognito;
+
+  /// Discover shows only verified people, in every mode.
+  final bool verifiedOnlyEverywhere;
+
+  /// The user stays visible but matches with nobody new. Likes wait until
+  /// the pause ends.
+  final bool pauseNewMatches;
+
   /// The break the user is taking, or `null` when they aren't taking one.
   /// On a break, nobody new sees them in Discover.
   final Snooze? snooze;
@@ -129,6 +148,10 @@ final class UserSettings {
     double? textScale,
     bool? reduceMotion,
     bool? highContrast,
+    bool? incognito,
+    bool? verifiedOnlyEverywhere,
+    bool? pauseNewMatches,
+    ValueGetter<Snooze?>? snooze,
   }) {
     return UserSettings(
       distanceUnit: distanceUnit ?? this.distanceUnit,
@@ -138,7 +161,11 @@ final class UserSettings {
       textScale: textScale ?? this.textScale,
       reduceMotion: reduceMotion ?? this.reduceMotion,
       highContrast: highContrast ?? this.highContrast,
-      snooze: snooze,
+      incognito: incognito ?? this.incognito,
+      verifiedOnlyEverywhere:
+          verifiedOnlyEverywhere ?? this.verifiedOnlyEverywhere,
+      pauseNewMatches: pauseNewMatches ?? this.pauseNewMatches,
+      snooze: snooze == null ? this.snooze : snooze(),
     );
   }
 }
