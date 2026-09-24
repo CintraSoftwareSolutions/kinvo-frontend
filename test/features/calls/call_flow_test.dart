@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kinvo/src/core/navigation/app_routes.dart';
 import 'package:kinvo/src/core/realtime/realtime_events.dart';
@@ -133,6 +134,9 @@ void main() {
     await app.pumpUntilFound(find.byType(CallScreen));
     expect(find.text('Voice call'), findsOneWidget);
     expect(find.text('Incoming'), findsOneWidget);
+    // Answering with a camera icon promises a video call nobody asked for.
+    expect(find.byIcon(Icons.call_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.videocam_rounded), findsNothing);
 
     await tester.tap(find.text('Decline'));
     await app.pumpUntilGone(find.byType(CallScreen));
@@ -195,6 +199,12 @@ void main() {
 
     expect(server.calls.single.status, 'active');
     expect(app.backend.ringtones.playing, isFalse);
+
+    // The controls a live call has, each named the same whichever way it is
+    // set: the icon and the fill say which way that is.
+    expect(find.text('Mute'), findsOneWidget);
+    expect(find.text('Speaker'), findsOneWidget);
+    expect(find.text('Video'), findsOneWidget);
   });
 
   testWidgets('a call going out does not ring this phone', (tester) async {

@@ -29,6 +29,11 @@ final class LiveKitCallMedia extends ChangeNotifier implements CallMedia {
   String? _failure;
   bool _microphoneOn = true;
   bool _cameraOn = true;
+
+  /// Where the sound comes out. Set from the kind of call when it is joined:
+  /// a video call is held away from the face and a voice call against it, so
+  /// starting a voice call on the loudspeaker would play a private
+  /// conversation to the room.
   bool _speakerOn = true;
   bool _disposed = false;
 
@@ -63,6 +68,8 @@ final class LiveKitCallMedia extends ChangeNotifier implements CallMedia {
     // still turn it on later, which is what makes this a starting state rather
     // than a restriction.
     _cameraOn = withCamera;
+    // And with the sound at the ear, like every other voice call on the phone.
+    _speakerOn = withCamera;
 
     _set(CallMediaPhase.connecting, failure: null);
     _room.addListener(_onRoomChanged);
@@ -151,6 +158,12 @@ final class LiveKitCallMedia extends ChangeNotifier implements CallMedia {
     _cameraOn = on;
     _notify();
     await _room.localParticipant?.setCameraEnabled(on);
+
+    // Turning the camera on during a voice call moves the sound with it: the
+    // phone is about to be held at arm's length, where an earpiece cannot be
+    // heard. Turning it off does not move the sound back, because by then the
+    // person may have chosen where they want it.
+    if (on && !_speakerOn) await setSpeaker(on: true);
   }
 
   @override

@@ -10,6 +10,7 @@ import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
     private var ringtones: RingtoneBridge? = null
+    private var callWindow: CallWindowBridge? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,6 +29,15 @@ class MainActivity : FlutterActivity() {
         // one.
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, RingtoneBridge.CHANNEL)
             .setMethodCallHandler(bridge)
+
+        // Also the activity's, for the same reason: the window a call is
+        // shown in belongs to it.
+        val window = CallWindowBridge(applicationContext)
+        window.attach(this)
+        callWindow = window
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CallWindowBridge.CHANNEL)
+            .setMethodCallHandler(window)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: android.content.Intent?) {
@@ -40,6 +50,8 @@ class MainActivity : FlutterActivity() {
         // otherwise leave the phone ringing with nothing on screen.
         ringtones?.detach()
         ringtones = null
+        callWindow?.detach()
+        callWindow = null
         super.onDestroy()
     }
 

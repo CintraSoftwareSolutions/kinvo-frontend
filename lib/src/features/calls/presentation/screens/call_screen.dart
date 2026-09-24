@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../profile/presentation/widgets/person_photo.dart';
 import '../../domain/call.dart';
 import '../../media/call_media.dart';
+import '../call_window.dart';
 import '../controllers/call_controller.dart';
 import '../widgets/call_safety_sheet.dart';
 
@@ -25,6 +26,14 @@ class CallScreen extends ConsumerStatefulWidget {
 class _CallScreenState extends ConsumerState<CallScreen> {
   Timer? _tick;
 
+  /// Held rather than read later: a provider cannot be read from dispose,
+  /// and that is precisely when the lock screen must come back.
+  late final CallWindow _window = ref.read(callWindowProvider);
+
+  /// What the window was last asked for, so a screen that rebuilds every
+  /// second asks the platform only when something has actually changed.
+  bool? _awake;
+
   @override
   void initState() {
     super.initState();
@@ -33,12 +42,27 @@ class _CallScreenState extends ConsumerState<CallScreen> {
     _tick = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) setState(() {});
     });
+
+    // Over the lock screen from the first frame: this screen is often the
+    // reason a sleeping phone woke up at all.
+    unawaited(_window.set(showOverLockScreen: true, keepAwake: false));
   }
 
   @override
   void dispose() {
     _tick?.cancel();
+    // After this the screen is gone, and the rest of Kinvo must be behind the
+    // lock screen again.
+    unawaited(_window.clear());
     super.dispose();
+  }
+
+  /// Keeps the screen lit while there is a picture to watch, and lets it
+  /// behave normally on a voice call held to an ear.
+  void _keepAwake({required bool awake}) {
+    if (_awake == awake) return;
+    _awake = awake;
+    unawaited(_window.set(showOverLockScreen: true, keepAwake: awake));
   }
 
   @override
@@ -61,6 +85,12 @@ class _CallScreenState extends ConsumerState<CallScreen> {
     }
 
     final media = call.media;
+    _keepAwake(
+      awake:
+          call.call.kind == CallKind.video ||
+          (media?.cameraOn ?? false) ||
+          (media?.otherPersonVideoOn ?? false),
+    );
 
     return PopScope(
       // Backing out of a call must not leave it running with the camera on.
@@ -244,7 +274,6 @@ class _Controls extends StatelessWidget {
   Widget build(BuildContext context) {
     if (call.call.status.isLive && call.isIncoming) {
       return Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _CallButton(
             icon: Icons.call_end_rounded,
@@ -254,7 +283,9 @@ class _Controls extends StatelessWidget {
             onTap: call.ending ? null : () => unawaited(controller.decline()),
           ),
           _CallButton(
-            icon: Icons.videocam_rounded,
+            icon: call.call.kind == CallKind.audio
+                ? Icons.call_rounded
+                : Icons.videocam_rounded,
             label: 'Answer',
             background: AppColors.success,
             size: 64,
@@ -276,34 +307,43 @@ class _Controls extends StatelessWidget {
 
     final enabled = media != null && media!.phase == CallMediaPhase.connected;
 
+    // With no media — a server with no video service, or a call still
+    // connecting — the controls show what this call would be rather than what
+    // it is, because nothing is on or off yet. They are greyed out, and none
+    // of them is lit: an unusable button that looks switched on is a lie.
+    final video = call.call.kind == CallKind.video;
+    final microphoneOn = media?.microphoneOn ?? true;
+    final speakerOn = media?.speakerOn ?? video;
+    final cameraOn = media?.cameraOn ?? video;
+
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
+        // The three toggles keep their names and show their state, the way
+        // every phone's call screen does: the icon says which way it is, and
+        // the button is filled while it is doing the notable thing. A label
+        // that changed under a thumb would be read after it was pressed.
         _CallButton(
-          icon: media?.microphoneOn ?? false
-              ? Icons.mic_rounded
-              : Icons.mic_off_rounded,
+          icon: microphoneOn ? Icons.mic_rounded : Icons.mic_off_rounded,
           label: 'Mute',
+          active: enabled && !microphoneOn,
           onTap: enabled
-              ? () => unawaited(media!.setMicrophone(on: !media!.microphoneOn))
+              ? () => unawaited(media!.setMicrophone(on: !microphoneOn))
               : null,
         ),
         _CallButton(
-          icon: media?.speakerOn ?? false
-              ? Icons.volume_up_rounded
-              : Icons.hearing_rounded,
+          icon: speakerOn ? Icons.volume_up_rounded : Icons.hearing_rounded,
           label: 'Speaker',
+          active: enabled && speakerOn,
           onTap: enabled
-              ? () => unawaited(media!.setSpeaker(on: !media!.speakerOn))
+              ? () => unawaited(media!.setSpeaker(on: !speakerOn))
               : null,
         ),
         _CallButton(
-          icon: media?.cameraOn ?? false
-              ? Icons.videocam_rounded
-              : Icons.videocam_off_rounded,
-          label: 'Camera',
+          icon: cameraOn ? Icons.videocam_rounded : Icons.videocam_off_rounded,
+          label: 'Video',
+          active: enabled && !cameraOn,
           onTap: enabled
-              ? () => unawaited(media!.setCamera(on: !media!.cameraOn))
+              ? () => unawaited(media!.setCamera(on: !cameraOn))
               : null,
         ),
         _CallButton(
@@ -330,6 +370,7 @@ class _CallButton extends StatelessWidget {
     required this.onTap,
     this.background,
     this.size = 52,
+    this.active = false,
   });
 
   final IconData icon;
@@ -338,37 +379,57 @@ class _CallButton extends StatelessWidget {
   final Color? background;
   final double size;
 
+  /// Whether the thing this button controls is in its notable state — muted,
+  /// on the loudspeaker, camera off. Drawn filled, as every phone draws a
+  /// call control that is doing something.
+  final bool active;
+
   @override
   Widget build(BuildContext context) {
     // The label is part of the button, not a caption beside it: a 52-pixel
     // circle is a small target for a thumb during a call, and someone aiming
     // for "End" hits the word as often as the icon.
-    return Semantics(
-      button: true,
-      label: label,
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: Opacity(
-          opacity: onTap == null ? 0.5 : 1,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: size,
-                height: size,
-                decoration: BoxDecoration(
-                  color: background ?? Colors.white24,
-                  shape: BoxShape.circle,
+    final foreground = active ? Colors.black87 : Colors.white;
+
+    return Expanded(
+      child: Semantics(
+        button: true,
+        label: label,
+        // Screen readers hear the state as well as the name, which is the
+        // whole difference between "Mute" and "Mute, on".
+        toggled: background == null ? active : null,
+        child: GestureDetector(
+          onTap: onTap,
+          behavior: HitTestBehavior.opaque,
+          child: Opacity(
+            opacity: onTap == null ? 0.5 : 1,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: size,
+                  height: size,
+                  decoration: BoxDecoration(
+                    color:
+                        background ?? (active ? Colors.white : Colors.white24),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    icon,
+                    color: background == null ? foreground : Colors.white,
+                    size: size * 0.44,
+                  ),
                 ),
-                child: Icon(icon, color: Colors.white, size: size * 0.44),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                label,
-                style: const TextStyle(fontSize: 11, color: Colors.white70),
-              ),
-            ],
+                const SizedBox(height: 6),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 11, color: Colors.white70),
+                ),
+              ],
+            ),
           ),
         ),
       ),
