@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/ads/ads_controller.dart';
 import '../../../../core/assets/app_assets.dart';
 import '../../../../core/auth/auth_providers.dart';
 import '../../../../core/auth/session_status.dart';
@@ -37,6 +38,10 @@ class SettingsScreen extends ConsumerWidget {
         ? ref.watch(pushPermissionProvider).value
         : null;
     final settings = ref.watch(userSettingsProvider).value;
+    // Where the law requires a way to change the answer given to Google's
+    // consent message — the UK and the EEA — and only for accounts that see
+    // ads at all.
+    final adPrivacyChoices = ref.watch(adsProvider).privacyOptionsRequired;
     // Watched so the modes are ready when the filters are opened.
     final modes = ref.watch(discoveryModesProvider);
 
@@ -119,6 +124,17 @@ class SettingsScreen extends ConsumerWidget {
                             : null,
                         onTap: () => context.push(AppRoutes.privacy),
                       ),
+                      if (adPrivacyChoices)
+                        SettingsLink(
+                          icon: Icons.campaign_outlined,
+                          title: 'Ad privacy choices',
+                          description: 'Change what ads may use about you',
+                          onTap: () => unawaited(
+                            ref
+                                .read(adConsentProvider.notifier)
+                                .showPrivacyOptions(),
+                          ),
+                        ),
                     ],
                   ),
                   const SizedBox(height: 22),

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/ads/ads_controller.dart';
+import '../../../../core/ads/banner_slot.dart';
 import '../../../../core/assets/app_assets.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -37,6 +39,13 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   /// doesn't land on top of whatever just opened.
   static const _invitationDelay = Duration(seconds: 2);
 
+  /// The screens a banner may sit under, for accounts that see ads.
+  static const _bannerPaths = {
+    AppRoutes.matches,
+    AppRoutes.plans,
+    AppRoutes.more,
+  };
+
   late final StreamSubscription<LiveUpdate> _updates;
   bool _inviting = false;
 
@@ -58,6 +67,13 @@ class _HomeShellState extends ConsumerState<HomeShell> {
 
   @override
   Widget build(BuildContext context) {
+    // Ads live as long as the home screen, for accounts that see them:
+    // Google's consent message belongs at launch rather than whenever the
+    // first banner happens to show, and an interstitial should be loaded
+    // before one can be due. A listener, not a read: Riverpod pauses a
+    // provider nothing listens to, and a paused one loads nothing. For anyone
+    // who doesn't see ads this settles at once and asks nothing.
+    ref.listen(interstitialAdsProvider, (_, _) {});
     ref.listen(pushInvitationProvider, (_, invite) {
       if (invite.value == true) unawaited(_inviteToNotifications());
     });
@@ -86,6 +102,10 @@ class _HomeShellState extends ConsumerState<HomeShell> {
       child: Column(
         children: [
           Expanded(child: navigationShell),
+          // Only on these tabs' own screens: never over the deck, where the
+          // swipe buttons are, and never on anything opened from a tab.
+          if (_bannerPaths.contains(GoRouter.of(context).state.uri.path))
+            const BannerSlot(),
           HomeBottomNav(
             items: navItems,
             currentIndex: navigationShell.currentIndex,

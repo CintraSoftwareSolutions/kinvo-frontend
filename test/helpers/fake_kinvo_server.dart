@@ -355,6 +355,7 @@ final class FakeKinvoServer {
         'purchase_mode': purchaseMode,
       }),
       ('GET', ['subscriptions', 'me']) => _ok(_currentPlanView()),
+      ('GET', ['entitlements']) => _ok(_entitlementsView()),
       ('POST', ['subscriptions', 'test-purchase']) => _testPurchase(body),
       ('DELETE', ['subscriptions', 'test-purchase']) => _endTestPlan(),
       ('GET', ['verification']) => _ok(_verificationView()),
@@ -2853,6 +2854,23 @@ final class FakeKinvoServer {
               'cancelled_at': null,
               'created_at': current.periodStart.toIso8601String(),
             },
+    };
+  }
+
+  /// What the plan unlocks, as the server's matrix has it: ads for the free
+  /// plan only, and seeing who liked you on Premium.
+  Map<String, Object?> _entitlementsView() {
+    final current = subscription;
+    final tier = current != null && current.isActive ? current.tier : 'free';
+    return {
+      'tier': tier,
+      'flags': {
+        'show_ads': tier == 'free',
+        'see_who_liked_you': tier == 'advanced',
+        'rewind': tier != 'free',
+      },
+      'quotas': const <String, Object?>{},
+      'upgrade_available': tier != 'advanced',
     };
   }
 

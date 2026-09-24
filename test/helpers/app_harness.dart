@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kinvo/src/app.dart';
+import 'package:kinvo/src/core/ads/ads_platform.dart';
 import 'package:kinvo/src/core/auth/auth_tokens.dart';
 import 'package:kinvo/src/core/navigation/app_router.dart';
 import 'package:kinvo/src/core/push/push_messaging.dart';
@@ -116,8 +118,10 @@ Future<AppHarness> pumpKinvoApp(
   FakeRealtimeServer? realtime,
   PushMessaging? push,
   FakeCallNotifications? callNotifications,
+  AdsPlatform? ads,
   bool demoAvailable = true,
   Clock? clock,
+  List<Override> overrides = const [],
 }) async {
   tester.view
     ..physicalSize = const Size(1170, 2532)
@@ -129,6 +133,7 @@ Future<AppHarness> pumpKinvoApp(
     realtime: realtime,
     push: push,
     callNotifications: callNotifications,
+    ads: ads,
   );
   if (savedSession != null) {
     await backend.tokenStore.write(savedSession);
@@ -139,7 +144,10 @@ Future<AppHarness> pumpKinvoApp(
       // Retries are covered by their own tests; here they would only add
       // timers.
       retry: (_, _) => null,
-      overrides: backend.overrides(demoAvailable: demoAvailable, clock: clock),
+      overrides: [
+        ...backend.overrides(demoAvailable: demoAvailable, clock: clock),
+        ...overrides,
+      ],
       child: const KinvoApp(),
     ),
   );

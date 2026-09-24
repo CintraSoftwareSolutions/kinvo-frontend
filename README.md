@@ -569,6 +569,46 @@ new phone. `userSettingsProvider` holds them for the session.
   stored by the server but not applied yet, so the app doesn't offer them.
   Theme and accessibility is still a sample screen.
 
+## Ads
+
+Spec §7.4: Google AdMob, banners and interstitials, for the free plan only.
+
+- **Who sees them is the server's answer**: the `show_ads` flag in
+  `GET /entitlements`, read again when `entitlements:updated` arrives, so an
+  upgrade takes the ads away at once. The app never works it out from a plan's
+  name. Anything unknown means no ads — while loading, after a failure, in the
+  demo, and signed out.
+- **Banners** sit above the navigation bar on Matches, Plans and More, and only
+  on those tabs' own screens (`HomeShell._bannerPaths`). Never on Discover,
+  where the swipe buttons are — an ad a thumb lands on by accident is an
+  invalid click, and AdMob penalises the account for it. A banner takes no room
+  until it has loaded.
+- **Interstitials** come between cards in Discover, by
+  `InterstitialPolicy`: every 15 swipes at most, at least 3 minutes apart,
+  never in the first minute, and never on a swipe that made a match. One is
+  loaded in advance; if none is ready when one is due, none shows.
+- **Consent**: Google's consent message (UMP) is shown at launch where the law
+  requires it — the UK and the EEA — and only to accounts that see ads. No ad
+  is requested until it allows. The message itself is set up in AdMob, under
+  Privacy & messaging; until it is, nothing is shown. Where the law requires a way to change the
+  answer, Settings shows "Ad privacy choices".
+- **Content**: nothing rated above T (teen).
+
+| Setting                                                   | What it is                                                                   |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `-Pkinvo.admobAppId=ca-app-pub-…~…` (Gradle)              | The AdMob Android app. Google's sample app unless given.                     |
+| `GADApplicationIdentifier` in `ios/Runner/Info.plist`     | The AdMob iOS app. Google's sample app until changed.                        |
+| `ADMOB_ANDROID_BANNER_ID`, `ADMOB_ANDROID_INTERSTITIAL_ID` | Android ad units, as `--dart-define`s. Google's test units unless given.     |
+| `ADMOB_IOS_BANNER_ID`, `ADMOB_IOS_INTERSTITIAL_ID`         | iOS ad units, the same way.                                                  |
+
+Real IDs belong in a production build's settings only. A debug build always
+asks for Google's test units whatever it is given, and `env/staging.json`
+names none — tapping a real ad from a test build is invalid traffic, and AdMob
+closes accounts over it.
+
+No test reaches Google's SDK: the app talks to `AdsPlatform`, and tests use
+`FakeAdsPlatform`, which records what it was asked to do.
+
 ## Photos and uploads
 
 `MediaUploader` uploads the way the backend requires: ask for a presigned URL

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kinvo/src/core/ads/ads_platform.dart';
 import 'package:kinvo/src/core/auth/google_identity.dart';
 import 'package:kinvo/src/features/calls/presentation/call_notifications.dart';
 import 'package:kinvo/src/core/auth/token_store.dart';
@@ -38,7 +39,9 @@ final class TestBackend {
     FakeRealtimeServer? realtime,
     PushMessaging? push,
     FakeCallNotifications? callNotifications,
+    AdsPlatform? ads,
   }) : respond = respond ?? _notFound,
+       ads = ads ?? const NoAdsPlatform(),
        realtime = realtime ?? FakeRealtimeServer(),
        push = push ?? const UnavailablePushMessaging(),
        callNotifications =
@@ -65,6 +68,10 @@ final class TestBackend {
   /// The call screen the phone draws for itself. Off unless a test asks
   /// for one, as on a build with no push settings.
   final FakeCallNotifications callNotifications;
+
+  /// Google's ad SDK. Off unless a test supplies a fake: no test may reach the
+  /// real one, which needs a phone and the network.
+  final AdsPlatform ads;
 
   final secureStore = InMemoryKeyValueStore();
   final preferences = InMemoryKeyValueStore();
@@ -110,6 +117,7 @@ final class TestBackend {
       // No test may reach the phone's ringtone chooser or make a sound.
       ringtonesProvider.overrideWithValue(ringtones),
       callNotificationsProvider.overrideWithValue(callNotifications),
+      adsPlatformProvider.overrideWithValue(ads),
       demoModeAvailableProvider.overrideWithValue(demoAvailable),
       // The camera, photo library and location need a real device.
       photoPickerProvider.overrideWithValue(photoPicker),

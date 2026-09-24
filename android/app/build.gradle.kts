@@ -28,6 +28,14 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // The AdMob app this build belongs to. Google's sample app unless the
+        // build is given a real one with -Pkinvo.admobAppId=ca-app-pub-...~...
+        // The SDK reads it at launch and stops the app without it, so it can
+        // never be left out — only left as the sample, which shows test ads.
+        manifestPlaceholders["admobAppId"] =
+            (project.findProperty("kinvo.admobAppId") as String?)
+                ?: "ca-app-pub-3940256099942544~3347511713"
     }
 
     buildTypes {

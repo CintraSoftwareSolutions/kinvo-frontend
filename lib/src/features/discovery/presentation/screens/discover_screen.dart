@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/ads/ads_controller.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -331,6 +334,12 @@ class _DeckBody extends ConsumerWidget {
     if (!context.mounted) return;
     switch (outcome) {
       case Swiped(:final card, result: SwipeResult(match: _?)):
+        // Counted, but no ad: this moment belongs to the match.
+        unawaited(
+          ref
+              .read(interstitialAdsProvider.notifier)
+              .swipeCompleted(matched: true),
+        );
         // The Matches tab shows the new match next time it's opened.
         ref.invalidate(matchesListProvider(false));
         final colors = modeColors(mode.value);
@@ -348,7 +357,13 @@ class _DeckBody extends ConsumerWidget {
         await showPaywallSheet(context, paywall);
       case SwipeFailed(:final message):
         _tell(context, message);
-      case Swiped() || CardGone() || null:
+      case Swiped():
+        // Between cards is the one natural break the deck has; whether an
+        // interstitial is due, and ready, is the ad controller's to decide.
+        await ref
+            .read(interstitialAdsProvider.notifier)
+            .swipeCompleted(matched: false);
+      case CardGone() || null:
         break;
     }
   }
