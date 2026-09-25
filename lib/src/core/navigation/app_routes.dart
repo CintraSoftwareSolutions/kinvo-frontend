@@ -10,7 +10,6 @@ abstract final class AppRoutes {
   // Signed out
   static const welcome = '/welcome';
   static const signup = '/signup';
-  static const otp = '/signup/verify-code';
   static const login = '/login';
   static const phoneSignIn = '/login/phone';
   static const resetPassword = '/login/reset-password';
@@ -83,18 +82,6 @@ abstract final class AppRoutes {
   /// The report form. Push it with a `ReportTarget` as `extra` to say who
   /// the report is about.
   static const reportPath = '/report';
-  static const reportConnectionParameter = 'connection';
-
-  /// The report form, about the demo's sample person [connectionId] when
-  /// given.
-  static String report({String? connectionId}) {
-    return Uri(
-      path: reportPath,
-      queryParameters: connectionId == null
-          ? null
-          : {reportConnectionParameter: connectionId},
-    ).toString();
-  }
 
   static const splashDestinationParameter = 'from';
 

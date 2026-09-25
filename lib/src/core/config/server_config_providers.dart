@@ -24,3 +24,17 @@ final serverConfigRepositoryProvider = Provider<ServerConfigRepository>(
 final serverConfigProvider = FutureProvider<ServerConfig>(
   (ref) => ref.watch(serverConfigRepositoryProvider).fetch(),
 );
+
+/// The ways of signing in to offer. Email only until the catalogue has
+/// loaded, and if it can't be: nothing is offered that the server hasn't
+/// confirmed.
+final signInMethodsProvider = Provider<SignInMethods>(
+  (ref) =>
+      ref.watch(serverConfigProvider).value?.signIn ?? SignInMethods.emailOnly,
+);
+
+/// Where people get help and read the rules. None until the catalogue has
+/// loaded.
+final supportLinksProvider = Provider<SupportLinks>(
+  (ref) => ref.watch(serverConfigProvider).value?.support ?? SupportLinks.none,
+);

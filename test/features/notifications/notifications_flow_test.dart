@@ -338,19 +338,4 @@ void main() {
       expect(find.byType(PushBannerContent), findsNothing);
     });
   });
-
-  testWidgets('the demo has sample notifications, offline', (tester) async {
-    final app = await pumpKinvoApp(tester);
-    await app.pumpUntilFound(find.text('Explore Demo'));
-    await tester.tap(find.text('Explore Demo'));
-    await app.pumpUntilFound(find.byType(DiscoverScreen));
-    await app.pumpUntilLoaded();
-
-    await app.pumpUntilFound(_bellCount('2'));
-    await tester.tap(_bell());
-    await app.pumpUntilFound(find.text('It is a match!'));
-    await app.pumpUntilLoaded();
-
-    expect(app.adapter.requests, isEmpty);
-  });
 }

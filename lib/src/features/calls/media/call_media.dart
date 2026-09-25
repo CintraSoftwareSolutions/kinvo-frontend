@@ -29,7 +29,7 @@ enum CallMediaPhase {
 /// Picture and sound for one call.
 ///
 /// An interface so the call screen never imports a vendor's SDK, and so tests
-/// and the demo can run the whole call without one. The one implementation
+/// can run the whole call without one. The one implementation
 /// that does is [LiveKitCallMedia]; it is the only file that knows which
 /// service is behind a call, matching the backend's provider interface.
 abstract class CallMedia extends ChangeNotifier {

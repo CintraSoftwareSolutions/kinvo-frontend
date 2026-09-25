@@ -1,12 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/demo/demo_mode.dart';
 import '../../../core/location/geo_point.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_client_provider.dart';
 import '../../../core/network/api_envelope.dart';
-import '../../../core/network/api_error_code.dart';
-import '../../../core/network/api_exception.dart';
 import '../domain/trusted_contact.dart';
 
 /// The most trusted contacts the server keeps for one account.
@@ -14,8 +11,7 @@ const maxTrustedContacts = 5;
 
 /// The user's trusted contacts, and alerting them.
 ///
-/// An interface because the demo shows the same screens without an account,
-/// on [DemoTrustedContactsRepository]. Failures are `ApiException`s.
+/// Failures are `ApiException`s.
 abstract interface class TrustedContactsRepository {
   Future<List<TrustedContact>> fetchContacts();
 
@@ -117,93 +113,9 @@ final class ApiTrustedContactsRepository implements TrustedContactsRepository {
   }
 }
 
-/// Trusted contacts for the demo, kept in memory. Nobody is ever emailed.
-final class DemoTrustedContactsRepository implements TrustedContactsRepository {
-  DemoTrustedContactsRepository();
-
-  final List<TrustedContact> _contacts = [
-    const TrustedContact(
-      id: 'demo-contact-1',
-      name: 'Mum',
-      phone: null,
-      email: 'mum@example.com',
-      relationship: 'Mum',
-    ),
-  ];
-  int _added = 0;
-
-  @override
-  Future<List<TrustedContact>> fetchContacts() async => List.of(_contacts);
-
-  @override
-  Future<TrustedContact> addContact(ContactDetails details) async {
-    if (_contacts.length >= maxTrustedContacts) {
-      throw const ApiErrorException(
-        code: ApiErrorCode.badRequest,
-        message: 'You can have at most 5 trusted contacts.',
-        statusCode: 400,
-      );
-    }
-    final contact = _build('demo-contact-new-${++_added}', details);
-    _contacts.add(contact);
-    return contact;
-  }
-
-  @override
-  Future<TrustedContact> updateContact(
-    String contactId,
-    ContactDetails details,
-  ) async {
-    final index = _contacts.indexWhere((contact) => contact.id == contactId);
-    if (index < 0) throw _notFound;
-    return _contacts[index] = _build(contactId, details);
-  }
-
-  @override
-  Future<void> deleteContact(String contactId) async {
-    _contacts.removeWhere((contact) => contact.id == contactId);
-  }
-
-  @override
-  Future<EmergencyAlert> raiseEmergency({
-    String? note,
-    GeoPoint? location,
-  }) async {
-    return const EmergencyAlert(
-      summary:
-          'This is the demo, so nobody was emailed. With an account, your '
-          'trusted contacts would be.',
-      contacts: [],
-    );
-  }
-
-  static TrustedContact _build(String id, ContactDetails details) {
-    String? filled(String? value) {
-      final trimmed = value?.trim() ?? '';
-      return trimmed.isEmpty ? null : trimmed;
-    }
-
-    return TrustedContact(
-      id: id,
-      name: details.name.trim(),
-      phone: filled(details.phone),
-      email: filled(details.email),
-      relationship: filled(details.relationship),
-    );
-  }
-
-  static const _notFound = ApiErrorException(
-    code: ApiErrorCode.notFound,
-    message: 'We could not find that.',
-    statusCode: 404,
-  );
-}
-
-/// The repository trusted contacts use: the demo's while exploring it, the
-/// API's otherwise.
+/// The repository trusted contacts use.
 final trustedContactsRepositoryProvider = Provider<TrustedContactsRepository>((
   ref,
 ) {
-  if (ref.watch(demoSessionProvider)) return DemoTrustedContactsRepository();
   return ApiTrustedContactsRepository(ref.watch(apiClientProvider));
 });

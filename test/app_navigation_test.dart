@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kinvo/src/core/auth/account_providers.dart';
-import 'package:kinvo/src/core/demo/demo_mode.dart';
 import 'package:kinvo/src/core/navigation/app_routes.dart';
 import 'package:kinvo/src/features/discovery/presentation/screens/discover_screen.dart';
 import 'package:kinvo/src/features/home/presentation/widgets/home_bottom_nav.dart';
@@ -41,7 +40,6 @@ void main() {
 
     await app.pumpUntilFound(find.text('Create Account'));
     expect(find.text('Log In'), findsOneWidget);
-    expect(find.text('Explore Demo'), findsOneWidget);
   });
 
   testWidgets('signed in with a finished profile, the app opens on Discover', (
@@ -159,43 +157,31 @@ void main() {
     },
   );
 
-  testWidgets('Explore Demo opens the app on sample data', (tester) async {
-    final app = await pumpKinvoApp(tester);
-    await app.pumpUntilFound(find.text('Explore Demo'));
-
-    await tester.tap(find.text('Explore Demo'));
-
-    await app.pumpUntilFound(find.byType(DiscoverScreen));
-    await app.pumpUntilLoaded();
-    expect(app.adapter.requests, isEmpty);
-  });
-
-  testWidgets('builds without demo mode hide Explore Demo', (tester) async {
-    final app = await pumpKinvoApp(tester, demoAvailable: false);
-
-    await app.pumpUntilFound(find.text('Create Account'));
-    expect(find.text('Explore Demo'), findsNothing);
-  });
-
   testWidgets('every app location opens its screen', (tester) async {
-    final app = await pumpKinvoApp(tester);
-    await app.pumpUntilFound(find.text('Create Account'));
-    app.container.read(demoSessionProvider.notifier).start();
+    final server = FakeKinvoServer()
+      ..completeProfile()
+      ..isOnboarded = true;
+    final app = await pumpKinvoApp(
+      tester,
+      savedSession: liveSession(),
+      respond: server.respond,
+    );
+    await app.pumpUntilFound(find.byType(DiscoverScreen));
 
     final locations = [
       AppRoutes.discover,
       AppRoutes.notifications,
       AppRoutes.matches,
-      AppRoutes.chat('sarah'),
+      AppRoutes.chat('conversation-1'),
       // With no call in progress this is a blank screen, which is the point:
       // a link to it left in history can never reopen a call that has ended.
       AppRoutes.call,
       AppRoutes.plans,
       AppRoutes.planComposer,
-      AppRoutes.planWith('sarah'),
+      AppRoutes.planWith('match-1'),
       AppRoutes.venues,
-      AppRoutes.plan('demo-plan-1'),
-      AppRoutes.editPlan('demo-plan-4'),
+      AppRoutes.plan('plan-1'),
+      AppRoutes.editPlan('plan-4'),
       AppRoutes.profile,
       AppRoutes.profileEdit,
       AppRoutes.profileInterests,
@@ -213,8 +199,7 @@ void main() {
       AppRoutes.theme,
       AppRoutes.settings,
       AppRoutes.notificationSettings,
-      AppRoutes.report(),
-      AppRoutes.report(connectionId: 'sarah'),
+      AppRoutes.reportPath,
     ];
 
     for (final location in locations) {
@@ -233,14 +218,21 @@ void main() {
     // Leave screens with timers, such as the video call.
     app.router.go(AppRoutes.discover);
     await tester.pump(const Duration(milliseconds: 300));
+    await app.pumpUntilLoaded();
   });
 
   testWidgets('a link to a missing conversation says it is not available', (
     tester,
   ) async {
-    final app = await pumpKinvoApp(tester);
-    await app.pumpUntilFound(find.text('Create Account'));
-    app.container.read(demoSessionProvider.notifier).start();
+    final server = FakeKinvoServer()
+      ..completeProfile()
+      ..isOnboarded = true;
+    final app = await pumpKinvoApp(
+      tester,
+      savedSession: liveSession(),
+      respond: server.respond,
+    );
+    await app.pumpUntilFound(find.byType(DiscoverScreen));
 
     app.router.go(AppRoutes.chat('nobody'));
     await app.pumpUntilFound(find.text("This conversation isn't available"));

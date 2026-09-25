@@ -57,7 +57,7 @@ class SafetyCenterScreen extends ConsumerWidget {
                     iconColor: AppColors.textPrimary,
                     title: 'Report a user',
                     subtitle: 'Tell us about someone who made you feel unsafe.',
-                    onTap: () => context.push(AppRoutes.report()),
+                    onTap: () => context.push(AppRoutes.reportPath),
                   ),
                   const SizedBox(height: 8),
                   SettingsTile(

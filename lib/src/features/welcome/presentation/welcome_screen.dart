@@ -1,20 +1,21 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/demo/demo_mode.dart';
+import '../../../core/config/server_config_providers.dart';
+import '../../../core/links/external_links.dart';
 import '../../../core/navigation/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/gradient_scaffold.dart';
 import '../../../core/widgets/kinvo_logo.dart';
 
-class WelcomeScreen extends ConsumerWidget {
+class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final demoAvailable = ref.watch(demoModeAvailableProvider);
-
+  Widget build(BuildContext context) {
     return GradientScaffold(
       background: AppColors.welcomeBackground,
       child: SafeArea(
@@ -117,39 +118,61 @@ class WelcomeScreen extends ConsumerWidget {
                   child: const Text('Log In'),
                 ),
               ),
-              if (demoAvailable) ...[
-                const SizedBox(height: 14),
-                Semantics(
-                  button: true,
-                  child: GestureDetector(
-                    onTap: () => continueInDemo(
-                      context,
-                      ref,
-                      destination: AppRoutes.discover,
-                    ),
-                    child: Text(
-                      'Explore Demo',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-              const SizedBox(height: 14),
-              Text(
-                'By continuing, you agree to our Terms & Privacy Policy',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.white.withValues(alpha: 0.7),
-                  fontSize: 10.5,
-                ),
-              ),
+              const _LegalLine(),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// What continuing agrees to, with links to both pages. Said only once Kinvo
+/// has published its terms and privacy policy: agreeing to pages that don't
+/// exist yet isn't something to ask of anyone.
+class _LegalLine extends ConsumerWidget {
+  const _LegalLine();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final links = ref.watch(supportLinksProvider);
+    final terms = links.terms;
+    final privacy = links.privacy;
+    if (terms == null || privacy == null) return const SizedBox.shrink();
+
+    final style = Theme.of(context).textTheme.bodyMedium?.copyWith(
+      color: Colors.white.withValues(alpha: 0.7),
+      fontSize: 10.5,
+    );
+    Widget link(String label, Uri page) {
+      return Semantics(
+        link: true,
+        child: GestureDetector(
+          onTap: () =>
+              unawaited(ref.read(externalLinksProvider).openPage(page)),
+          behavior: HitTestBehavior.opaque,
+          child: Text(
+            label,
+            style: style?.copyWith(
+              color: Colors.white,
+              decoration: TextDecoration.underline,
+              decorationColor: Colors.white,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 14),
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        children: [
+          Text('By continuing, you agree to our ', style: style),
+          link('Terms', terms),
+          Text(' and ', style: style),
+          link('Privacy Policy', privacy),
+        ],
       ),
     );
   }

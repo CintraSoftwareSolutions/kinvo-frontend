@@ -54,7 +54,7 @@ final class AdsState {
 ///
 /// Who sees them is the server's decision — `show_ads` among the account's
 /// entitlements — never worked out here from a plan's name. Anything unknown
-/// means no ads: while the plan is loading, if it cannot be read, in the demo,
+/// means no ads: while the plan is loading, if it cannot be read,
 /// and for anyone signed out.
 final adsProvider = Provider<AdsState>((ref) {
   if (!ref.watch(adsPlatformProvider).isAvailable) return AdsState.off;

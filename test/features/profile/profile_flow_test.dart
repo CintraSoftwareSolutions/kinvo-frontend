@@ -293,28 +293,4 @@ void main() {
     expect(find.text('Designer at Foundry'), findsOneWidget);
     expect(find.textContaining('Your distance is hidden.'), findsOneWidget);
   });
-
-  testWidgets('the demo profile changes without an account', (tester) async {
-    final app = await pumpKinvoApp(
-      tester,
-      clock: () => DateTime(2026, 9, 17, 10),
-    );
-    await app.pumpUntilFound(find.text('Explore Demo'));
-    await tester.tap(find.text('Explore Demo'));
-    await app.pumpUntilFound(find.byType(DiscoverScreen));
-    await app.pumpUntilLoaded();
-
-    app.router.go(AppRoutes.profileEdit);
-    await app.pumpUntilFound(_row('Name'));
-    await tester.tap(_row('Name'));
-    await app.pumpUntilFound(find.text('Your name'));
-    await tester.pump(const Duration(milliseconds: 500));
-    await tester.enterText(find.widgetWithText(TextField, 'Name'), 'Alex J');
-    await tester.tap(find.text('Save'));
-    await app.pumpUntilGone(find.text('Your name'));
-
-    app.router.go(AppRoutes.profile);
-    await app.pumpUntilFound(find.text('Alex J, 29'));
-    expect(app.adapter.requests, isEmpty);
-  });
 }

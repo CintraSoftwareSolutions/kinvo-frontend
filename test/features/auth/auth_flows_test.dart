@@ -101,7 +101,12 @@ void main() {
     expect(find.text('Enter your email address.'), findsOneWidget);
     expect(find.text('Enter a password.'), findsOneWidget);
     expect(find.text('Enter your date of birth.'), findsOneWidget);
-    expect(app.adapter.requests, isEmpty);
+    // Only the catalogue every launch reads: no sign-up was attempted.
+    expect(app.backend.requestsTo('/auth/register'), isEmpty);
+    expect(
+      app.adapter.requests.map((request) => request.uri.path),
+      everyElement('/api/v1/config'),
+    );
   });
 
   testWidgets('logging in opens the app', (tester) async {
@@ -168,39 +173,55 @@ void main() {
     semantics.dispose();
   });
 
-  testWidgets('production builds offer every way in that works', (
-    tester,
-  ) async {
-    final app = await pumpKinvoApp(tester, demoAvailable: false);
-    await openFromWelcome(tester, app, 'Log In');
+  group('the ways in', () {
+    const phone = 'Continue with your phone number';
+    const google = 'Continue with Google';
 
-    expect(field('EMAIL'), findsOneWidget);
-    // Resetting a password is a real flow, so it is not demo-only.
-    expect(find.text('Forgot password?'), findsOneWidget);
-    expect(find.text('Continue with your phone number'), findsOneWidget);
-    expect(find.text('Continue with Google'), findsOneWidget);
-    // The prototype cards, which lead nowhere.
-    expect(find.text('QUICK ACCESS'), findsNothing);
+    testWidgets('are every one the server can complete', (tester) async {
+      final backend = FakeKinvoServer();
+      final app = await pumpKinvoApp(tester, respond: backend.respond);
+      await openFromWelcome(tester, app, 'Log In');
+      await app.pumpUntilFound(find.text(google));
 
-    app.router.go(AppRoutes.signup);
-    await tester.pumpAndSettle();
+      expect(field('EMAIL'), findsOneWidget);
+      expect(find.text('Forgot password?'), findsOneWidget);
+      expect(find.text(phone), findsOneWidget);
 
-    expect(find.byType(SignupScreen), findsOneWidget);
-    expect(find.text('Continue with Google'), findsOneWidget);
-    // Apple needs a paid developer account and a Mac, so it stays a prop.
-    expect(find.text('Continue with Apple'), findsNothing);
-  });
+      app.router.go(AppRoutes.signup);
+      await tester.pumpAndSettle();
 
-  testWidgets('demo builds keep the prototype sign-in options', (tester) async {
-    final app = await pumpKinvoApp(tester);
-    await openFromWelcome(tester, app, 'Log In');
+      expect(find.byType(SignupScreen), findsOneWidget);
+      expect(find.text(google), findsOneWidget);
+      // Nothing is set up for Apple yet, so nothing offers it.
+      expect(find.text('Continue with Apple'), findsNothing);
+    });
 
-    expect(find.text('QUICK ACCESS'), findsOneWidget);
+    testWidgets('leave out phone while the server has it switched off', (
+      tester,
+    ) async {
+      final backend = FakeKinvoServer()..phoneSignIn = false;
+      final app = await pumpKinvoApp(tester, respond: backend.respond);
+      await openFromWelcome(tester, app, 'Log In');
+      await app.pumpUntilFound(find.text(google));
 
-    app.router.go(AppRoutes.signup);
-    await tester.pumpAndSettle();
+      // A button that could only fail is worse than none.
+      expect(find.text(phone), findsNothing);
+      expect(field('EMAIL'), findsOneWidget);
+    });
 
-    expect(find.text('Continue with Google'), findsOneWidget);
+    testWidgets('are email alone until the server has said more', (
+      tester,
+    ) async {
+      // No catalogue at all: nothing unconfirmed is offered.
+      final app = await pumpKinvoApp(tester);
+      await openFromWelcome(tester, app, 'Log In');
+      await tester.pump(const Duration(seconds: 1));
+
+      expect(field('EMAIL'), findsOneWidget);
+      expect(find.text(phone), findsNothing);
+      expect(find.text(google), findsNothing);
+      expect(find.text('OR'), findsNothing);
+    });
   });
 
   testWidgets('logging out from settings returns to the welcome screen', (
@@ -232,23 +253,6 @@ void main() {
       respond: server.respond,
     );
     await app.pumpUntilFound(find.text('About you'));
-
-    await tapAndOpenDialog(tester, find.text('Log out'));
-    await tester.tap(find.widgetWithText(FilledButton, 'Log out'));
-
-    await app.pumpUntilFound(find.text('Create Account'));
-  });
-
-  testWidgets('leaving the demo from settings returns to the welcome screen', (
-    tester,
-  ) async {
-    final app = await pumpKinvoApp(tester);
-    await openFromWelcome(tester, app, 'Explore Demo');
-    app.router.go(AppRoutes.settings);
-    await app.pumpUntilFound(find.byType(SettingsScreen));
-
-    // There's no account behind the demo to delete.
-    expect(find.text('Delete Account'), findsNothing);
 
     await tapAndOpenDialog(tester, find.text('Log out'));
     await tester.tap(find.widgetWithText(FilledButton, 'Log out'));

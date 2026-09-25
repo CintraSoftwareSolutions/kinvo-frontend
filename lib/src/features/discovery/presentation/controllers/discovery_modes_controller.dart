@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/auth/auth_providers.dart';
 import '../../../../core/config/server_config.dart';
 import '../../../../core/config/server_config_providers.dart';
-import '../../../../core/demo/demo_mode.dart';
 import '../../data/discovery_repository.dart';
 import '../../domain/discovery_formatting.dart';
 import '../../domain/discovery_mode.dart';
@@ -36,12 +35,9 @@ class SelectedDiscoveryModeController extends Notifier<String?> {
   void select(String mode) => state = mode;
 }
 
-/// Interest labels by slug, from the server's catalogue.
-///
-/// Empty in the demo, which runs without a connection and names interests
-/// from their slugs, and while the catalogue loads.
+/// Interest labels by slug, from the server's catalogue. Empty while the
+/// catalogue loads.
 final interestLabelsProvider = Provider.autoDispose<Map<String, String>>((ref) {
-  if (ref.watch(demoSessionProvider)) return const {};
   final config = ref.watch(serverConfigProvider).value;
   return {
     for (final interest in config?.interests ?? const <InterestOption>[])
@@ -51,8 +47,6 @@ final interestLabelsProvider = Provider.autoDispose<Map<String, String>>((ref) {
 
 /// A mode's label, by its API name: from the user's modes, then the server's
 /// catalogue, and otherwise made from the name itself.
-///
-/// The catalogue is only read outside the demo, which has no connection.
 final modeLabelProvider = Provider.autoDispose.family<String, String>((
   ref,
   mode,
@@ -61,11 +55,9 @@ final modeLabelProvider = Provider.autoDispose.family<String, String>((
   for (final each in modes) {
     if (each.value == mode) return each.label;
   }
-  if (!ref.watch(demoSessionProvider)) {
-    final config = ref.watch(serverConfigProvider).value;
-    for (final option in config?.modes ?? const <ModeOption>[]) {
-      if (option.value == mode) return option.label;
-    }
+  final config = ref.watch(serverConfigProvider).value;
+  for (final option in config?.modes ?? const <ModeOption>[]) {
+    if (option.value == mode) return option.label;
   }
   return humanise(mode);
 });

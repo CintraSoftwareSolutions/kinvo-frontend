@@ -36,7 +36,6 @@ dependencies:
   flutter_riverpod: ^3.4.3
   flutter_svg: ^2.2.0
   image_picker: ^1.1.2
-  pinput: ^5.0.0
   flutter_secure_storage: ^11.1.1
   shared_preferences: ^2.5.5
   package_info_plus: ^10.2.1
@@ -54,6 +53,7 @@ dependencies:
   flutter_callkit_incoming: ^3.1.5
   google_sign_in: ^7.2.0
   google_mobile_ads: ^9.1.0
+  url_launcher: ^6.3.2
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -74,7 +74,6 @@ flutter:
   uses-material-design: true
   assets:
     - assets/icons/
-    - assets/images/avatars/
     - assets/fonts/OFL.txt
 
   fonts:

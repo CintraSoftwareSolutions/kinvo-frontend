@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/auth/auth_providers.dart';
 import 'core/auth/session_status.dart';
+import 'core/config/server_config_providers.dart';
 import 'core/navigation/app_router.dart';
 import 'core/push/push_providers.dart';
 import 'core/realtime/realtime_providers.dart';
@@ -51,7 +52,11 @@ class _KinvoAppState extends ConsumerState<KinvoApp> {
       ..listen(callScreenKeeperProvider, (_, _) {})
       // And a call answered on the lock screen, of a phone that was closed
       // when it arrived, is picked up here.
-      ..listen(callkitKeeperProvider, (_, _) {});
+      ..listen(callkitKeeperProvider, (_, _) {})
+      // The server's catalogue, asked for at launch: the sign-in screens and
+      // the welcome screen's legal line are ready the moment they open,
+      // rather than filling in after.
+      ..listen(serverConfigProvider, (_, _) {});
 
     final appearance = ref.watch(appearanceProvider);
 

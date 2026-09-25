@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/auth/auth_providers.dart';
 import '../../../../core/auth/session_status.dart';
-import '../../../../core/demo/demo_mode.dart';
 import '../../../../core/theme/app_appearance.dart';
 import '../../../../core/time/clock.dart';
 import '../../../../core/units/distance.dart';
@@ -24,13 +23,10 @@ class UserSettingsController extends AsyncNotifier<UserSettings> {
   Future<UserSettings> build() async {
     final session = ref.watch(sessionStatusProvider);
 
-    // Nobody is signed in and the demo has not been started: there are no
-    // settings to read, and asking for them would be a request with no
-    // session behind it — which the demo, which never touches the network,
-    // would make on the welcome screen.
-    if (session is! SignedIn && !ref.watch(demoSessionProvider)) {
-      return UserSettings.defaults;
-    }
+    // Nobody is signed in: there are no settings to read, and asking for them
+    // would be a request with no session behind it, made from the welcome
+    // screen.
+    if (session is! SignedIn) return UserSettings.defaults;
 
     return ref.watch(settingsRepositoryProvider).fetchSettings();
   }

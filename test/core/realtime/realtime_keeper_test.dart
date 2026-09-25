@@ -66,22 +66,6 @@ void main() {
     expect(server.realtime.attempts, isEmpty);
   });
 
-  testWidgets('never connects in the demo', (tester) async {
-    final server = _onboarded();
-    final app = await pumpKinvoApp(
-      tester,
-      respond: server.respond,
-      realtime: server.realtime,
-    );
-    await app.pumpUntilFound(find.text('Explore Demo'));
-
-    await tester.tap(find.text('Explore Demo'));
-    await app.pumpUntilFound(find.byType(DiscoverScreen));
-    await app.pumpUntilLoaded();
-
-    expect(server.realtime.attempts, isEmpty);
-  });
-
   testWidgets('closes a while after the app leaves the screen, and opens '
       'again when it comes back', (tester) async {
     final server = _onboarded();

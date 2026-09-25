@@ -1,18 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/demo/demo_mode.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_client_provider.dart';
 import '../../../core/network/api_envelope.dart';
-import '../../../core/time/clock.dart';
 import '../../../core/units/distance.dart';
 import '../domain/signed_in_device.dart';
 import '../domain/user_settings.dart';
 
 /// The signed-in user's settings.
 ///
-/// An interface because the demo shows the same screens without an account,
-/// on [DemoSettingsRepository]. Failures are `ApiException`s.
+/// Failures are `ApiException`s.
 abstract interface class SettingsRepository {
   Future<UserSettings> fetchSettings();
 
@@ -96,8 +93,6 @@ final class ApiSettingsRepository implements SettingsRepository {
 }
 
 /// The phones and tablets signed in to the account.
-///
-/// An interface for the demo, as [SettingsRepository] is.
 abstract interface class DevicesRepository {
   /// Most recently used first.
   Future<List<SignedInDevice>> fetchDevices();
@@ -151,134 +146,12 @@ final class ApiDevicesRepository implements DevicesRepository {
   }
 }
 
-/// The demo's settings and devices, kept for as long as the demo runs.
-final class DemoSettings {
-  DemoSettings({required Clock clock})
-    : devices = [
-        SignedInDevice(
-          id: 'demo-this-device',
-          platform: 'android',
-          model: 'This phone',
-          isCurrent: true,
-          lastSeenAt: clock(),
-        ),
-        SignedInDevice(
-          id: 'demo-tablet',
-          platform: 'ios',
-          model: 'iPad Air',
-          osVersion: 'iPadOS 18.1',
-          appVersion: '1.0.0+1',
-          isCurrent: false,
-          lastSeenAt: clock().subtract(const Duration(days: 3)),
-        ),
-        SignedInDevice(
-          id: 'demo-old-phone',
-          platform: 'android',
-          model: 'Google Pixel 6',
-          osVersion: 'Android 14',
-          appVersion: '1.0.0+1',
-          isCurrent: false,
-          lastSeenAt: clock().subtract(const Duration(days: 40)),
-        ),
-      ];
-
-  UserSettings settings = UserSettings.defaults;
-  final List<SignedInDevice> devices;
-}
-
-final demoSettingsProvider = Provider<DemoSettings>((ref) {
-  ref.watch(demoSessionProvider);
-  return DemoSettings(clock: ref.watch(clockProvider));
-});
-
-/// [SettingsRepository] for the demo: settings are kept in [DemoSettings],
-/// and nothing is sent anywhere.
-final class DemoSettingsRepository implements SettingsRepository {
-  const DemoSettingsRepository(this._demo);
-
-  final DemoSettings _demo;
-
-  @override
-  Future<UserSettings> fetchSettings() async => _demo.settings;
-
-  @override
-  Future<UserSettings> update({
-    DistanceUnit? distanceUnit,
-    bool? showDistance,
-    bool? showLastActive,
-    AppThemeChoice? theme,
-    double? textScale,
-    bool? reduceMotion,
-    bool? highContrast,
-    bool? incognito,
-    bool? verifiedOnlyEverywhere,
-    bool? pauseNewMatches,
-  }) async {
-    return _demo.settings = _demo.settings.copyWith(
-      distanceUnit: distanceUnit,
-      showDistance: showDistance,
-      showLastActive: showLastActive,
-      theme: theme,
-      textScale: textScale,
-      reduceMotion: reduceMotion,
-      highContrast: highContrast,
-      incognito: incognito,
-      verifiedOnlyEverywhere: verifiedOnlyEverywhere,
-      pauseNewMatches: pauseNewMatches,
-    );
-  }
-
-  // Every other setting carried across: rebuilding the settings here once
-  // dropped the demo's theme and text size whenever a break began or ended.
-  @override
-  Future<UserSettings> takeBreak({DateTime? until}) async {
-    return _demo.settings = _demo.settings.copyWith(
-      snooze: () => Snooze(endsAt: until),
-    );
-  }
-
-  @override
-  Future<UserSettings> endBreak() async {
-    return _demo.settings = _demo.settings.copyWith(snooze: () => null);
-  }
-}
-
-/// [DevicesRepository] for the demo, over [DemoSettings.devices].
-final class DemoDevicesRepository implements DevicesRepository {
-  const DemoDevicesRepository(this._demo);
-
-  final DemoSettings _demo;
-
-  @override
-  Future<List<SignedInDevice>> fetchDevices() async => [..._demo.devices];
-
-  @override
-  Future<void> signOut(String deviceId) async {
-    _demo.devices.removeWhere((device) => device.id == deviceId);
-  }
-
-  @override
-  Future<int> signOutOthers() async {
-    final before = _demo.devices.length;
-    _demo.devices.removeWhere((device) => !device.isCurrent);
-    return before - _demo.devices.length;
-  }
-}
-
-/// The repository settings use: the demo's while exploring it, the API's
-/// otherwise.
+/// The repository settings use.
 final settingsRepositoryProvider = Provider<SettingsRepository>((ref) {
-  if (ref.watch(demoSessionProvider)) {
-    return DemoSettingsRepository(ref.watch(demoSettingsProvider));
-  }
   return ApiSettingsRepository(ref.watch(apiClientProvider));
 });
 
-/// The repository the device list uses: the demo's while exploring it, the
-/// API's otherwise.
+/// The repository the device list uses.
 final devicesRepositoryProvider = Provider<DevicesRepository>((ref) {
-  if (ref.watch(demoSessionProvider)) {
-    return DemoDevicesRepository(ref.watch(demoSettingsProvider));
-  }
   return ApiDevicesRepository(ref.watch(apiClientProvider));
 });

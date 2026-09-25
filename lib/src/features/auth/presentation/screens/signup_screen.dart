@@ -3,12 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:kinvo/src/core/assets/app_assets.dart';
 import 'package:kinvo/src/core/auth/auth_providers.dart';
 import 'package:kinvo/src/core/auth/session_status.dart';
-import 'package:kinvo/src/core/demo/demo_mode.dart';
-import 'package:kinvo/src/core/navigation/app_routes.dart';
+import 'package:kinvo/src/core/config/server_config_providers.dart';
 import 'package:kinvo/src/core/theme/app_colors.dart';
 import 'package:kinvo/src/core/time/clock.dart';
 import 'package:kinvo/src/core/widgets/flow_widgets.dart';
@@ -29,6 +27,8 @@ class SignupScreen extends ConsumerWidget {
     final dateOfBirth = form.dateOfBirth;
     final googleState = ref.watch(socialSignInControllerProvider);
     final social = ref.read(socialSignInControllerProvider.notifier);
+    final useGoogle =
+        ref.watch(signInMethodsProvider).google && social.canUseGoogle;
 
     // A session starting here means the new details were accepted. Password
     // managers are told now, while the fields are still on screen.
@@ -48,10 +48,11 @@ class SignupScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Real for everyone: Google proves who they are, the server
-              // decides what that means here, and an account is made if
-              // there is none.
-              if (social.canUseGoogle) ...[
+              // Google proves who they are, the server decides what that
+              // means here, and an account is made if there is none. Offered
+              // only once the server has confirmed it can complete it, and
+              // when this build is set up for Google too.
+              if (useGoogle) ...[
                 SocialActionCard(
                   title: 'Continue with Google',
                   subtitle: 'No password to choose or remember.',
@@ -68,23 +69,6 @@ class SignupScreen extends ConsumerWidget {
                 const SectionDivider(label: 'OR USE EMAIL'),
                 const SizedBox(height: 12),
               ],
-              DemoOnly(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    SocialActionCard(
-                      title: 'Continue with Apple',
-                      subtitle:
-                          'Privacy-first signup for iPhone-friendly flows.',
-                      assetName: AppAssets.appleLogo,
-                      onTap: () => context.push(AppRoutes.otp),
-                    ),
-                    const SizedBox(height: 16),
-                    const SectionDivider(label: 'OR USE EMAIL'),
-                    const SizedBox(height: 12),
-                  ],
-                ),
-              ),
               AutofillGroup(
                 onDisposeAction: AutofillContextAction.cancel,
                 child: Column(

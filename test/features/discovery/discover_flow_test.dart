@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kinvo/src/core/navigation/app_routes.dart';
 import 'package:kinvo/src/features/discovery/presentation/screens/discover_screen.dart';
 import 'package:kinvo/src/features/discovery/presentation/widgets/profile_sheet.dart';
 
@@ -148,25 +147,6 @@ void main() {
       find.descendant(of: sheet, matching: find.text('Ada, 29')),
       findsOneWidget,
     );
-  });
-
-  testWidgets('the demo explores Discover without a connection', (
-    tester,
-  ) async {
-    final app = await pumpKinvoApp(tester);
-    await app.pumpUntilFound(find.text('Explore Demo'));
-    await _tap(tester, find.text('Explore Demo'));
-    await app.pumpUntilFound(find.byType(DiscoverScreen));
-    await app.pumpUntilLoaded();
-
-    expect(find.text('Sarah'), findsOneWidget);
-    await _tap(tester, _labelled('Like'));
-    await app.pumpUntilFound(find.text("It's a match!"));
-    await _tap(tester, find.text('See your matches'));
-    await app.pumpUntilLoaded();
-
-    expect(app.router.state.uri.path, AppRoutes.matches);
-    expect(app.adapter.requests, isEmpty);
   });
 
   group('rewinding a swipe that became a match', () {

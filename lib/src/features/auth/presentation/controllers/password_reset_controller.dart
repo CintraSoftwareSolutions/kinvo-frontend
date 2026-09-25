@@ -15,11 +15,7 @@ import 'login_controller.dart';
 /// cleared as soon as the code is spent.
 @immutable
 final class PendingPasswordReset {
-  const PendingPasswordReset({
-    required this.email,
-    required this.sentAt,
-    this.code,
-  });
+  const PendingPasswordReset({required this.email, required this.sentAt});
 
   /// The address the code was sent to, already trimmed.
   final String email;
@@ -27,11 +23,6 @@ final class PendingPasswordReset {
   /// When it was sent, so the app doesn't spend the account's small hourly
   /// allowance of codes on impatient taps.
   final DateTime sentAt;
-
-  /// The code itself, on a deployment with no way to send email. Only
-  /// development and staging servers ever answer with one, and only demo
-  /// builds show it.
-  final String? code;
 }
 
 /// How long to wait before asking for another code. The server allows five an
@@ -156,9 +147,7 @@ class ResetRequestController extends Notifier<ResetRequestFormState> {
     state = form;
 
     try {
-      final code = await ref
-          .read(passwordResetServiceProvider)
-          .sendCode(email: form.email);
+      await ref.read(passwordResetServiceProvider).sendCode(email: form.email);
 
       ref
           .read(pendingPasswordResetProvider.notifier)
@@ -166,7 +155,6 @@ class ResetRequestController extends Notifier<ResetRequestFormState> {
             PendingPasswordReset(
               email: form.email.trim(),
               sentAt: ref.read(clockProvider)(),
-              code: code,
             ),
           );
 

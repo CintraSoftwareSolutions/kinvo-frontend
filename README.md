@@ -25,7 +25,6 @@ flutter run --dart-define-from-file=env/staging.json
 | Key                 | Purpose                                                                                                                     |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | `API_BASE_URL`      | Root of the REST API, including `/api/v1`. Must use `https`, except for local hosts (`localhost`, `127.0.0.1`, `10.0.2.2`). |
-| `DEMO_MODE_ENABLED` | `true` shows Explore Demo on the welcome screen. Leave it out of production builds.                                         |
 
 These values are compiled into the app, so never put secrets in them. A build
 without the file still starts, but its first API call fails with an
@@ -60,7 +59,6 @@ lib/src/
     auth/        session: tokens, refresh, status; the signed-in account
     config/      build-time configuration (AppConfig) and the server's
                  catalogue of modes, interests and limits (ServerConfig)
-    demo/        demo mode
     device/      device id, platform, app version, and the phone's model
                  and system, sent to the API
     entitlements/ paywalls: what the server says needs an upgrade
@@ -95,7 +93,7 @@ The router is go_router, from `appRouterProvider`. Every location is in
 - The five tabs are a `StatefulShellRoute`, so each keeps its own stack and
   state. Screens opened from a tab, such as a chat, cover the bottom navigation.
 - `redirectFor` in `route_guard.dart` decides who can go where. The router runs
-  it again whenever the session, the account or the demo changes:
+  it again whenever the session or the account changes:
   - While the saved session is read, the splash screen shows, then continues to
     the link that was opened.
   - A suspended account only reaches the suspension screen.
@@ -107,15 +105,13 @@ The router is go_router, from `appRouterProvider`. Every location is in
   invalidate `currentAccountProvider`. The router follows the new account.
 - Unknown locations, and links to something that no longer exists, show
   `NotFoundScreen`.
-- The phone and social sign-in screens aren't connected to the API yet. They
-  finish through `continueInDemo`, which is replaced as each flow is connected,
-  and only demo builds show the way to them (`DemoOnly`). The demo skips
-  onboarding, since it has no account to set up.
-- Features connected to the API read and write through a repository interface
-  with two implementations: the API's, and a demo one on bundled sample data
-  (for example `DemoDiscoveryRepository`). The provider picks the demo's while
-  `demoSessionProvider` is on, so the demo runs the real screens without an
-  account or a connection.
+- The log-in and sign-up screens offer phone and Google only while
+  `GET /config` `sign_in` says the server can complete them
+  (`signInMethodsProvider`), and Google only in builds set up for it. Apple
+  isn't offered yet. Email is always there.
+- Each feature reads and writes through a repository interface whose provider
+  returns the API's implementation. Tests keep the real client and answer its
+  requests from a fake server (`test/helpers/fake_kinvo_server.dart`).
 
 ## Calling the API
 
@@ -221,8 +217,8 @@ Forgotten passwords:
 - A code lasts an hour and works once, and asking for another retires it — so
   the code box empties when a new one is sent, and the app waits a minute
   between asks, because the server allows five an hour per address.
-- A server with no way to send email hands the code back in the response.
-  Demo builds show it on the code screen; production servers never send one.
+- A development server with no way to send email hands the code back in its
+  response. The app never shows it: the code only ever comes by email.
 - A reset ends every session the account had, so the app signs in again with
   the new password. If that sign-in fails, the password is still the new one:
   the app says so on the log-in screen rather than sending the user back for a
@@ -351,8 +347,6 @@ newest first, 30 at a time, and further back as the user scrolls up.
   blocks too unless the user says not; it names the other person's latest
   message, so moderators know where to look. Blocking (`POST /blocks`) ends the
   match. Reports are anonymous.
-- In the demo, the sample matches have sample conversations, kept with the
-  matches in `DemoInbox` so the two agree, and nothing touches the network.
 
 ## Live updates
 
@@ -360,7 +354,7 @@ newest first, 30 at a time, and further back as the user scrolls up.
 at `/socket.io` on the API's host, over WebSocket.
 
 - `realtimeKeeperProvider` opens it while it's useful: signed in to an account
-  that has finished onboarding, outside the demo, with the app on screen.
+  that has finished onboarding, with the app on screen.
   Signing out closes it at once. Leaving the screen closes it after 30 seconds,
   so a trip to the camera doesn't show the user going offline.
 - It sends the session's access token in the handshake. An expired token is
@@ -406,7 +400,6 @@ off.
 - Once onboarding is done, the app invites the user once to turn notifications
   on, before the system asks. The system only asks once, so that prompt isn't
   spent on someone who hasn't seen why.
-- In the demo the list has samples, and nothing touches the network.
 
 ### Push notifications
 
@@ -495,8 +488,6 @@ and a note. The Plans tab lists them by where they stand
 - A confirmed plan can be emailed to trusted contacts ("Tell a trusted
   contact", `POST /plans/{id}/share`): who the user is meeting, where and
   when, in the user's own time.
-- In the demo, the sample matches have sample plans and places, and nothing
-  touches the network.
 
 ## Safety
 
@@ -516,7 +507,21 @@ trusted contacts it reaches, and reporting someone.
   never says a contact was told unless the server says an email was sent. If
   the alert doesn't reach the server, it says so and offers to try again.
 - Live location sharing isn't offered: the server can't show it to anyone yet.
-- In the demo, nobody is emailed, and the screen says so.
+
+## Support
+
+More → Support & guidelines. Every row leads somewhere real.
+
+- The Safety Center, always.
+- The help centre, community guidelines, terms and privacy policy, each only
+  once the server lists it under `GET /config` `support`. A page Kinvo
+  hasn't published isn't shown.
+- **Email support** starts an email in the phone's mail app, to the address in
+  `support.email`. A phone with no mail app is shown the address to copy.
+- Pages and emails open through `ExternalLinks` (`core/links/`, over
+  `url_launcher`), which tests replace to see what would have opened.
+- The welcome screen says what continuing agrees to only once both the terms
+  and the privacy policy exist, and links to both.
 
 ## Profile
 
@@ -545,8 +550,6 @@ complete it (`completion_missing`, the steps worth most first).
 - **How others see me** shows `GET /users/me/preview`, the server's own
   public view of the profile, with the same widgets as someone else's full
   profile.
-- In the demo, the profile is a sample (`DemoProfile`) that changes in memory.
-  Photos added there stay on the phone and are never uploaded.
 
 ## Settings and privacy
 
@@ -581,8 +584,8 @@ Spec §7.4: Google AdMob, banners and interstitials, for the free plan only.
 - **Who sees them is the server's answer**: the `show_ads` flag in
   `GET /entitlements`, read again when `entitlements:updated` arrives, so an
   upgrade takes the ads away at once. The app never works it out from a plan's
-  name. Anything unknown means no ads — while loading, after a failure, in the
-  demo, and signed out.
+  name. Anything unknown means no ads — while loading, after a failure, and
+  signed out.
 - **Banners** sit above the navigation bar on Matches, Plans and More, and only
   on those tabs' own screens (`HomeShell._bannerPaths`). Never on Discover,
   where the swipe buttons are — an ad a thumb lands on by accident is an

@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/auth/auth_providers.dart';
 import '../../../../core/auth/session_status.dart';
-import '../../../../core/demo/demo_mode.dart';
 import '../../../../core/forms/form_errors.dart';
 import '../../../../core/network/api_error_code.dart';
 import '../../../../core/network/api_exception.dart';
@@ -30,11 +29,9 @@ class CurrentPlanController extends AsyncNotifier<CurrentPlan> {
   Future<CurrentPlan> build() async {
     final session = ref.watch(sessionStatusProvider);
 
-    // Nobody is signed in and the demo has not started: there is no plan to
-    // read, and asking would be a request with no session behind it.
-    if (session is! SignedIn && !ref.watch(demoSessionProvider)) {
-      return CurrentPlan.free;
-    }
+    // Nobody is signed in: there is no plan to read, and asking would be a
+    // request with no session behind it.
+    if (session is! SignedIn) return CurrentPlan.free;
 
     final updates = ref.watch(liveUpdatesProvider).stream.listen((update) {
       if (update is SubscriptionChanged) unawaited(refresh());

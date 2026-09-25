@@ -182,20 +182,6 @@ void main() {
     expect(find.text('Ad privacy choices'), findsNothing);
   });
 
-  testWidgets('the demo shows no ads and asks nothing', (tester) async {
-    final ads = FakeAdsPlatform();
-    final app = await pumpKinvoApp(tester, ads: ads);
-    await app.pumpUntilFound(find.text('Explore Demo'));
-    await tester.tap(find.text('Explore Demo'));
-    await app.pumpUntilFound(find.byType(DiscoverScreen));
-    await app.pumpUntilLoaded();
-
-    await _go(tester, app, AppRoutes.matches);
-
-    expect(_banner, findsNothing);
-    expect(ads.consentRequests, 0);
-  });
-
   testWidgets('an interstitial shows between cards once it is due', (
     tester,
   ) async {

@@ -9,7 +9,7 @@ import 'push_messaging.dart';
 /// [PushMessaging] on Firebase Cloud Messaging.
 ///
 /// Firebase starts on first use rather than at launch, so a build that never
-/// needs push, such as one only ever used in the demo, never starts it.
+/// needs push, such as one where nobody ever signs in, never starts it.
 final class FirebasePushMessaging implements PushMessaging {
   FirebasePushMessaging(this._options, {TargetPlatform? platform})
     : _platform = platform ?? defaultTargetPlatform;

@@ -127,18 +127,12 @@ final class AuthApi {
   ///
   /// Succeeds whether or not the address has an account: the server answers
   /// identically either way, so nobody can use this to find out who has one.
-  ///
-  /// Returns the code itself when the server has no way to send email, which
-  /// only a development or staging deployment can answer. In production it is
-  /// always null, and the code is in the user's inbox.
-  Future<String?> requestPasswordReset({required String email}) {
+  /// The code is only ever in the user's inbox.
+  Future<void> requestPasswordReset({required String email}) {
     return _client.post(
       '/auth/forgot-password',
       body: {'email': email},
-      decode: (json) => switch (json['reset_code']) {
-        final String code when code.isNotEmpty => code,
-        _ => null,
-      },
+      decode: ApiClient.ignoreData,
     );
   }
 

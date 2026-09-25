@@ -361,20 +361,4 @@ void main() {
     await app.pumpUntilFound(find.byType(PlansScreen));
     await app.pumpUntilLoaded();
   });
-
-  testWidgets('the demo has sample plans, offline', (tester) async {
-    final app = await pumpKinvoApp(tester);
-    await app.pumpUntilFound(find.text('Explore Demo'));
-    await tester.tap(find.text('Explore Demo'));
-    await app.pumpUntilFound(find.byType(DiscoverScreen));
-    await app.pumpUntilLoaded();
-
-    app.router.go(AppRoutes.plans);
-    await app.pumpUntilFound(find.text('Blue Bottle Coffee'));
-    await tester.tap(find.text('Blue Bottle Coffee'));
-    await app.pumpUntilFound(find.text("You're both on."));
-    await app.pumpUntilLoaded();
-
-    expect(app.adapter.requests, isEmpty);
-  });
 }

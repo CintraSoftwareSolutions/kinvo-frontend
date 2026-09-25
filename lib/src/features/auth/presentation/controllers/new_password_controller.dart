@@ -175,7 +175,7 @@ class NewPasswordController extends Notifier<NewPasswordFormState> {
     );
 
     try {
-      final code = await ref
+      await ref
           .read(passwordResetServiceProvider)
           .sendCode(email: pending.email);
 
@@ -185,7 +185,6 @@ class NewPasswordController extends Notifier<NewPasswordFormState> {
             PendingPasswordReset(
               email: pending.email,
               sentAt: ref.read(clockProvider)(),
-              code: code,
             ),
           );
 

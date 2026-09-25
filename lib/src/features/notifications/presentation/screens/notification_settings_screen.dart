@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/demo/demo_mode.dart';
 import '../../../../core/location/location_service.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/push/push_messaging.dart';
@@ -87,13 +86,6 @@ class _DeviceStatus extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (ref.watch(demoSessionProvider)) {
-      return const _StatusCard(
-        icon: Icons.notifications_off_outlined,
-        title: 'Not in the demo',
-        message: 'Push notifications arrive once you have an account.',
-      );
-    }
     if (!ref.watch(pushMessagingProvider).isAvailable) {
       return const _StatusCard(
         icon: Icons.notifications_off_outlined,

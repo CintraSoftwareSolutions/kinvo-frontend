@@ -7,7 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:kinvo/src/core/assets/app_assets.dart';
 import 'package:kinvo/src/core/auth/auth_providers.dart';
 import 'package:kinvo/src/core/auth/session_status.dart';
-import 'package:kinvo/src/core/demo/demo_mode.dart';
+import 'package:kinvo/src/core/config/server_config_providers.dart';
 import 'package:kinvo/src/core/navigation/app_routes.dart';
 import 'package:kinvo/src/core/theme/app_colors.dart';
 import 'package:kinvo/src/core/widgets/flow_widgets.dart';
@@ -26,6 +26,10 @@ class LoginScreen extends ConsumerWidget {
     final editable = !form.isSubmitting;
     final googleState = ref.watch(socialSignInControllerProvider);
     final social = ref.read(socialSignInControllerProvider.notifier);
+    final methods = ref.watch(signInMethodsProvider);
+    final usePhone = methods.phone;
+    // This build must be set up for Google as well as the server.
+    final useGoogle = methods.google && social.canUseGoogle;
 
     // A session starting here means the details were accepted. Password
     // managers are told now, while the fields are still on screen.
@@ -128,26 +132,32 @@ class LoginScreen extends ConsumerWidget {
                 loading: form.isSubmitting,
                 onPressed: submit,
               ),
-              const SizedBox(height: 16),
-              const SectionDivider(label: 'OR'),
-              const SizedBox(height: 14),
-              // Real for everyone: the server texts a code through Twilio, and
-              // a number with no account gets one.
-              OutlineActionButton(
-                label: 'Continue with your phone number',
-                // The card underneath is white, and this button defaults to
-                // white on white.
-                foregroundColor: AppColors.purple,
-                borderColor: AppColors.border,
-                onPressed: editable
-                    ? () => context.push(AppRoutes.phoneSignIn)
-                    : null,
-              ),
+              // Only the ways the server says it can complete: a button that
+              // can only fail is worse than none.
+              if (usePhone || useGoogle) ...[
+                const SizedBox(height: 16),
+                const SectionDivider(label: 'OR'),
+              ],
+              // The server texts a code, and a number with no account gets
+              // one.
+              if (usePhone) ...[
+                const SizedBox(height: 14),
+                OutlineActionButton(
+                  label: 'Continue with your phone number',
+                  // The card underneath is white, and this button defaults to
+                  // white on white.
+                  foregroundColor: AppColors.purple,
+                  borderColor: AppColors.border,
+                  onPressed: editable
+                      ? () => context.push(AppRoutes.phoneSignIn)
+                      : null,
+                ),
+              ],
               // Google proves who they are; the server decides what that
               // means here. A Google account with no Kinvo account gets
               // one, the same as a new phone number does.
-              if (social.canUseGoogle) ...[
-                const SizedBox(height: 10),
+              if (useGoogle) ...[
+                SizedBox(height: usePhone ? 10 : 14),
                 SocialActionCard(
                   title: 'Continue with Google',
                   subtitle: 'No password to remember.',
@@ -161,33 +171,6 @@ class LoginScreen extends ConsumerWidget {
                   FormErrorBanner(message: message),
                 ],
               ],
-              const DemoOnly(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    SizedBox(height: 16),
-                    SectionDivider(label: 'QUICK ACCESS'),
-                    SizedBox(height: 14),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: SmallInfoCard(
-                            title: 'Apple',
-                            description: 'Fast sign-in for iOS demos.',
-                          ),
-                        ),
-                        SizedBox(width: 10),
-                        Expanded(
-                          child: SmallInfoCard(
-                            title: 'Google',
-                            description: 'Use your workspace identity.',
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
             ],
           ),
         ),

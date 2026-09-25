@@ -1,18 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/demo/demo_mode.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_client_provider.dart';
 import '../../../core/network/api_envelope.dart';
 import '../../../core/network/cursor_page.dart';
-import '../../../core/time/clock.dart';
 import '../domain/app_notification.dart';
-import 'demo_notifications_repository.dart';
 
-/// The user's notification feed and delivery preferences.
-///
-/// An interface because the demo shows the same screens without an account,
-/// on [DemoNotificationsRepository]. Failures are `ApiException`s.
+/// The user's notification feed and delivery preferences. Failures are
+/// `ApiException`s.
 abstract interface class NotificationsRepository {
   /// One page of notifications, newest first.
   Future<CursorPage<AppNotification>> fetchNotifications({String? cursor});
@@ -104,13 +99,7 @@ final class ApiNotificationsRepository implements NotificationsRepository {
   }
 }
 
-/// The repository notifications use: the demo's while exploring it, the
-/// API's otherwise.
-final notificationsRepositoryProvider = Provider<NotificationsRepository>((
-  ref,
-) {
-  if (ref.watch(demoSessionProvider)) {
-    return DemoNotificationsRepository(clock: ref.watch(clockProvider));
-  }
-  return ApiNotificationsRepository(ref.watch(apiClientProvider));
-});
+/// The repository notifications use.
+final notificationsRepositoryProvider = Provider<NotificationsRepository>(
+  (ref) => ApiNotificationsRepository(ref.watch(apiClientProvider)),
+);

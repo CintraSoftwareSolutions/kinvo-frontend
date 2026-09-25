@@ -149,7 +149,7 @@ void main() {
     await app.pumpUntilFound(find.text('Log In'));
 
     // Reading the text size must not become a request with no session behind
-    // it, which is also what keeps the demo offline.
+    // it.
     expect(app.backend.requestsTo('/settings'), isEmpty);
   });
 }

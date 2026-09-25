@@ -67,15 +67,4 @@ abstract final class AppAssets {
   static const plusCircle = 'assets/icons/plus_circle.svg';
   static const crown = 'assets/icons/crown.svg';
   static const triangleAlert = 'assets/icons/triangle_alert.svg';
-
-  // Avatars
-  static const avatarMaya = 'assets/images/avatars/maya.jpg';
-  static const avatarSarah = 'assets/images/avatars/sarah.jpg';
-  static const avatarOlivia = 'assets/images/avatars/olivia.jpg';
-  static const avatarNoah = 'assets/images/avatars/noah.jpg';
-  static const avatarEmma = 'assets/images/avatars/emma.jpg';
-  static const avatarDavid = 'assets/images/avatars/david.jpg';
-  static const avatarZara = 'assets/images/avatars/zara.jpg';
-  static const avatarMarcus = 'assets/images/avatars/marcus.jpg';
-  static const avatarBill = 'assets/images/avatars/bill.jpg';
 }

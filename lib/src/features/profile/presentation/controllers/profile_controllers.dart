@@ -6,11 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/auth/auth_providers.dart';
 import '../../../../core/config/server_config.dart';
 import '../../../../core/config/server_config_providers.dart';
-import '../../../../core/demo/demo_mode.dart';
 import '../../../../core/forms/form_errors.dart';
 import '../../../../core/media/photo_picker.dart';
 import '../../../../core/network/api_exception.dart';
-import '../../data/demo_profile_repository.dart';
 import '../../data/profile_repository.dart';
 import '../../domain/own_profile.dart';
 import '../../domain/profile_fields.dart';
@@ -80,14 +78,11 @@ final ownPreviewProvider = FutureProvider.autoDispose<PublicProfile>(
   (ref) => ref.watch(profileRepositoryProvider).fetchPreview(),
 );
 
-/// The interests, prompts, lifestyle answers and limits a profile can use:
-/// the server's catalogue, or the demo's, which runs without a connection.
-final profileCatalogueProvider = Provider<AsyncValue<ServerConfig>>((ref) {
-  if (ref.watch(demoSessionProvider)) {
-    return const AsyncData(DemoProfile.catalogue);
-  }
-  return ref.watch(serverConfigProvider);
-});
+/// The interests, prompts, lifestyle answers and limits a profile can use,
+/// from the server's catalogue.
+final profileCatalogueProvider = Provider<AsyncValue<ServerConfig>>(
+  (ref) => ref.watch(serverConfigProvider),
+);
 
 /// What's happening to the photos right now.
 @immutable

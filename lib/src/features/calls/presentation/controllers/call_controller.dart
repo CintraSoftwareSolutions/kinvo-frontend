@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/demo/demo_mode.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/ringtone/ringtone.dart';
 import '../../../profile/domain/user_summary.dart';
@@ -36,8 +35,8 @@ final class ActiveCall {
 
   final Call call;
 
-  /// Null when this call carries no picture or sound: the demo, or a server
-  /// with no video service configured. Everything else still works.
+  /// Null when this call carries no picture or sound: a server with no video
+  /// service configured. Everything else still works.
   final CallMedia? media;
 
   /// True from the moment the user hangs up until the screen closes, so the
@@ -442,10 +441,9 @@ final class CallController extends Notifier<ActiveCall?> {
   }
 
   CallMedia? _mediaFor(Call call) {
-    // No address means no video service configured — staging, or the demo. The
-    // call itself still works, and the screen says why there is no picture.
+    // No address means no video service configured. The call itself still
+    // works, and the screen says why there is no picture.
     if (call.video?.isConnectable != true) return null;
-    if (ref.read(demoSessionProvider)) return null;
     return LiveKitCallMedia();
   }
 

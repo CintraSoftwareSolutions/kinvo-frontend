@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../auth/account_providers.dart';
 import '../auth/auth_providers.dart';
 import '../auth/session_status.dart';
-import '../demo/demo_mode.dart';
 import '../network/network_providers.dart';
 import 'realtime_connection.dart';
 import 'realtime_socket.dart';
@@ -78,8 +77,8 @@ class AppForegroundNotifier extends Notifier<bool> {
 const realtimeBackgroundGrace = Duration(seconds: 30);
 
 /// Keeps the live connection open while it's any use: signed in to an account
-/// that's set up, outside the demo, with the app on screen. Listen to this
-/// once, for as long as the app runs.
+/// that's set up, with the app on screen. Listen to this once, for as long as
+/// the app runs.
 ///
 /// Signing out closes the connection at once; leaving the screen closes it
 /// after [realtimeBackgroundGrace].
@@ -89,10 +88,7 @@ final realtimeKeeperProvider = Provider<void>((ref) {
   void update() {
     final signedIn = ref.read(sessionStatusProvider) is SignedIn;
     final account = ref.read(currentAccountProvider).value;
-    final eligible =
-        signedIn &&
-        (account?.isOnboarded ?? false) &&
-        !ref.read(demoSessionProvider);
+    final eligible = signedIn && (account?.isOnboarded ?? false);
 
     if (!eligible) {
       connection.setWanted(false);
@@ -120,7 +116,6 @@ final realtimeKeeperProvider = Provider<void>((ref) {
   ref
     ..listen(sessionStatusProvider, (_, _) => scheduleUpdate())
     ..listen(currentAccountProvider, (_, _) => scheduleUpdate())
-    ..listen(demoSessionProvider, (_, _) => scheduleUpdate())
     ..listen(appInForegroundProvider, (_, _) => scheduleUpdate());
   scheduleUpdate();
 });

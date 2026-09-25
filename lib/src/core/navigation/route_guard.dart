@@ -10,8 +10,7 @@ import 'app_routes.dart';
 /// - While the saved session is read, everything waits on the splash screen,
 ///   which remembers [target].
 /// - A suspended account only reaches the suspension screen.
-/// - Signed out, only the welcome and sign-in screens are open, unless the
-///   user is exploring the demo.
+/// - Signed out, only the welcome and sign-in screens are open.
 /// - Signed in, the account decides: it waits on the splash while loading,
 ///   goes to onboarding until profile setup is finished, and is kept out of
 ///   the signed-out screens afterwards.
@@ -19,7 +18,6 @@ String? redirectFor({
   required Uri target,
   required SessionStatus session,
   required AsyncValue<Account?> account,
-  required bool inDemo,
 }) {
   final path = target.path;
 
@@ -29,12 +27,6 @@ String? redirectFor({
 
     case AccountSuspended():
       return path == AppRoutes.suspended ? null : AppRoutes.suspended;
-
-    case SignedOut() when inDemo:
-      // The demo has no account to set up.
-      return _systemRoutes.contains(path) || path == AppRoutes.onboarding
-          ? AppRoutes.discover
-          : null;
 
     case SignedOut():
       return _signedOutRoutes.contains(path) ? null : AppRoutes.welcome;
@@ -63,7 +55,6 @@ const _systemRoutes = {AppRoutes.splash, AppRoutes.suspended};
 const _signedOutRoutes = {
   AppRoutes.welcome,
   AppRoutes.signup,
-  AppRoutes.otp,
   AppRoutes.login,
   AppRoutes.phoneSignIn,
   AppRoutes.resetPassword,

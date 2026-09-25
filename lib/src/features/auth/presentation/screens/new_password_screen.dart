@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kinvo/src/core/assets/app_assets.dart';
-import 'package:kinvo/src/core/demo/demo_mode.dart';
 import 'package:kinvo/src/core/navigation/app_routes.dart';
 import 'package:kinvo/src/core/theme/app_colors.dart';
 import 'package:kinvo/src/core/widgets/flow_widgets.dart';
@@ -60,18 +59,6 @@ class NewPasswordScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (pending.code case final code?)
-                DemoOnly(
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: InfoBanner(
-                      title: 'Test code: $code',
-                      description:
-                          'This server has no way to send email, so it handed '
-                          'the code back. A production server never does.',
-                    ),
-                  ),
-                ),
               AppInputCard(
                 // A resend retires the old code, so the field starts again
                 // with it rather than keeping digits that no longer work.

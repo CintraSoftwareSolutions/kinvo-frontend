@@ -54,7 +54,7 @@ void main() {
 
   group('asking for a code', () {
     test('sends one and remembers where it went', () async {
-      final code = await askForCode(email: '  Sam@Example.com  ');
+      await askForCode(email: '  Sam@Example.com  ');
 
       // Sent without the spaces around it; the server lower-cases it.
       expect(backend.requestsTo('/auth/forgot-password').single.data, {
@@ -62,8 +62,6 @@ void main() {
       });
       expect(pending()?.email, 'Sam@Example.com');
       expect(pending()?.sentAt, now);
-      // Only a server with nowhere to send it answers with the code.
-      expect(pending()?.code, code);
     });
 
     test('checks the address before sending anything', () async {
@@ -199,7 +197,6 @@ void main() {
       expect(form.code, isEmpty);
       expect(form.notice, 'A new code is on its way.');
       expect(pending()?.sentAt, now);
-      expect(pending()?.code, isNot(first));
     });
   });
 }

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/config/server_config.dart';
 import '../../../../core/config/server_config_providers.dart';
-import '../../../../core/demo/demo_mode.dart';
 import '../../../../core/media/photo_processing.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../chat/data/live_updates.dart';
@@ -43,11 +42,8 @@ enum ReportResult {
 }
 
 /// The reasons someone can be reported for, as the server lists them.
-///
-/// The demo offers the same reasons without asking the server.
 final reportReasonsProvider =
     FutureProvider.autoDispose<List<ReportReasonOption>>((ref) async {
-      if (ref.watch(demoSessionProvider)) return _demoReasons;
       final reasons = (await ref.watch(
         serverConfigProvider.future,
       )).reportReasons;
@@ -56,13 +52,6 @@ final reportReasonsProvider =
       }
       return reasons;
     });
-
-const _demoReasons = [
-  ReportReasonOption(value: 'harassment', label: 'Harassment or abuse'),
-  ReportReasonOption(value: 'fake_profile', label: 'Fake profile'),
-  ReportReasonOption(value: 'spam_scam', label: 'Spam or scam'),
-  ReportReasonOption(value: 'safety_concern', label: 'Safety concern'),
-];
 
 /// The report form as the user fills it in.
 @immutable

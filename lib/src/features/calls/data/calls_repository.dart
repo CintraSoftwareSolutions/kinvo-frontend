@@ -1,16 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/demo/demo_mode.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_client_provider.dart';
 import '../../../core/network/cursor_page.dart';
 import '../domain/call.dart';
-import 'demo_calls_repository.dart';
 
-/// Video calls with a match.
-///
-/// An interface because the demo shows the same screens without an account, on
-/// [DemoCallsRepository]. Failures are `ApiException`s.
+/// Video calls with a match. Failures are `ApiException`s.
 abstract interface class CallsRepository {
   /// Rings the other person in [matchId], and returns the call with a token.
   ///
@@ -127,11 +122,7 @@ final class ApiCallsRepository implements CallsRepository {
   }
 }
 
-/// The repository for the current session: the API when signed in, the demo's
-/// fake one in a demo session.
-final callsRepositoryProvider = Provider<CallsRepository>((ref) {
-  if (ref.watch(demoSessionProvider)) {
-    return ref.watch(demoCallsRepositoryProvider);
-  }
-  return ApiCallsRepository(ref.watch(apiClientProvider));
-});
+/// The repository calls use.
+final callsRepositoryProvider = Provider<CallsRepository>(
+  (ref) => ApiCallsRepository(ref.watch(apiClientProvider)),
+);

@@ -16,13 +16,11 @@ String? _redirect(
   String location, {
   SessionStatus session = const SignedOut(SignOutReason.signedOut),
   AsyncValue<Account?> account = const AsyncData(null),
-  bool inDemo = false,
 }) {
   return redirectFor(
     target: Uri.parse(location),
     session: session,
     account: account,
-    inDemo: inDemo,
   );
 }
 
@@ -50,8 +48,8 @@ void main() {
       for (final location in [
         AppRoutes.welcome,
         AppRoutes.signup,
-        AppRoutes.otp,
         AppRoutes.login,
+        AppRoutes.phoneSignIn,
         AppRoutes.resetPassword,
       ]) {
         expect(_redirect(location), isNull, reason: location);
@@ -68,15 +66,6 @@ void main() {
       ]) {
         expect(_redirect(location), AppRoutes.welcome, reason: location);
       }
-    });
-
-    test('opens the app while exploring the demo', () {
-      expect(_redirect(AppRoutes.discover, inDemo: true), isNull);
-      expect(_redirect(AppRoutes.splash, inDemo: true), AppRoutes.discover);
-    });
-
-    test('the demo has no account to set up', () {
-      expect(_redirect(AppRoutes.onboarding, inDemo: true), AppRoutes.discover);
     });
   });
 

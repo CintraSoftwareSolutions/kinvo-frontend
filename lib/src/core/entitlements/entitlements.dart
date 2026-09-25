@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../auth/auth_providers.dart';
 import '../auth/session_status.dart';
-import '../demo/demo_mode.dart';
 import '../network/api_client.dart';
 import '../network/api_client_provider.dart';
 import '../network/api_envelope.dart';
@@ -80,11 +79,8 @@ class EntitlementsController extends AsyncNotifier<Entitlements> {
   Future<Entitlements> build() async {
     final session = ref.watch(sessionStatusProvider);
 
-    // Signed out, or the demo, which never touches the network: nothing to
-    // read, and nothing unlocked.
-    if (session is! SignedIn || ref.watch(demoSessionProvider)) {
-      return Entitlements.unknown;
-    }
+    // Signed out: nothing to read, and nothing unlocked.
+    if (session is! SignedIn) return Entitlements.unknown;
 
     final events = ref.watch(realtimeConnectionProvider).events.listen((event) {
       if (event.name == ServerEvents.entitlementsUpdated) unawaited(refresh());

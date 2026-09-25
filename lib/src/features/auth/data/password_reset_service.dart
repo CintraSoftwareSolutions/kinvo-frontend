@@ -33,10 +33,7 @@ final class PasswordResetService {
   final EmailAuthService _signIn;
 
   /// Sends a code to [email].
-  ///
-  /// Returns the code when the server had no way to email it, which only a
-  /// development or staging deployment answers; null everywhere else.
-  Future<String?> sendCode({required String email}) {
+  Future<void> sendCode({required String email}) {
     return _api.requestPasswordReset(email: email.trim());
   }
 

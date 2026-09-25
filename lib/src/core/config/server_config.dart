@@ -15,6 +15,8 @@ final class ServerConfig {
     this.reportReasons = const [],
     this.prompts = const [],
     this.lifestyleOptions = const {},
+    this.signIn = SignInMethods.emailOnly,
+    this.support = SupportLinks.none,
   });
 
   /// Reads the `data` of `GET /config`.
@@ -51,6 +53,8 @@ final class ServerConfig {
           final JsonMap options => _readLifestyleOptions(options),
           _ => const {},
         },
+        signIn: SignInMethods.fromJson(json['sign_in']),
+        support: SupportLinks.fromJson(json['support']),
       );
     }
     throw const FormatException('Expected modes, interests and limits.');
@@ -73,6 +77,12 @@ final class ServerConfig {
   /// The answers each profile detail such as `drinking` or `education`
   /// accepts, as API values such as `socially`, in the order to offer them.
   final Map<String, List<String>> lifestyleOptions;
+
+  /// The ways of signing in this server can complete right now.
+  final SignInMethods signIn;
+
+  /// Where people get help and read the rules.
+  final SupportLinks support;
 
   static Map<String, List<String>> _readLifestyleOptions(JsonMap options) {
     return {
@@ -98,6 +108,98 @@ final class ServerConfig {
       );
     }
     return results;
+  }
+}
+
+/// The ways of signing in the server can complete right now, from `sign_in`
+/// in `GET /config`. The app offers only these, so no button leads to a
+/// method that can only fail. Email is always one of them.
+@immutable
+final class SignInMethods {
+  const SignInMethods({
+    this.phone = false,
+    this.google = false,
+    this.apple = false,
+  });
+
+  /// What is assumed until the server says more, or if it never does: a
+  /// method is offered only once the server has confirmed it.
+  static const emailOnly = SignInMethods();
+
+  /// Reads `sign_in`. Anything but an explicit `true` is off.
+  factory SignInMethods.fromJson(Object? json) {
+    if (json is! JsonMap) return emailOnly;
+    return SignInMethods(
+      phone: json['phone'] == true,
+      google: json['google'] == true,
+      apple: json['apple'] == true,
+    );
+  }
+
+  /// A code texted to a phone number.
+  final bool phone;
+  final bool google;
+  final bool apple;
+}
+
+/// Where people get help and read the rules, from `support` in
+/// `GET /config`. Each is null until the operator sets it, and the app shows
+/// only those that are set, so no row or link leads nowhere.
+@immutable
+final class SupportLinks {
+  const SupportLinks({
+    this.email,
+    this.helpCentre,
+    this.guidelines,
+    this.terms,
+    this.privacy,
+  });
+
+  static const none = SupportLinks();
+
+  /// Reads `support`. A value that isn't a usable address is left out.
+  factory SupportLinks.fromJson(Object? json) {
+    if (json is! JsonMap) return none;
+    return SupportLinks(
+      email: _emailAddress(json['email']),
+      helpCentre: _webPage(json['help_url']),
+      guidelines: _webPage(json['guidelines_url']),
+      terms: _webPage(json['terms_url']),
+      privacy: _webPage(json['privacy_url']),
+    );
+  }
+
+  /// Where to write for help.
+  final String? email;
+
+  final Uri? helpCentre;
+
+  /// The community guidelines: what's allowed, and what happens otherwise.
+  final Uri? guidelines;
+
+  /// The terms of service.
+  final Uri? terms;
+
+  /// The privacy policy.
+  final Uri? privacy;
+
+  /// Whether the welcome screen can say what signing up agrees to.
+  bool get hasLegalPages => terms != null && privacy != null;
+
+  static final _address = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+
+  static String? _emailAddress(Object? value) {
+    return value is String && _address.hasMatch(value) ? value : null;
+  }
+
+  /// Only secure web pages: a link from the server never opens anything else
+  /// on the phone.
+  static Uri? _webPage(Object? value) {
+    if (value is! String) return null;
+    final uri = Uri.tryParse(value);
+    return uri != null && uri.scheme == 'https' && uri.host.isNotEmpty
+        ? uri
+        : null;
   }
 }
 

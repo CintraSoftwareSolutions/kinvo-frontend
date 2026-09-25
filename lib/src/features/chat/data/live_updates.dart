@@ -234,8 +234,8 @@ final class LiveUpdates {
 }
 
 /// Live changes to conversations and matches, for as long as the app runs.
-/// Nothing arrives from the server while the live connection is closed, as
-/// in the demo, but changes made on the device still do.
+/// Nothing arrives from the server while the live connection is closed, but
+/// changes made on the device still do.
 final liveUpdatesProvider = Provider<LiveUpdates>((ref) {
   final updates = LiveUpdates(ref.watch(realtimeConnectionProvider).events);
   ref.onDispose(updates.dispose);

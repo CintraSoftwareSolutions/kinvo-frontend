@@ -1,18 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/demo/demo_mode.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_client_provider.dart';
 import '../../../core/network/cursor_page.dart';
-import '../../../core/time/clock.dart';
 import '../domain/match_summary.dart';
-import 'demo_inbox.dart';
-import 'demo_matches_repository.dart';
 
 /// Everything the Matches tab reads from the server and sends to it.
-///
-/// An interface because the demo shows the same screens without an account,
-/// on [DemoMatchesRepository]. Failures are `ApiException`s.
+/// Failures are `ApiException`s.
 abstract interface class MatchesRepository {
   /// One page of matches, newest first. [archived] picks the Archived tab.
   Future<CursorPage<MatchSummary>> fetchMatches({
@@ -92,14 +86,7 @@ final class ApiMatchesRepository implements MatchesRepository {
   }
 }
 
-/// The repository the Matches tab uses: the demo's while exploring it, the
-/// API's otherwise.
-final matchesRepositoryProvider = Provider<MatchesRepository>((ref) {
-  if (ref.watch(demoSessionProvider)) {
-    return DemoMatchesRepository(
-      inbox: ref.watch(demoInboxProvider),
-      clock: ref.watch(clockProvider),
-    );
-  }
-  return ApiMatchesRepository(ref.watch(apiClientProvider));
-});
+/// The repository the Matches tab uses.
+final matchesRepositoryProvider = Provider<MatchesRepository>(
+  (ref) => ApiMatchesRepository(ref.watch(apiClientProvider)),
+);

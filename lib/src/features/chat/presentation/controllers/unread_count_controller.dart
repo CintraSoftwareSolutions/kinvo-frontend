@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/auth/auth_providers.dart';
 import '../../../../core/auth/session_status.dart';
-import '../../../../core/demo/demo_mode.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/realtime/realtime_connection.dart';
 import '../../../../core/realtime/realtime_providers.dart';
@@ -26,9 +25,8 @@ class UnreadCountController extends AsyncNotifier<int> {
   @override
   Future<int> build() async {
     final signedIn = ref.watch(sessionStatusProvider) is SignedIn;
-    final inDemo = ref.watch(demoSessionProvider);
     final repository = ref.watch(chatRepositoryProvider);
-    if (!signedIn && !inDemo) return 0;
+    if (!signedIn) return 0;
 
     // The server's count is the only one that knows about every conversation,
     // so any change that could move it asks the server again.

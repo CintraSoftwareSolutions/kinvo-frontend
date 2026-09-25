@@ -4,15 +4,12 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/new_password_screen.dart';
-import '../../features/auth/presentation/screens/otp_screen.dart';
 import '../../features/auth/presentation/screens/phone_sign_in_screen.dart';
 import '../../features/auth/presentation/screens/password_reset_screen.dart';
 import '../../features/auth/presentation/screens/signup_screen.dart';
 import '../../features/calls/presentation/screens/call_screen.dart';
 import '../../features/calls/presentation/screens/calls_screen.dart';
 import '../../features/chat/presentation/screens/chat_screen.dart';
-import '../../features/connections/domain/connection.dart';
-import '../../features/connections/presentation/controllers/connections_controller.dart';
 import '../../features/discovery/presentation/screens/discover_screen.dart';
 import '../../features/home/presentation/screens/home_shell.dart';
 import '../../features/matches/presentation/screens/matches_screen.dart';
@@ -48,7 +45,6 @@ import '../../features/welcome/presentation/welcome_screen.dart';
 import '../../features/auth/presentation/controllers/password_reset_controller.dart';
 import '../auth/account_providers.dart';
 import '../auth/auth_providers.dart';
-import '../demo/demo_mode.dart';
 import 'app_routes.dart';
 import 'route_guard.dart';
 
@@ -63,8 +59,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   // Listening also keeps the account loading whenever a session exists.
   ref
     ..listen(sessionStatusProvider, (_, _) => refresh.notify())
-    ..listen(currentAccountProvider, (_, _) => refresh.notify())
-    ..listen(demoSessionProvider, (_, _) => refresh.notify());
+    ..listen(currentAccountProvider, (_, _) => refresh.notify());
 
   final router = GoRouter(
     navigatorKey: rootNavigatorKey,
@@ -74,7 +69,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       target: state.uri,
       session: ref.read(sessionStatusProvider),
       account: ref.read(currentAccountProvider),
-      inDemo: ref.read(demoSessionProvider),
     ),
     errorBuilder: (context, state) => const NotFoundScreen(),
     routes: _routes(rootNavigatorKey, ref),
@@ -96,13 +90,7 @@ List<RouteBase> _routes(GlobalKey<NavigatorState> rootKey, Ref ref) {
       builder: (_, _) => const AccountSuspendedScreen(),
     ),
     GoRoute(path: AppRoutes.welcome, builder: (_, _) => const WelcomeScreen()),
-    GoRoute(
-      path: AppRoutes.signup,
-      builder: (_, _) => const SignupScreen(),
-      routes: [
-        GoRoute(path: 'verify-code', builder: (_, _) => const OtpScreen()),
-      ],
-    ),
+    GoRoute(path: AppRoutes.signup, builder: (_, _) => const SignupScreen()),
     GoRoute(
       path: AppRoutes.login,
       builder: (_, _) => const LoginScreen(),
@@ -136,25 +124,12 @@ List<RouteBase> _routes(GlobalKey<NavigatorState> rootKey, Ref ref) {
     GoRoute(path: AppRoutes.call, builder: (_, _) => const CallScreen()),
     GoRoute(
       path: AppRoutes.reportPath,
-      builder: (_, state) {
-        if (state.extra case final ReportTarget target) {
-          return ReportScreen(target: target);
-        }
-        // The demo's video call reports someone by their sample id.
-        final connectionId =
-            state.uri.queryParameters[AppRoutes.reportConnectionParameter];
-        return connectionId == null
-            ? const ReportScreen()
-            : _ConnectionPage(
-                connectionId: connectionId,
-                builder: (connection) => ReportScreen(
-                  target: ReportTarget(
-                    userId: connection.id,
-                    displayName: connection.name,
-                  ),
-                ),
-              );
-      },
+      builder: (_, state) => ReportScreen(
+        target: switch (state.extra) {
+          final ReportTarget target => target,
+          _ => null,
+        },
+      ),
     ),
     StatefulShellRoute.indexedStack(
       builder: (_, _, navigationShell) =>
@@ -348,21 +323,6 @@ List<RouteBase> _routes(GlobalKey<NavigatorState> rootKey, Ref ref) {
 /// The route guarantees the parameter; an empty id simply finds nothing.
 String _pathParameter(GoRouterState state, String name) {
   return state.pathParameters[name] ?? '';
-}
-
-/// Builds a page for the connection named in the URL, or the not-found screen
-/// when there's no such connection.
-class _ConnectionPage extends ConsumerWidget {
-  const _ConnectionPage({required this.connectionId, required this.builder});
-
-  final String connectionId;
-  final Widget Function(Connection connection) builder;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final connection = ref.watch(connectionByIdProvider(connectionId));
-    return connection == null ? const NotFoundScreen() : builder(connection);
-  }
 }
 
 class _RouterRefresh extends ChangeNotifier {

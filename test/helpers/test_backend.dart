@@ -6,9 +6,9 @@ import 'package:kinvo/src/core/ads/ads_platform.dart';
 import 'package:kinvo/src/core/auth/google_identity.dart';
 import 'package:kinvo/src/features/calls/presentation/call_notifications.dart';
 import 'package:kinvo/src/core/auth/token_store.dart';
-import 'package:kinvo/src/core/demo/demo_mode.dart';
 import 'package:kinvo/src/core/device/client_info.dart';
 import 'package:kinvo/src/core/device/device_providers.dart';
+import 'package:kinvo/src/core/links/external_links.dart';
 import 'package:kinvo/src/core/location/location_service.dart';
 import 'package:kinvo/src/core/media/photo_picker.dart';
 import 'package:kinvo/src/core/network/network_providers.dart';
@@ -21,6 +21,7 @@ import 'package:kinvo/src/core/time/clock.dart';
 
 import 'auth_fixtures.dart';
 import 'device_fakes.dart';
+import 'fake_external_links.dart';
 import 'fake_http_adapter.dart';
 import 'fake_push_messaging.dart';
 import 'fake_realtime_server.dart';
@@ -78,6 +79,9 @@ final class TestBackend {
   final photoPicker = FakePhotoPicker();
   final googleIdentity = FakeGoogleIdentity();
   final locationService = FakeLocationService();
+
+  /// The phone's browser and mail app. Assert on it to check what opened.
+  final externalLinks = FakeExternalLinks();
   late final FakeHttpAdapter adapter;
 
   /// The saved session, as the app reads it at launch.
@@ -94,7 +98,7 @@ final class TestBackend {
   ///
   /// [clock] fixes the time the app runs on; without it, the app uses the
   /// real clock.
-  List<Override> overrides({bool demoAvailable = true, Clock? clock}) {
+  List<Override> overrides({Clock? clock}) {
     return [
       secureKeyValueStoreProvider.overrideWithValue(secureStore),
       preferencesKeyValueStoreProvider.overrideWithValue(preferences),
@@ -118,11 +122,12 @@ final class TestBackend {
       ringtonesProvider.overrideWithValue(ringtones),
       callNotificationsProvider.overrideWithValue(callNotifications),
       adsPlatformProvider.overrideWithValue(ads),
-      demoModeAvailableProvider.overrideWithValue(demoAvailable),
       // The camera, photo library and location need a real device.
       photoPickerProvider.overrideWithValue(photoPicker),
       googleIdentityProvider.overrideWithValue(googleIdentity),
       locationServiceProvider.overrideWithValue(locationService),
+      // No test may leave the app for a browser or a mail app.
+      externalLinksProvider.overrideWithValue(externalLinks),
       if (clock != null) clockProvider.overrideWithValue(clock),
     ];
   }

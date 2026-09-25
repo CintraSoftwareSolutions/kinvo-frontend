@@ -119,7 +119,6 @@ Future<AppHarness> pumpKinvoApp(
   PushMessaging? push,
   FakeCallNotifications? callNotifications,
   AdsPlatform? ads,
-  bool demoAvailable = true,
   Clock? clock,
   List<Override> overrides = const [],
 }) async {
@@ -145,7 +144,7 @@ Future<AppHarness> pumpKinvoApp(
       // timers.
       retry: (_, _) => null,
       overrides: [
-        ...backend.overrides(demoAvailable: demoAvailable, clock: clock),
+        ...backend.overrides(clock: clock),
         ...overrides,
       ],
       child: const KinvoApp(),

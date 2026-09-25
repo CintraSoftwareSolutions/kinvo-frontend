@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/demo/demo_mode.dart';
 import '../../../core/location/geo_point.dart';
 import '../../../core/media/media_uploader.dart';
 import '../../../core/media/photo_processing.dart';
@@ -11,12 +10,10 @@ import '../domain/own_profile.dart';
 import '../domain/profile_fields.dart';
 import '../domain/profile_photo.dart';
 import '../domain/public_profile.dart';
-import 'demo_profile_repository.dart';
 
 /// Reads and changes the signed-in user's profile.
 ///
-/// An interface because the demo shows the same screens without an account,
-/// on [DemoProfileRepository]. Failures are `ApiException`s.
+/// Failures are `ApiException`s.
 abstract interface class ProfileRepository {
   Future<OwnProfile> fetchOwnProfile();
 
@@ -114,18 +111,12 @@ final class ApiProfileRepository implements ProfileRepository {
   }
 }
 
-/// The repository the profile uses: the demo's while exploring it, the API's
-/// otherwise.
+/// The repository the profile uses.
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
-  if (ref.watch(demoSessionProvider)) {
-    return DemoProfileRepository(ref.watch(demoProfileProvider));
-  }
   return ApiProfileRepository(ref.watch(apiClientProvider));
 });
 
 /// Adds, removes and orders the signed-in user's profile photos.
-///
-/// An interface for the demo, as [ProfileRepository] is.
 abstract interface class PhotosRepository {
   Future<PhotoAlbum> fetchAlbum();
 
@@ -212,12 +203,8 @@ final class ApiPhotosRepository implements PhotosRepository {
   }
 }
 
-/// The repository photos use: the demo's while exploring it, the API's
-/// otherwise.
+/// The repository photos use.
 final photosRepositoryProvider = Provider<PhotosRepository>((ref) {
-  if (ref.watch(demoSessionProvider)) {
-    return DemoPhotosRepository(ref.watch(demoProfileProvider));
-  }
   return ApiPhotosRepository(
     api: ref.watch(apiClientProvider),
     uploader: ref.watch(mediaUploaderProvider),

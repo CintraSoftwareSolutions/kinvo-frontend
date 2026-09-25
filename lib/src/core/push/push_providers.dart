@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../auth/auth_providers.dart';
 import '../auth/session_status.dart';
-import '../demo/demo_mode.dart';
 import '../device/device_providers.dart';
 import '../network/api_client_provider.dart';
 import '../realtime/realtime_providers.dart';
@@ -59,8 +58,7 @@ final pushRegistrationKeeperProvider = Provider<void>((ref) {
   StreamSubscription<String>? tokenRefreshes;
 
   void sync() {
-    final signedIn = ref.read(sessionStatusProvider) is SignedIn;
-    if (signedIn && !ref.read(demoSessionProvider)) {
+    if (ref.read(sessionStatusProvider) is SignedIn) {
       unawaited(registrar.sync());
     }
   }

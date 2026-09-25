@@ -198,26 +198,4 @@ void main() {
     await tester.tap(find.text('Done'));
     await app.pumpUntilFound(find.text('One of your trusted contacts knows'));
   });
-
-  testWidgets('the demo alerts nobody', (tester) async {
-    final app = await pumpKinvoApp(tester);
-    await app.pumpUntilFound(find.text('Explore Demo'));
-    await tester.tap(find.text('Explore Demo'));
-    await app.pumpUntilFound(find.byType(DiscoverScreen));
-    await app.pumpUntilLoaded();
-    app.router.go(AppRoutes.safetyCenter);
-    await app.pumpUntilFound(find.text('1 of 5 added.'));
-
-    await tester.tap(find.text('Alert my trusted contacts'));
-    await app.pumpUntilFound(find.text('Alert your trusted contacts?'));
-    await _tapWhenOpen(tester, find.text('Send alert'));
-
-    await app.pumpUntilFound(
-      find.text(
-        'This is the demo, so nobody was emailed. With an account, your '
-        'trusted contacts would be.',
-      ),
-    );
-    expect(app.adapter.requests, isEmpty);
-  });
 }

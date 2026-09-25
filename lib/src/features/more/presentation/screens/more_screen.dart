@@ -75,7 +75,7 @@ class MoreScreen extends StatelessWidget {
                   ),
                   iconBg: AppColors.surfaceSoft,
                   title: 'Support & guidelines',
-                  subtitle: 'Help center, community, escalation paths.',
+                  subtitle: 'Help, the rules, and safety.',
                   onTap: () => context.push(AppRoutes.support),
                 ),
                 const SizedBox(height: 10),

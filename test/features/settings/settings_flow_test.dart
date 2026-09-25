@@ -228,22 +228,4 @@ void main() {
     await app.pumpUntilFound(find.text('Dating filters'));
     expect(find.text('Within 30 miles'), findsOneWidget);
   });
-
-  testWidgets('the demo settings change without an account', (tester) async {
-    final app = await pumpKinvoApp(tester);
-    await app.pumpUntilFound(find.text('Explore Demo'));
-    await tester.tap(find.text('Explore Demo'));
-    await app.pumpUntilFound(find.byType(DiscoverScreen));
-    await app.pumpUntilLoaded();
-
-    app.router.go(AppRoutes.privacy);
-    await app.pumpUntilFound(_switch('Show my distance'));
-    await tester.tap(_switch('Show my distance'));
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(_isOn(tester, 'Show my distance'), isFalse);
-
-    app.router.go(AppRoutes.devices);
-    await app.pumpUntilFound(find.text('iPad Air'));
-    expect(app.adapter.requests, isEmpty);
-  });
 }

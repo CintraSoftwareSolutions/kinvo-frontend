@@ -1,16 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/demo/demo_mode.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_client_provider.dart';
 import '../../../core/network/api_envelope.dart';
 import '../../../core/network/cursor_page.dart';
-import '../../../core/time/clock.dart';
-import '../../matches/data/demo_inbox.dart';
 import '../../safety/domain/trusted_contact.dart';
 import '../domain/plan.dart';
-import 'demo_plans_repository.dart';
 
 /// The lists on the Plans screen.
 enum PlansTab {
@@ -51,10 +47,7 @@ final class PlanDetails {
   final String? notes;
 }
 
-/// Plans with the user's matches.
-///
-/// An interface because the demo shows the same screens without an account,
-/// on [DemoPlansRepository]. Failures are `ApiException`s.
+/// Plans with the user's matches. Failures are `ApiException`s.
 abstract interface class PlansRepository {
   /// One page of the plans in [tab], newest first.
   Future<CursorPage<Plan>> fetchPlans(PlansTab tab, {String? cursor});
@@ -218,14 +211,7 @@ final class ApiPlansRepository implements PlansRepository {
   }
 }
 
-/// The repository plans use: the demo's while exploring it, the API's
-/// otherwise.
-final plansRepositoryProvider = Provider<PlansRepository>((ref) {
-  if (ref.watch(demoSessionProvider)) {
-    return DemoPlansRepository(
-      inbox: ref.watch(demoInboxProvider),
-      clock: ref.watch(clockProvider),
-    );
-  }
-  return ApiPlansRepository(ref.watch(apiClientProvider));
-});
+/// The repository plans use.
+final plansRepositoryProvider = Provider<PlansRepository>(
+  (ref) => ApiPlansRepository(ref.watch(apiClientProvider)),
+);

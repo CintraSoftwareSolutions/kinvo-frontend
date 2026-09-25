@@ -1,24 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/auth/account_providers.dart';
-import '../../../core/demo/demo_mode.dart';
 import '../../../core/media/media_uploader.dart';
 import '../../../core/media/photo_processing.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_client_provider.dart';
 import '../../../core/network/api_envelope.dart';
 import '../../../core/network/cursor_page.dart';
-import '../../../core/time/clock.dart';
-import '../../matches/data/demo_inbox.dart';
 import '../domain/chat_message.dart';
 import '../domain/conversation.dart';
 import '../domain/moderation_check.dart';
-import 'demo_chat_repository.dart';
 
-/// Everything chat reads from the server and sends to it.
-///
-/// An interface because the demo shows the same screens without an account,
-/// on [DemoChatRepository]. Failures are `ApiException`s.
+/// Everything chat reads from the server and sends to it. Failures are
+/// `ApiException`s.
 abstract interface class ChatRepository {
   Future<Conversation> fetchConversation(String conversationId);
 
@@ -192,24 +186,15 @@ final class ApiChatRepository implements ChatRepository {
   }
 }
 
-/// The repository chat uses: the demo's while exploring it, the API's
-/// otherwise.
+/// The repository chat uses.
 final chatRepositoryProvider = Provider<ChatRepository>((ref) {
-  if (ref.watch(demoSessionProvider)) {
-    return DemoChatRepository(
-      inbox: ref.watch(demoInboxProvider),
-      clock: ref.watch(clockProvider),
-    );
-  }
   return ApiChatRepository(
     api: ref.watch(apiClientProvider),
     uploader: ref.watch(mediaUploaderProvider),
   );
 });
 
-/// The user's id, as messages name their sender. In the demo, the demo's
-/// stand-in for the user.
-final chatUserIdProvider = Provider<String?>((ref) {
-  if (ref.watch(demoSessionProvider)) return DemoChatRepository.userId;
-  return ref.watch(currentAccountProvider).value?.id;
-});
+/// The user's id, as messages name their sender.
+final chatUserIdProvider = Provider<String?>(
+  (ref) => ref.watch(currentAccountProvider).value?.id,
+);

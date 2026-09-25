@@ -70,6 +70,18 @@ final class FakeKinvoServer {
   int maxModes = 3;
   int maxInterests = 10;
 
+  /// The ways of signing in the server says it can complete, as `sign_in`
+  /// in `GET /config`.
+  bool phoneSignIn = true;
+  bool googleSignIn = true;
+
+  /// What `support` in `GET /config` lists: nothing until a test sets it.
+  String? supportEmail;
+  String? helpUrl;
+  String? guidelinesUrl;
+  String? termsUrl;
+  String? privacyUrl;
+
   /// Filters the user has changed, by mode. Anything left out is the
   /// server's default.
   final Map<String, Map<String, Object?>> modeFilters = {};
@@ -2678,6 +2690,19 @@ final class FakeKinvoServer {
         'bio_max_length': 500,
         'default_page_size': 20,
         'max_page_size': 100,
+      },
+      'sign_in': {
+        'email': true,
+        'phone': phoneSignIn,
+        'google': googleSignIn,
+        'apple': false,
+      },
+      'support': {
+        'email': supportEmail,
+        'help_url': helpUrl,
+        'guidelines_url': guidelinesUrl,
+        'terms_url': termsUrl,
+        'privacy_url': privacyUrl,
       },
     };
   }

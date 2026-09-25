@@ -1,12 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/demo/demo_mode.dart';
 import '../../../core/media/media_uploader.dart';
 import '../../../core/media/photo_processing.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_client_provider.dart';
-import '../../matches/data/demo_inbox.dart';
 
 /// What was being looked at when someone was reported, so moderators can find
 /// it.
@@ -60,8 +58,7 @@ final class ReportDraft {
 
 /// Blocking and reporting people.
 ///
-/// An interface because the demo shows the same screens without an account,
-/// on [DemoSafetyRepository]. Failures are `ApiException`s.
+/// Failures are `ApiException`s.
 abstract interface class SafetyRepository {
   /// Blocks [userId]: neither sees the other again, and any match between them
   /// ends. Blocking someone already blocked succeeds.
@@ -124,31 +121,8 @@ final class ApiSafetyRepository implements SafetyRepository {
   }
 }
 
-/// Safety for the demo, where nobody real is blocked or reported. Blocking
-/// still ends the sample match, as it would a real one.
-final class DemoSafetyRepository implements SafetyRepository {
-  const DemoSafetyRepository(this._inbox);
-
-  final DemoInbox _inbox;
-
-  @override
-  Future<void> block(String userId) async {
-    // The demo's matches are named after their sample people.
-    _inbox.find(userId)?.isUnmatched = true;
-  }
-
-  @override
-  Future<void> report(ReportDraft report) async {
-    if (report.alsoBlock) await block(report.userId);
-  }
-}
-
-/// The repository safety actions use: the demo's while exploring it, the
-/// API's otherwise.
+/// The repository safety actions use.
 final safetyRepositoryProvider = Provider<SafetyRepository>((ref) {
-  if (ref.watch(demoSessionProvider)) {
-    return DemoSafetyRepository(ref.watch(demoInboxProvider));
-  }
   return ApiSafetyRepository(
     api: ref.watch(apiClientProvider),
     uploader: ref.watch(mediaUploaderProvider),

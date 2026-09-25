@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/demo/demo_mode.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../safety/domain/trusted_contact.dart';
@@ -182,11 +181,10 @@ class _SharePlanSheetState extends ConsumerState<_SharePlanSheet> {
   }
 
   List<Widget> _result(PlanShare shared) {
-    final inDemo = ref.watch(demoSessionProvider);
     return [
-      if (inDemo || shared.contacts.isEmpty)
+      if (shared.contacts.isEmpty)
         const Text(
-          'This is the demo, so nobody was emailed.',
+          'Nobody was emailed.',
           style: TextStyle(fontSize: 14, color: AppColors.textPrimary),
         )
       else

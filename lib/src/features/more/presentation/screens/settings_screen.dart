@@ -31,7 +31,6 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // The demo has no account to delete.
     final hasAccount = ref.watch(sessionStatusProvider) is SignedIn;
     final pushPermission =
         hasAccount && ref.watch(pushMessagingProvider).isAvailable

@@ -6,11 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart' hide AsyncError;
 
 import '../../../core/config/server_config.dart';
 import '../../../core/config/server_config_providers.dart';
-import '../../../core/demo/demo_mode.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_client_provider.dart';
 import '../../../core/network/cursor_page.dart';
-import '../../../core/time/clock.dart';
 import '../../modes/data/modes_repository.dart';
 import '../../modes/domain/mode_filters.dart';
 import '../../modes/domain/user_modes.dart';
@@ -20,12 +18,9 @@ import '../domain/deck_stats.dart';
 import '../domain/discovery_formatting.dart';
 import '../domain/discovery_mode.dart';
 import '../domain/swipe.dart';
-import 'demo_discovery_repository.dart';
 
-/// Everything Discover reads from the server and sends to it.
-///
-/// An interface because the demo explores the same screens without an
-/// account, on [DemoDiscoveryRepository]. Failures are `ApiException`s.
+/// Everything Discover reads from the server and sends to it. Failures are
+/// `ApiException`s.
 abstract interface class DiscoveryRepository {
   /// The modes the signed-in user has switched on, main mode first.
   Future<List<DiscoveryMode>> fetchModes();
@@ -185,12 +180,8 @@ Future<(A, B)> _both<A, B>(Future<A> a, Future<B> b) async {
   }
 }
 
-/// The repository Discover uses: the demo's while exploring it, the API's
-/// otherwise.
+/// The repository Discover uses.
 final discoveryRepositoryProvider = Provider<DiscoveryRepository>((ref) {
-  if (ref.watch(demoSessionProvider)) {
-    return DemoDiscoveryRepository(clock: ref.watch(clockProvider));
-  }
   return ApiDiscoveryRepository(
     api: ref.watch(apiClientProvider),
     modes: ref.watch(modesRepositoryProvider),

@@ -1,14 +1,10 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 
 /// Someone's photo, or their initial on [color] while it loads, when they
 /// have none, or when it can't be shown.
 ///
 /// Photo links from the API expire, so a card left open long enough can hold
-/// one that no longer works; the initial covers that too. Links with the
-/// `asset:` scheme are bundled images and `file:` links are photos on the
-/// device, both of which the demo uses.
+/// one that no longer works; the initial covers that too.
 class PersonPhoto extends StatelessWidget {
   const PersonPhoto({
     required this.url,
@@ -31,20 +27,6 @@ class PersonPhoto extends StatelessWidget {
     final url = this.url;
 
     if (url == null) return fallback;
-    if (url.scheme == 'asset') {
-      return Image.asset(
-        url.path,
-        fit: BoxFit.cover,
-        errorBuilder: (_, _, _) => fallback,
-      );
-    }
-    if (url.scheme == 'file') {
-      return Image.file(
-        File(url.toFilePath()),
-        fit: BoxFit.cover,
-        errorBuilder: (_, _, _) => fallback,
-      );
-    }
     return Image.network(
       url.toString(),
       fit: BoxFit.cover,

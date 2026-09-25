@@ -1,16 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/demo/demo_mode.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_client_provider.dart';
 import '../../../core/network/api_envelope.dart';
 import '../domain/venue.dart';
-import 'demo_venues_repository.dart';
 
-/// Places to meet, from Kinvo's list.
-///
-/// An interface because the demo shows the same screens without an account,
-/// on [DemoVenuesRepository]. Failures are `ApiException`s.
+/// Places to meet, from Kinvo's list. Failures are `ApiException`s.
 abstract interface class VenuesRepository {
   /// Places near the user, nearest first: those of [category] when given,
   /// and suited to [mode] when given.
@@ -89,9 +84,7 @@ final class ApiVenuesRepository implements VenuesRepository {
   }
 }
 
-/// The repository places come from: the demo's while exploring it, the API's
-/// otherwise.
-final venuesRepositoryProvider = Provider<VenuesRepository>((ref) {
-  if (ref.watch(demoSessionProvider)) return DemoVenuesRepository();
-  return ApiVenuesRepository(ref.watch(apiClientProvider));
-});
+/// The repository places come from.
+final venuesRepositoryProvider = Provider<VenuesRepository>(
+  (ref) => ApiVenuesRepository(ref.watch(apiClientProvider)),
+);

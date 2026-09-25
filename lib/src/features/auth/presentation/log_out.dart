@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/auth/auth_providers.dart';
-import '../../../core/demo/demo_mode.dart';
 import '../../../core/theme/app_colors.dart';
 import '../data/social_auth_service.dart';
 
@@ -30,13 +29,12 @@ Future<void> confirmLogOut(BuildContext context, WidgetRef ref) async {
   await logOut(ref);
 }
 
-/// Ends the session on this device, or leaves the demo. The router then
-/// returns to the welcome screen.
+/// Ends the session on this device. The router then returns to the welcome
+/// screen.
 Future<void> logOut(WidgetRef ref) async {
-  // Read before anything changes: leaving the demo closes the current screen.
+  // Read before anything changes: signing out closes the current screen.
   final session = ref.read(sessionManagerProvider);
   final social = ref.read(socialAuthServiceProvider);
-  ref.read(demoSessionProvider.notifier).end();
   await session.signOut();
 
   // Google is told too, so the next sign-in asks which account to use

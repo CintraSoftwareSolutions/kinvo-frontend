@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/auth/account_providers.dart';
 import '../../../../core/auth/auth_providers.dart';
 import '../../../../core/auth/session_status.dart';
-import '../../../../core/demo/demo_mode.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/network/paged_list.dart';
 import '../../../../core/push/push_messaging.dart';
@@ -194,9 +193,8 @@ class NotificationUnreadCountController extends AsyncNotifier<int> {
   @override
   Future<int> build() async {
     final signedIn = ref.watch(sessionStatusProvider) is SignedIn;
-    final inDemo = ref.watch(demoSessionProvider);
     final repository = ref.watch(notificationsRepositoryProvider);
-    if (!signedIn && !inDemo) return 0;
+    if (!signedIn) return 0;
 
     final arrivals = _arrivals(ref).listen((_) => _scheduleRefresh());
     // Reading a conversation marks the notifications about it read too.
@@ -219,16 +217,14 @@ class NotificationUnreadCountController extends AsyncNotifier<int> {
         if (foreground) _scheduleRefresh();
       });
 
-    // The icon shows the account's own count; the demo's is make-believe.
-    if (signedIn) {
-      final badge = ref.watch(appIconBadgeProvider);
-      listenSelf((previous, next) {
-        final count = next.value;
-        if (count != null && count != previous?.value) {
-          unawaited(badge.show(count));
-        }
-      });
-    }
+    // The app icon shows the same count.
+    final badge = ref.watch(appIconBadgeProvider);
+    listenSelf((previous, next) {
+      final count = next.value;
+      if (count != null && count != previous?.value) {
+        unawaited(badge.show(count));
+      }
+    });
 
     return repository.fetchUnreadCount();
   }
