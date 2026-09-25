@@ -62,6 +62,41 @@ final class ExtendFailed extends ExtendOutcome {
   final String message;
 }
 
+/// Ends matches from wherever the user decides to: a list, or Discover when
+/// a rewind turns out to be a match.
+final matchEndingProvider = Provider<MatchEnding>((ref) {
+  return MatchEnding(
+    repository: ref.watch(matchesRepositoryProvider),
+    updates: ref.watch(liveUpdatesProvider),
+  );
+});
+
+final class MatchEnding {
+  const MatchEnding({
+    required MatchesRepository repository,
+    required LiveUpdates updates,
+  }) : _repository = repository,
+       _updates = updates;
+
+  final MatchesRepository _repository;
+  final LiveUpdates _updates;
+
+  /// Ends the match for both people, and tells every list showing it.
+  /// Returns why it failed, or `null` once it's done.
+  Future<String?> unmatch(String matchId) async {
+    try {
+      await _repository.unmatch(matchId);
+    } on ApiException catch (error) {
+      // Already gone is what the user wanted.
+      if (error is! ApiErrorException || error.statusCode != 404) {
+        return error.message;
+      }
+    }
+    _updates.publish(MatchEnded(matchId));
+    return null;
+  }
+}
+
 /// Matches, newest first: current ones, or archived ones when the argument is
 /// true.
 final matchesListProvider = AsyncNotifierProvider.autoDispose
@@ -145,18 +180,12 @@ class MatchesListController extends AsyncNotifier<PagedList<MatchSummary>> {
   /// Ends the match for both people. Returns why it failed, or `null` once
   /// it's done.
   Future<String?> unmatch(String matchId) async {
-    final updates = ref.read(liveUpdatesProvider);
-    try {
-      await _repository.unmatch(matchId);
-    } on ApiException catch (error) {
-      // Already gone is what the user wanted.
-      if (error is! ApiErrorException || error.statusCode != 404) {
-        return error.message;
-      }
+    final error = await ref.read(matchEndingProvider).unmatch(matchId);
+    // At once, rather than when the announcement comes round.
+    if (error == null && ref.mounted) {
+      _removeWhere((match) => match.id == matchId);
     }
-    _removeWhere((match) => match.id == matchId);
-    updates.publish(MatchEnded(matchId));
-    return null;
+    return error;
   }
 
   Future<ExtendOutcome> extend(String matchId) async {

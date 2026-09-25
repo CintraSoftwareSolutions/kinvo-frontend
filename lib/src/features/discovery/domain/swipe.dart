@@ -146,30 +146,23 @@ final class SwipeResult {
 /// The server's answer to rewinding the last swipe.
 @immutable
 final class RewindResult {
-  const RewindResult({
-    required this.restoredUserId,
-    required this.action,
-    required this.matchRemoved,
-  });
+  const RewindResult({required this.restoredUserId, required this.action});
 
   /// Reads the `data` of `POST /discovery/{mode}/rewind`.
+  ///
+  /// The server still sends `match_removed`, always false, for older builds:
+  /// rewind never undoes a match, so it isn't read.
   factory RewindResult.fromJson(JsonMap json) {
     if (json case {
       'restored_user_id': final String restoredUserId,
       'action': final String actionName,
-      'match_removed': final bool matchRemoved,
     } when restoredUserId.isNotEmpty) {
       if (SwipeAction.fromWireName(actionName) case final action?) {
-        return RewindResult(
-          restoredUserId: restoredUserId,
-          action: action,
-          matchRemoved: matchRemoved,
-        );
+        return RewindResult(restoredUserId: restoredUserId, action: action);
       }
     }
     throw const FormatException(
-      'Expected a rewind result with restored_user_id, action and '
-      'match_removed.',
+      'Expected a rewind result with restored_user_id and action.',
     );
   }
 
@@ -178,7 +171,4 @@ final class RewindResult {
 
   /// What the undone swipe was.
   final SwipeAction action;
-
-  /// Whether undoing it also undid a match.
-  final bool matchRemoved;
 }

@@ -134,13 +134,21 @@ final class DemoDiscoveryRepository implements DiscoveryRepository {
         statusCode: 404,
       );
     }
-    final (userId, action) = swipes.removeLast();
-    final matchRemoved = _matches[mode]?.remove(userId) ?? false;
-    return RewindResult(
-      restoredUserId: userId,
-      action: action,
-      matchRemoved: matchRemoved,
-    );
+    final (userId, action) = swipes.last;
+    // As the server does: a swipe that became a match is never undone. The
+    // demo's Discover matches aren't in its Matches tab, so there's no match
+    // to offer Unmatch on — the same answer as for one that has ended.
+    if (_matches[mode]?.contains(userId) ?? false) {
+      throw const ApiErrorException(
+        code: ApiErrorCode.alreadyMatched,
+        message:
+            'You matched with this person, so that swipe cannot be undone.',
+        statusCode: 409,
+        details: {'match_id': null},
+      );
+    }
+    swipes.removeLast();
+    return RewindResult(restoredUserId: userId, action: action);
   }
 
   @override

@@ -139,6 +139,19 @@ final class RewindFailed extends RewindOutcome {
   final String message;
 }
 
+/// The last swipe became a match, and rewind never undoes one: unmatching is
+/// how a match ends. Nothing changed.
+final class RewindKeptMatch extends RewindOutcome {
+  const RewindKeptMatch({required this.matchId, required this.message});
+
+  /// The match, while it's still on the user's list, so Unmatch can be
+  /// offered; `null` once it has ended.
+  final String? matchId;
+
+  /// The server's explanation, for when there's nothing to offer.
+  final String message;
+}
+
 /// Today's deck for the mode given, by its API name.
 final deckControllerProvider = AsyncNotifierProvider.autoDispose
     .family<DeckController, DeckState, String>(DeckController.new);
@@ -151,6 +164,9 @@ class DeckController extends AsyncNotifier<DeckState> {
   static const refillBelow = 5;
 
   final String mode;
+
+  /// A rewind is on its way, so a second tap doesn't send another.
+  bool _isRewinding = false;
 
   DiscoveryRepository get _repository => ref.read(discoveryRepositoryProvider);
 
@@ -275,8 +291,9 @@ class DeckController extends AsyncNotifier<DeckState> {
   /// Undoes the last swipe in this mode and puts that card back on top.
   Future<RewindOutcome?> rewind() async {
     final deck = state.value;
-    if (deck == null || deck.isSwiping) return null;
+    if (deck == null || deck.isSwiping || _isRewinding) return null;
 
+    _isRewinding = true;
     try {
       final result = await _repository.rewind(mode);
       if (!ref.mounted) return Rewound(result);
@@ -299,7 +316,20 @@ class DeckController extends AsyncNotifier<DeckState> {
       if (Paywall.fromError(error) case final paywall?) {
         return RewindNeedsUpgrade(paywall);
       }
+      if (error case ApiErrorException(
+        code: ApiErrorCode.alreadyMatched,
+        :final details,
+        :final message,
+      )) {
+        final matchId = details?['match_id'];
+        return RewindKeptMatch(
+          matchId: matchId is String && matchId.isNotEmpty ? matchId : null,
+          message: message,
+        );
+      }
       return RewindFailed(error.message);
+    } finally {
+      _isRewinding = false;
     }
   }
 

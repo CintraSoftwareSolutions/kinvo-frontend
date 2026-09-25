@@ -9,6 +9,7 @@ import 'package:kinvo/src/features/discovery/domain/swipe.dart';
 import 'package:kinvo/src/features/discovery/presentation/controllers/deck_controller.dart';
 import 'package:kinvo/src/features/discovery/presentation/controllers/discovery_actions.dart';
 import 'package:kinvo/src/features/discovery/presentation/controllers/discovery_modes_controller.dart';
+import 'package:kinvo/src/features/matches/data/matches_repository.dart';
 
 import '../../../helpers/fake_kinvo_server.dart';
 import '../../../helpers/test_backend.dart';
@@ -238,6 +239,57 @@ void main() {
         (outcome! as RewindFailed).message,
         'There is nothing to rewind in this mode.',
       );
+    });
+
+    test('never undoes a swipe that became a match', () async {
+      server
+        ..isPremium = true
+        ..likesBack.add('p1');
+      final deck = await openDeck();
+      await deck.swipe(SwipeAction.like);
+
+      final outcome = await deck.rewind();
+
+      // The match to offer Unmatch on; nothing else changed.
+      expect(outcome, isA<RewindKeptMatch>());
+      expect((outcome! as RewindKeptMatch).matchId, 'match-p1');
+      expect(names(), ['Bea', 'Cat']);
+      expect(server.matches.single.person.id, 'p1');
+      expect(server.swipes['dating'], hasLength(1));
+    });
+
+    test('has no match to offer once it has ended', () async {
+      server
+        ..isPremium = true
+        ..likesBack.add('p1');
+      final deck = await openDeck();
+      await deck.swipe(SwipeAction.like);
+      await container.read(matchesRepositoryProvider).unmatch('match-p1');
+
+      final outcome = await deck.rewind();
+
+      expect(outcome, isA<RewindKeptMatch>());
+      final kept = outcome! as RewindKeptMatch;
+      expect(kept.matchId, isNull);
+      expect(
+        kept.message,
+        'You matched with this person, so that swipe cannot be undone.',
+      );
+      expect(names(), ['Bea', 'Cat']);
+    });
+
+    test('sends one rewind for two quick taps', () async {
+      server.isPremium = true;
+      final deck = await openDeck();
+      await deck.swipe(SwipeAction.pass);
+
+      final first = deck.rewind();
+      final second = await deck.rewind();
+
+      expect(second, isNull);
+      expect(await first, isA<Rewound>());
+      expect(backend.requestsTo('/discovery/dating/rewind'), hasLength(1));
+      expect(names(), ['Ada', 'Bea', 'Cat']);
     });
   });
 

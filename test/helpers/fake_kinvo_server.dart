@@ -135,6 +135,10 @@ final class FakeKinvoServer {
   /// Matches, newest first.
   final List<FakeMatch> matches = [];
 
+  /// `mode:personId` for each match that has ended. The server keeps those as
+  /// rows, so rewind still refuses the swipe, with no match left to offer.
+  final Set<String> endedMatches = {};
+
   /// Calls, oldest first.
   final List<FakeCall> calls = [];
 
@@ -636,16 +640,25 @@ final class FakeKinvoServer {
         'There is nothing to rewind in this mode.',
       );
     }
-    final last = made.removeLast();
+    final last = made.last;
+    // As the server does: a swipe that became a match is never undone.
+    final live = matches
+        .where((match) => match.mode == mode && match.person.id == last.userId)
+        .firstOrNull;
+    if (live != null || endedMatches.contains('$mode:${last.userId}')) {
+      return _error(
+        409,
+        'ALREADY_MATCHED',
+        'You matched with this person, so that swipe cannot be undone.',
+        details: {'match_id': live?.id},
+      );
+    }
+    made.removeLast();
     if (last.action != 'pass' && likesUsed > 0) likesUsed--;
-    final before = matches.length;
-    matches.removeWhere(
-      (match) => match.mode == mode && match.person.id == last.userId,
-    );
     return _ok({
       'restored_user_id': last.userId,
       'action': last.action,
-      'match_removed': matches.length != before,
+      'match_removed': false,
     });
   }
 
@@ -800,6 +813,9 @@ final class FakeKinvoServer {
 
   ResponseBody _unmatch(String id) {
     final before = matches.length;
+    for (final match in matches.where((match) => match.id == id)) {
+      endedMatches.add('${match.mode}:${match.person.id}');
+    }
     matches.removeWhere((match) => match.id == id);
     if (matches.length == before) {
       return _error(404, 'NOT_FOUND', 'We could not find that.');
@@ -1007,6 +1023,9 @@ final class FakeKinvoServer {
   /// Blocking ends every match with the person, as on the server.
   void _blockPerson(String personId) {
     blocked.add(personId);
+    for (final match in matches.where((match) => match.person.id == personId)) {
+      endedMatches.add('${match.mode}:${match.person.id}');
+    }
     matches.removeWhere((match) => match.person.id == personId);
     _closePlans((plan) => plan.match.person.id == personId);
   }

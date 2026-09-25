@@ -12,6 +12,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/time/clock.dart';
 import '../../../../core/widgets/flow_widgets.dart';
 import '../../../../core/widgets/paywall_sheet.dart';
+import '../../../matches/data/matches_repository.dart';
 import '../../../matches/presentation/controllers/matches_controllers.dart';
 import '../../../notifications/presentation/controllers/notifications_controllers.dart';
 import '../../../modes/presentation/mode_presentation.dart';
@@ -382,11 +383,12 @@ class _DeckBody extends ConsumerWidget {
         .rewind();
     if (!context.mounted) return;
     switch (outcome) {
-      case Rewound(:final result) when result.matchRemoved:
-        ref.invalidate(matchesListProvider(false));
-        _tell(context, 'Your last swipe is back, and its match is undone.');
       case Rewound():
         _tell(context, 'Your last swipe is back.');
+      case RewindKeptMatch(:final matchId?):
+        await _offerToUnmatch(context, ref, matchId);
+      case RewindKeptMatch(:final message):
+        _tell(context, message);
       case RewindNeedsUpgrade(:final paywall):
         await showPaywallSheet(context, paywall);
       case RewindFailed(:final message):
@@ -534,6 +536,56 @@ Future<void> _offerToResume(BuildContext context, WidgetRef ref) async {
     ),
   );
   if (resume == true && context.mounted) await _resumeMatching(context, ref);
+}
+
+/// The rewind was refused because that swipe became a match: say so, and
+/// offer what does end a match — Unmatch — rather than leave a dead button.
+Future<void> _offerToUnmatch(
+  BuildContext context,
+  WidgetRef ref,
+  String matchId,
+) async {
+  // Their name makes the choice concrete, but isn't worth failing over.
+  String? name;
+  try {
+    final match = await ref.read(matchesRepositoryProvider).fetchMatch(matchId);
+    name = match.user.displayName;
+  } on ApiException {
+    name = null;
+  }
+  if (!context.mounted) return;
+
+  final unmatch = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: Text(
+        name == null ? 'That swipe became a match' : 'You matched with $name',
+      ),
+      content: const Text(
+        "Rewind can't undo a match. If you've changed your mind, you can "
+        "unmatch instead: the chat closes for you both, and that can't be "
+        'undone.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: const Text('Keep match'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          child: const Text('Unmatch'),
+        ),
+      ],
+    ),
+  );
+  if (unmatch != true || !context.mounted) return;
+
+  final error = await ref.read(matchEndingProvider).unmatch(matchId);
+  if (!context.mounted) return;
+  _tell(
+    context,
+    error ?? (name == null ? 'You unmatched.' : 'You unmatched $name.'),
+  );
 }
 
 Future<void> _resumeMatching(BuildContext context, WidgetRef ref) async {

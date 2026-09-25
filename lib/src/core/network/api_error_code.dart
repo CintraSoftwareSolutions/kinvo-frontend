@@ -34,6 +34,10 @@ enum ApiErrorCode {
   /// turn the pause off.
   newMatchesPaused('NEW_MATCHES_PAUSED'),
 
+  /// A rewind refused because that swipe became a match. `details.match_id`
+  /// is the match while it's still on the user's list, to offer Unmatch.
+  alreadyMatched('ALREADY_MATCHED'),
+
   fileTooLarge('FILE_TOO_LARGE'),
   unsupportedMediaType('UNSUPPORTED_MEDIA_TYPE'),
 

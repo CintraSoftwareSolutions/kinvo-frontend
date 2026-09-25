@@ -168,4 +168,71 @@ void main() {
     expect(app.router.state.uri.path, AppRoutes.matches);
     expect(app.adapter.requests, isEmpty);
   });
+
+  group('rewinding a swipe that became a match', () {
+    /// Likes Ada, who liked back, and carries on to Bea.
+    Future<AppHarness> matchWithAda(
+      WidgetTester tester,
+      FakeKinvoServer server,
+    ) async {
+      final app = await _openDiscover(tester, server);
+      await _tap(tester, _labelled('Like'));
+      await app.pumpUntilFound(find.text("It's a match!"));
+      await _tap(tester, find.text('Keep discovering'));
+      await app.pumpUntilFound(find.text('Bea'));
+      await app.pumpUntilLoaded();
+      return app;
+    }
+
+    testWidgets('keeps the match, and offers Unmatch instead', (tester) async {
+      final server = _server()
+        ..isPremium = true
+        ..likesBack.add('p1');
+      final app = await matchWithAda(tester, server);
+
+      await _tap(tester, _labelled('Rewind last swipe'));
+      await app.pumpUntilFound(find.text('You matched with Ada'));
+
+      // Keeping it changes nothing.
+      await tester.tap(find.text('Keep match'));
+      await app.pumpUntilGone(find.text('You matched with Ada'));
+      expect(server.matches.single.person.id, 'p1');
+      expect(find.text('Bea'), findsOneWidget);
+
+      await _tap(tester, _labelled('Rewind last swipe'));
+      await app.pumpUntilFound(find.text('You matched with Ada'));
+      await tester.tap(find.text('Unmatch'));
+      await app.pumpUntilFound(find.text('You unmatched Ada.'));
+
+      expect(server.matches, isEmpty);
+      // Unmatching ends the match; it doesn't bring the card back.
+      expect(server.swipes['dating']!.single.userId, 'p1');
+      expect(find.text('Bea'), findsOneWidget);
+      await app.pumpUntilLoaded();
+    });
+
+    testWidgets('says so, with nothing to offer, once the match has ended', (
+      tester,
+    ) async {
+      final server = _server()
+        ..isPremium = true
+        ..likesBack.add('p1');
+      final app = await matchWithAda(tester, server);
+      // Ended since, by Ada.
+      server
+        ..matches.clear()
+        ..endedMatches.add('dating:p1');
+
+      await _tap(tester, _labelled('Rewind last swipe'));
+      await app.pumpUntilFound(
+        find.text(
+          'You matched with this person, so that swipe cannot be undone.',
+        ),
+      );
+
+      expect(find.text('Unmatch'), findsNothing);
+      expect(find.text('Bea'), findsOneWidget);
+      await app.pumpUntilLoaded();
+    });
+  });
 }

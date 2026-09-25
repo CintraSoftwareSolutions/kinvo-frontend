@@ -211,6 +211,19 @@ void main() {
     });
   });
 
+  test('a rewind result is read with or without match_removed', () {
+    // Today's server still sends it, always false, for older builds; a later
+    // one can drop it.
+    for (final json in [
+      {'restored_user_id': 'p1', 'action': 'like', 'match_removed': false},
+      {'restored_user_id': 'p1', 'action': 'like'},
+    ]) {
+      final result = RewindResult.fromJson(json);
+      expect(result.restoredUserId, 'p1');
+      expect(result.action, SwipeAction.like);
+    }
+  });
+
   test('deck stats are read with and without a boost', () {
     final quiet = DeckStats.fromJson({
       'mode': 'dating',
