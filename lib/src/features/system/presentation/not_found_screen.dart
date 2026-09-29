@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/navigation/app_routes.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/kinvo_colors.dart';
 import '../../../core/widgets/flow_widgets.dart';
 import '../../../core/widgets/gradient_scaffold.dart';
 
@@ -14,7 +14,7 @@ class NotFoundScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GradientScaffold(
-      background: AppColors.lightBackground,
+      background: context.colors.backgroundGradient,
       child: FlowPageLayout(
         backButton: const SizedBox.shrink(),
         backButtonSpacing: 0,

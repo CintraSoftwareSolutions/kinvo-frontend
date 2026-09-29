@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/assets/app_assets.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/time/clock.dart';
 import '../../../discovery/domain/discovery_formatting.dart';
 import '../../../discovery/presentation/controllers/discovery_modes_controller.dart';
@@ -56,10 +56,10 @@ class ChatHeader extends ConsumerWidget {
           HeaderCircleButton(
             tooltip: MaterialLocalizations.of(context).backButtonTooltip,
             onTap: onBack,
-            child: const Icon(
+            child: Icon(
               Icons.arrow_back_rounded,
               size: 20,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
           ),
           const SizedBox(width: 12),
@@ -91,10 +91,10 @@ class ChatHeader extends ConsumerWidget {
                                   user.displayName,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 17,
                                     fontWeight: FontWeight.w700,
-                                    color: AppColors.textPrimary,
+                                    color: context.colors.textPrimary,
                                     height: 1.15,
                                   ),
                                 ),
@@ -105,8 +105,8 @@ class ChatHeader extends ConsumerWidget {
                                   AppAssets.shield,
                                   width: 13,
                                   height: 13,
-                                  colorFilter: const ColorFilter.mode(
-                                    AppColors.blue,
+                                  colorFilter: ColorFilter.mode(
+                                    context.colors.blue,
                                     BlendMode.srcIn,
                                   ),
                                 ),
@@ -124,8 +124,8 @@ class ChatHeader extends ConsumerWidget {
                                   ? FontWeight.w600
                                   : FontWeight.w400,
                               color: peerIsTyping
-                                  ? AppColors.purple
-                                  : AppColors.textSecondary,
+                                  ? context.colors.purple
+                                  : context.colors.textSecondary,
                             ),
                           ),
                         ],
@@ -145,8 +145,8 @@ class ChatHeader extends ConsumerWidget {
                 AppAssets.video,
                 width: 19,
                 height: 19,
-                colorFilter: const ColorFilter.mode(
-                  AppColors.purple,
+                colorFilter: ColorFilter.mode(
+                  context.colors.purple,
                   BlendMode.srcIn,
                 ),
               ),
@@ -161,8 +161,8 @@ class ChatHeader extends ConsumerWidget {
                 AppAssets.phone,
                 width: 18,
                 height: 18,
-                colorFilter: const ColorFilter.mode(
-                  AppColors.purple,
+                colorFilter: ColorFilter.mode(
+                  context.colors.purple,
                   BlendMode.srcIn,
                 ),
               ),
@@ -172,10 +172,10 @@ class ChatHeader extends ConsumerWidget {
           HeaderCircleButton(
             tooltip: 'Conversation options',
             onTap: onOpenMenu,
-            child: const Icon(
+            child: Icon(
               Icons.more_vert_rounded,
               size: 20,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
           ),
         ],
@@ -211,8 +211,8 @@ class HeaderCircleButton extends StatelessWidget {
           child: Container(
             width: 40,
             height: 40,
-            decoration: const BoxDecoration(
-              color: AppColors.surfaceSoft,
+            decoration: BoxDecoration(
+              color: context.colors.surfaceSoft,
               shape: BoxShape.circle,
             ),
             child: Center(child: child),
@@ -244,7 +244,7 @@ class _Avatar extends StatelessWidget {
               child: PersonPhoto(
                 url: user.photoUrl,
                 name: user.displayName,
-                color: modeColors(conversation.mode).primary,
+                color: context.colors.mode(conversation.mode).color,
                 initialSize: 17,
               ),
             ),
@@ -257,9 +257,9 @@ class _Avatar extends StatelessWidget {
                 width: 12,
                 height: 12,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF22C55E),
+                  color: context.colors.online,
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
+                  border: Border.all(color: context.colors.surface, width: 2),
                 ),
               ),
             ),

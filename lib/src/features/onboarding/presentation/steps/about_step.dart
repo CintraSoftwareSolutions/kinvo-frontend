@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/assets/app_assets.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/time/clock.dart';
 import '../../../../core/widgets/flow_widgets.dart';
 import '../../../auth/presentation/date_of_birth_picker.dart';
@@ -67,8 +67,8 @@ class AboutStep extends ConsumerWidget {
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               fontSize: 11,
               color: form.bio.trim().length > form.bioMaxLength
-                  ? AppColors.danger
-                  : AppColors.textMuted,
+                  ? context.colors.danger
+                  : context.colors.textMuted,
             ),
           ),
           if (form.needsDateOfBirth) ...[

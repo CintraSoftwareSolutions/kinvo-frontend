@@ -1,48 +1,28 @@
-import 'package:flutter/painting.dart';
-
 import '../../../core/assets/app_assets.dart';
 import '../../../core/config/server_config.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/kinvo_colors.dart';
 
-/// A mode's colours, by its name in the API: [primary] for its buttons and
-/// badges, [soft] behind them. A mode added after this version of the app
-/// gets the app's own colours.
-({Color primary, Color soft}) modeColors(String mode) {
+/// A mode's hue, by its name in the API. A mode added after this version of
+/// the app gets the app's own.
+Hue modeHue(String mode) {
   return switch (mode) {
-    'dating' => (
-      primary: const Color(0xFFEF4458),
-      soft: const Color(0xFFFFE4E8),
-    ),
-    'study_buddy' => (
-      primary: const Color(0xFF2563EB),
-      soft: const Color(0xFFDBEAFE),
-    ),
-    'networking' => (
-      primary: const Color(0xFF6366F1),
-      soft: const Color(0xFFE0E7FF),
-    ),
-    'trading' => (
-      primary: const Color(0xFF10B981),
-      soft: const Color(0xFFD1FAE5),
-    ),
-    'foodie' => (
-      primary: const Color(0xFFF59E0B),
-      soft: const Color(0xFFFEF3C7),
-    ),
-    'cuddle' => (
-      primary: const Color(0xFFEC4899),
-      soft: const Color(0xFFFCE7F0),
-    ),
-    'pet_dates' => (
-      primary: const Color(0xFFF97316),
-      soft: const Color(0xFFFFEDD5),
-    ),
-    'fitness' => (
-      primary: const Color(0xFF14B8A6),
-      soft: const Color(0xFFCCFBF1),
-    ),
-    _ => (primary: AppColors.purple, soft: AppColors.purpleSoft),
+    'dating' => Hue.red,
+    'study_buddy' => Hue.blue,
+    'networking' => Hue.indigo,
+    'trading' => Hue.green,
+    'foodie' => Hue.amber,
+    'cuddle' => Hue.pink,
+    'pet_dates' => Hue.orange,
+    'fitness' => Hue.teal,
+    _ => Hue.purple,
   };
+}
+
+/// Modes' colours in a palette.
+extension ModeColors on KinvoColors {
+  /// [mode]'s colours, by its name in the API: `color` for its buttons and
+  /// badges, `soft` behind them.
+  Tint mode(String mode) => tint(modeHue(mode));
 }
 
 /// The icon for a mode, by its name in the API. A mode added after this

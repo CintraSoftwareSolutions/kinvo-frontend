@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/config/server_config.dart';
 import '../../../../core/forms/form_errors.dart';
 import '../../../../core/network/api_exception.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/widgets/flow_widgets.dart';
 import '../../domain/own_profile.dart';
 import '../../domain/profile_rules.dart';
@@ -24,7 +24,7 @@ Future<void> showAddPromptSheet(
   ];
   final question = await showModalBottomSheet<PromptOption>(
     context: context,
-    backgroundColor: Colors.white,
+    backgroundColor: context.colors.surface,
     isScrollControlled: true,
     useSafeArea: true,
     shape: const RoundedRectangleBorder(
@@ -55,7 +55,7 @@ Future<void> showPromptAnswerSheet(
 }) {
   return showModalBottomSheet<void>(
     context: context,
-    backgroundColor: Colors.white,
+    backgroundColor: context.colors.surface,
     isScrollControlled: true,
     useSafeArea: true,
     shape: const RoundedRectangleBorder(
@@ -83,27 +83,30 @@ class _QuestionPicker extends StatelessWidget {
               width: 38,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.border,
+                color: context.colors.border,
                 borderRadius: BorderRadius.circular(999),
               ),
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'Choose a prompt',
             style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
           if (questions.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
               child: Text(
                 "There are no more prompts to answer right now.",
-                style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                style: TextStyle(
+                  fontSize: 13,
+                  color: context.colors.textSecondary,
+                ),
               ),
             )
           else
@@ -116,9 +119,9 @@ class _QuestionPicker extends StatelessWidget {
                       onTap: () => Navigator.of(context).pop(question),
                       contentPadding: EdgeInsets.zero,
                       title: Text(question.question),
-                      trailing: const Icon(
+                      trailing: Icon(
                         Icons.chevron_right_rounded,
-                        color: AppColors.textMuted,
+                        color: context.colors.textMuted,
                       ),
                     ),
                 ],
@@ -175,7 +178,7 @@ class _AnswerEditorState extends ConsumerState<_AnswerEditor> {
                 width: 38,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.border,
+                  color: context.colors.border,
                   borderRadius: BorderRadius.circular(999),
                 ),
               ),
@@ -185,10 +188,10 @@ class _AnswerEditorState extends ConsumerState<_AnswerEditor> {
               header: true,
               child: Text(
                 widget.editing.question,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
             ),
@@ -217,7 +220,9 @@ class _AnswerEditorState extends ConsumerState<_AnswerEditor> {
             if (!_isNew)
               TextButton(
                 onPressed: _saving ? null : _remove,
-                style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+                style: TextButton.styleFrom(
+                  foregroundColor: context.colors.danger,
+                ),
                 child: const Text('Remove this prompt'),
               ),
           ],

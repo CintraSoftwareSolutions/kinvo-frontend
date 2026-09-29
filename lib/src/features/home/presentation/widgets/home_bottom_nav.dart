@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 
 class HomeNavItem {
   const HomeNavItem({required this.icon, required this.label, this.badge = 0});
@@ -30,14 +30,14 @@ class HomeBottomNav extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(8, 10, 8, 10),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.colors.surface,
           borderRadius: BorderRadius.circular(28),
-          boxShadow: const [
+          boxShadow: [
             BoxShadow(
-              color: Color(0x140C132A),
+              color: context.colors.shadow,
               blurRadius: 24,
               spreadRadius: 0,
-              offset: Offset(0, 6),
+              offset: const Offset(0, 6),
             ),
           ],
         ),
@@ -71,7 +71,9 @@ class _NavCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color color = selected ? AppColors.purple : AppColors.textMuted;
+    final Color color = selected
+        ? context.colors.purple
+        : context.colors.textMuted;
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -80,7 +82,7 @@ class _NavCell extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
         decoration: BoxDecoration(
           color: selected
-              ? AppColors.purpleChip.withValues(alpha: 0.65)
+              ? context.colors.purpleChip.withValues(alpha: 0.65)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(18),
         ),
@@ -114,16 +116,19 @@ class _NavCell extends StatelessWidget {
                           minHeight: 15,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFEF4458),
+                          color: context.colors.danger,
                           borderRadius: BorderRadius.circular(999),
-                          border: Border.all(color: Colors.white, width: 1.5),
+                          border: Border.all(
+                            color: context.colors.surface,
+                            width: 1.5,
+                          ),
                         ),
                         child: Center(
                           child: Text(
                             '${item.badge}',
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: context.colors.onAccent,
                               fontSize: 9,
                               fontWeight: FontWeight.w700,
                               height: 1,

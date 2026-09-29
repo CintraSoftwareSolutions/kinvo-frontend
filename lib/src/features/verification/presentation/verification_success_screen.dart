@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/assets/app_assets.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/kinvo_colors.dart';
 import '../../../core/widgets/flow_widgets.dart';
 import '../../../core/widgets/page_header.dart';
 import '../domain/verification.dart';
@@ -24,7 +24,7 @@ class VerificationSuccessScreen extends ConsumerWidget {
     final isId = verification?.method == VerificationMethod.governmentId;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -36,24 +36,24 @@ class VerificationSuccessScreen extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 10),
             ),
             const VerificationSteps(stepIndex: 2),
-            const Divider(height: 1, color: AppColors.divider),
+            Divider(height: 1, color: context.colors.divider),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(18, 26, 18, 24),
                 child: Column(
                   children: [
-                    const VerificationBadge(
+                    VerificationBadge(
                       asset: AppAssets.checkCircle,
-                      background: Color(0xFFD1FAE5),
-                      foreground: Color(0xFF10B981),
+                      background: context.colors.tint(Hue.green).soft,
+                      foreground: context.colors.tint(Hue.green).color,
                     ),
                     const SizedBox(height: 18),
-                    const Text(
+                    Text(
                       'Sent for review',
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -65,18 +65,18 @@ class VerificationSuccessScreen extends ConsumerWidget {
                           : 'A moderator will check your selfie against your '
                                 'photos and let you know.',
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
                         height: 1.5,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 18),
-                    const VerificationTips(
+                    VerificationTips(
                       title: 'What happens next',
-                      background: Color(0xFFF1F5F9),
-                      titleColor: AppColors.textPrimary,
-                      tips: [
+                      background: context.colors.surfaceSoft,
+                      titleColor: context.colors.textPrimary,
+                      tips: const [
                         'We tell you either way, by notification.',
                         'Approved, and the badge appears on your profile '
                             'straight away.',

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/auth/auth_providers.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/kinvo_colors.dart';
 import '../data/social_auth_service.dart';
 
 /// Asks whether to log out and, if the user agrees, logs out.
@@ -19,7 +19,7 @@ Future<void> confirmLogOut(BuildContext context, WidgetRef ref) async {
         ),
         FilledButton(
           onPressed: () => Navigator.of(dialog).pop(true),
-          style: FilledButton.styleFrom(backgroundColor: AppColors.purple),
+          style: FilledButton.styleFrom(backgroundColor: dialog.colors.purple),
           child: const Text('Log out'),
         ),
       ],

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/network/api_exception.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/widgets/flow_widgets.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../../../core/units/distance.dart';
@@ -27,7 +27,7 @@ class _VenuesScreenState extends ConsumerState<VenuesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -127,13 +127,13 @@ class _VenueList extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
             child: Column(
               children: [
-                const Text(
+                Text(
                   "Places didn't load",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -142,10 +142,10 @@ class _VenueList extends ConsumerWidget {
                       ? error.message
                       : 'Something went wrong. Please try again.',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     height: 1.5,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 18),
@@ -179,11 +179,11 @@ class _VenueTile extends ConsumerWidget {
     ].join(' · ');
 
     return Material(
-      color: Colors.white,
+      color: context.colors.surface,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppColors.divider),
+        side: BorderSide(color: context.colors.divider),
       ),
       child: InkWell(
         onTap: () => context.pop(venue),
@@ -195,13 +195,13 @@ class _VenueTile extends ConsumerWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: AppColors.purpleSoft,
+                  color: context.colors.purpleSoft,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   venueIcon(venue.category),
                   size: 22,
-                  color: AppColors.purple,
+                  color: context.colors.purple,
                 ),
               ),
               const SizedBox(width: 12),
@@ -217,10 +217,10 @@ class _VenueTile extends ConsumerWidget {
                         venue.name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14.5,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
+                          color: context.colors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -228,9 +228,9 @@ class _VenueTile extends ConsumerWidget {
                         details,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                         ),
                       ),
                       if (venue.address case final address?)
@@ -238,9 +238,9 @@ class _VenueTile extends ConsumerWidget {
                           address,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 11.5,
-                            color: AppColors.textMuted,
+                            color: context.colors.textMuted,
                           ),
                         ),
                     ],
@@ -254,7 +254,9 @@ class _VenueTile extends ConsumerWidget {
                   venue.isSaved
                       ? Icons.bookmark_rounded
                       : Icons.bookmark_border_rounded,
-                  color: venue.isSaved ? AppColors.purple : AppColors.textMuted,
+                  color: venue.isSaved
+                      ? context.colors.purple
+                      : context.colors.textMuted,
                 ),
               ),
             ],
@@ -279,24 +281,24 @@ class _Empty extends StatelessWidget {
           Container(
             width: 56,
             height: 56,
-            decoration: const BoxDecoration(
-              color: AppColors.surfaceSoft,
+            decoration: BoxDecoration(
+              color: context.colors.surfaceSoft,
               shape: BoxShape.circle,
             ),
             child: Icon(
               savedOnly ? Icons.bookmark_border_rounded : Icons.place_outlined,
               size: 26,
-              color: AppColors.textMuted,
+              color: context.colors.textMuted,
             ),
           ),
           const SizedBox(height: 14),
           Text(
             savedOnly ? 'No saved places' : 'No places near you yet',
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
           ),
           const SizedBox(height: 4),
@@ -306,10 +308,10 @@ class _Empty extends StatelessWidget {
                 : "Kinvo's list of places doesn't reach your area yet. Type "
                       'the place into your plan instead.',
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
               height: 1.45,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ),
           if (!savedOnly) ...[

@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/widgets/photo_source_sheet.dart';
 import '../../../profile/domain/profile_photo.dart';
 import '../controllers/onboarding_controller.dart';
@@ -126,7 +126,7 @@ class _PhotoTile extends StatelessWidget {
             image: true,
             label: photo.isPrimary ? 'Main photo' : 'Photo $number',
             child: ColoredBox(
-              color: AppColors.surfaceSoft,
+              color: context.colors.surfaceSoft,
               child: url == null
                   ? const _BrokenImage()
                   : Image.network(
@@ -146,14 +146,16 @@ class _PhotoTile extends StatelessWidget {
             right: 4,
             child: isRemoving
                 ? const _RoundBackdrop(
-                    child: _TileSpinner(size: 14, color: Colors.white),
+                    child: _TileSpinner(size: 14, color: OverlayColors.content),
                   )
                 : IconButton(
                     onPressed: onRemove,
                     tooltip: 'Remove photo $number',
                     style: IconButton.styleFrom(
-                      backgroundColor: Colors.black54,
-                      foregroundColor: Colors.white,
+                      backgroundColor: OverlayColors.shade.withValues(
+                        alpha: 0.54,
+                      ),
+                      foregroundColor: OverlayColors.content,
                       minimumSize: const Size.square(32),
                       padding: EdgeInsets.zero,
                     ),
@@ -188,17 +190,21 @@ class _AddTile extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: isNext ? AppColors.purpleSoft : AppColors.surfaceSoft,
+            color: isNext
+                ? context.colors.purpleSoft
+                : context.colors.surfaceSoft,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: isNext ? AppColors.purpleLight : AppColors.border,
+              color: isNext
+                  ? context.colors.purpleLight
+                  : context.colors.border,
             ),
           ),
           child: Center(
             child: Icon(
               Icons.add_rounded,
               size: 26,
-              color: isNext ? AppColors.purple : AppColors.textMuted,
+              color: isNext ? context.colors.purple : context.colors.textMuted,
             ),
           ),
         ),
@@ -217,7 +223,7 @@ class _UploadingTile extends StatelessWidget {
       liveRegion: true,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: AppColors.purpleSoft,
+          color: context.colors.purpleSoft,
           borderRadius: BorderRadius.circular(14),
         ),
         child: const _TileSpinner(),
@@ -235,13 +241,13 @@ class _MainBadge extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
         decoration: BoxDecoration(
-          color: AppColors.purple,
+          color: context.colors.purple,
           borderRadius: BorderRadius.circular(999),
         ),
-        child: const Text(
+        child: Text(
           'Main',
           style: TextStyle(
-            color: Colors.white,
+            color: context.colors.onAccent,
             fontSize: 10.5,
             fontWeight: FontWeight.w700,
           ),
@@ -261,8 +267,8 @@ class _RoundBackdrop extends StatelessWidget {
     return Container(
       width: 32,
       height: 32,
-      decoration: const BoxDecoration(
-        color: Colors.black54,
+      decoration: BoxDecoration(
+        color: OverlayColors.shade.withValues(alpha: 0.54),
         shape: BoxShape.circle,
       ),
       child: child,
@@ -271,17 +277,22 @@ class _RoundBackdrop extends StatelessWidget {
 }
 
 class _TileSpinner extends StatelessWidget {
-  const _TileSpinner({this.size = 22, this.color = AppColors.purple});
+  const _TileSpinner({this.size = 22, this.color});
 
   final double size;
-  final Color color;
+
+  /// The accent unless given.
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
     return Center(
       child: SizedBox.square(
         dimension: size,
-        child: CircularProgressIndicator(strokeWidth: 2, color: color),
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          color: color ?? context.colors.purple,
+        ),
       ),
     );
   }
@@ -292,8 +303,8 @@ class _BrokenImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Icon(Icons.broken_image_outlined, color: AppColors.textMuted),
+    return Center(
+      child: Icon(Icons.broken_image_outlined, color: context.colors.textMuted),
     );
   }
 }

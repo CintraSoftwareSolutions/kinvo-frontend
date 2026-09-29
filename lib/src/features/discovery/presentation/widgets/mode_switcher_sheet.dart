@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../modes/domain/mode_choice.dart';
 import '../../../modes/presentation/mode_presentation.dart';
 
@@ -47,7 +47,7 @@ Future<ModeSwitch?> showModeSwitcherSheet(
 }) {
   return showModalBottomSheet<ModeSwitch>(
     context: context,
-    backgroundColor: Colors.white,
+    backgroundColor: context.colors.surface,
     isScrollControlled: true,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -85,24 +85,27 @@ class ModeSwitcherSheet extends StatelessWidget {
                 width: 38,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE5E7EB),
+                  color: context.colors.handle,
                   borderRadius: BorderRadius.circular(999),
                 ),
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Select Mode',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
             ),
             const SizedBox(height: 4),
-            const Text(
+            Text(
               'Each mode has its own deck, filters and matches.',
-              style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+              style: TextStyle(
+                fontSize: 12.5,
+                color: context.colors.textSecondary,
+              ),
             ),
             const SizedBox(height: 14),
             Flexible(
@@ -136,7 +139,9 @@ class ModeSwitcherSheet extends StatelessWidget {
                 onPressed: () => choose(const ManageModes()),
                 icon: const Icon(Icons.tune_rounded, size: 18),
                 label: const Text('Manage your modes'),
-                style: TextButton.styleFrom(foregroundColor: AppColors.purple),
+                style: TextButton.styleFrom(
+                  foregroundColor: context.colors.purple,
+                ),
               ),
             ),
           ],
@@ -159,7 +164,7 @@ class _ChoiceRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = modeColors(choice.value);
+    final modeTint = context.colors.mode(choice.value);
     final dimmed = !choice.isOn && !choice.canEnable;
     final hint = showing
         ? 'Showing now'
@@ -186,7 +191,9 @@ class _ChoiceRow extends StatelessWidget {
             margin: const EdgeInsets.only(bottom: 8),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
-              color: showing ? AppColors.purple : AppColors.surfaceSoft,
+              color: showing
+                  ? context.colors.purple
+                  : context.colors.surfaceSoft,
               borderRadius: BorderRadius.circular(14),
             ),
             child: Row(
@@ -196,10 +203,10 @@ class _ChoiceRow extends StatelessWidget {
                   height: 34,
                   decoration: BoxDecoration(
                     color: showing
-                        ? Colors.white.withValues(alpha: 0.18)
+                        ? context.colors.onAccent.withValues(alpha: 0.18)
                         : choice.isOn
-                        ? colors.soft
-                        : Colors.white,
+                        ? modeTint.soft
+                        : context.colors.surface,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Center(
@@ -208,7 +215,7 @@ class _ChoiceRow extends StatelessWidget {
                       width: 16,
                       height: 16,
                       colorFilter: ColorFilter.mode(
-                        showing ? Colors.white : colors.primary,
+                        showing ? context.colors.onAccent : modeTint.color,
                         BlendMode.srcIn,
                       ),
                     ),
@@ -224,10 +231,10 @@ class _ChoiceRow extends StatelessWidget {
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: showing
-                          ? Colors.white
+                          ? context.colors.onAccent
                           : choice.isOn
-                          ? AppColors.textPrimary
-                          : AppColors.textSecondary,
+                          ? context.colors.textPrimary
+                          : context.colors.textSecondary,
                     ),
                   ),
                 ),
@@ -255,20 +262,28 @@ class _Trailing extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.22),
+          color: context.colors.onAccent.withValues(alpha: 0.22),
           borderRadius: BorderRadius.circular(999),
         ),
-        child: const Text('ACTIVE', style: _tag),
+        child: Text(
+          'ACTIVE',
+          style: TextStyle(
+            color: context.colors.onAccent,
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.2,
+          ),
+        ),
       );
     }
     if (choice.isOn) {
       return choice.isMain
-          ? const Padding(
-              padding: EdgeInsets.only(right: 8),
+          ? Padding(
+              padding: const EdgeInsets.only(right: 8),
               child: Text(
                 'MAIN',
                 style: TextStyle(
-                  color: AppColors.textMuted,
+                  color: context.colors.textMuted,
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1.2,
@@ -278,10 +293,10 @@ class _Trailing extends StatelessWidget {
           : const SizedBox.shrink();
     }
     if (choice.canEnable) {
-      return const Text(
+      return Text(
         'Turn on',
         style: TextStyle(
-          color: AppColors.purple,
+          color: context.colors.purple,
           fontSize: 12.5,
           fontWeight: FontWeight.w700,
         ),
@@ -290,17 +305,17 @@ class _Trailing extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(
+        Icon(
           Icons.lock_outline_rounded,
           size: 16,
-          color: AppColors.textMuted,
+          color: context.colors.textMuted,
         ),
         if (choice.needsVerification) ...[
           const SizedBox(width: 4),
-          const Text(
+          Text(
             'Verify',
             style: TextStyle(
-              color: AppColors.textMuted,
+              color: context.colors.textMuted,
               fontSize: 12,
               fontWeight: FontWeight.w700,
             ),
@@ -310,10 +325,3 @@ class _Trailing extends StatelessWidget {
     );
   }
 }
-
-const _tag = TextStyle(
-  color: Colors.white,
-  fontSize: 10,
-  fontWeight: FontWeight.w700,
-  letterSpacing: 1.2,
-);

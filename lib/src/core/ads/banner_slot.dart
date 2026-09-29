@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../theme/kinvo_colors.dart';
 import 'ads_controller.dart';
 import 'ads_platform.dart';
 
@@ -20,17 +21,21 @@ class BannerSlot extends ConsumerWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
+        final line = context.colors.divider;
         return ref
             .read(adsPlatformProvider)
-            .buildBanner(width: constraints.maxWidth, frame: _frame);
+            .buildBanner(
+              width: constraints.maxWidth,
+              frame: (banner) => _frame(banner, line: line),
+            );
       },
     );
   }
 
-  static Widget _frame(Widget banner) {
+  static Widget _frame(Widget banner, {required Color line}) {
     return DecoratedBox(
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0x14000000))),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: line)),
       ),
       child: Padding(
         padding: const EdgeInsets.only(bottom: 6),

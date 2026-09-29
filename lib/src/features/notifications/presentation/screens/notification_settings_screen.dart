@@ -7,7 +7,7 @@ import '../../../../core/location/location_service.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/push/push_messaging.dart';
 import '../../../../core/push/push_providers.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/widgets/flow_widgets.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../../calls/presentation/widgets/call_ringtone_row.dart';
@@ -24,7 +24,7 @@ class NotificationSettingsScreen extends ConsumerWidget {
     final preferences = ref.watch(notificationPreferencesProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -61,13 +61,13 @@ class NotificationSettingsScreen extends ConsumerWidget {
                   const _SectionLabel('CALLS'),
                   const CallRingtoneRow(),
                   const SizedBox(height: 12),
-                  const Text(
+                  Text(
                     'Everything still appears in your notifications list, '
                     'whatever arrives as a push.',
                     style: TextStyle(
                       fontSize: 12,
                       height: 1.45,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                 ],
@@ -150,11 +150,11 @@ class _Categories extends ConsumerWidget {
     // A Material rather than a decorated box, so the switches' ripples show
     // on the card instead of underneath it.
     return Material(
-      color: Colors.white,
+      color: context.colors.surface,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
-        side: const BorderSide(color: AppColors.divider),
+        side: BorderSide(color: context.colors.divider),
       ),
       child: Column(
         children: [
@@ -166,7 +166,7 @@ class _Categories extends ConsumerWidget {
                   : null,
             ),
             if (index < shown.length - 1)
-              const Divider(height: 1, color: AppColors.divider, indent: 16),
+              Divider(height: 1, color: context.colors.divider, indent: 16),
           ],
         ],
       ),
@@ -240,19 +240,19 @@ class _CategorySwitch extends StatelessWidget {
     return SwitchListTile.adaptive(
       value: preference.pushEnabled,
       onChanged: onChanged,
-      activeTrackColor: AppColors.purple,
+      activeTrackColor: context.colors.purple,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       title: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
+          color: context.colors.textPrimary,
         ),
       ),
       subtitle: Text(
         description,
-        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+        style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
       ),
     );
   }
@@ -288,13 +288,17 @@ class _StatusCard extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: positive ? AppColors.greenSoft : AppColors.surfaceSoft,
+                  color: positive
+                      ? context.colors.greenSoft
+                      : context.colors.surfaceSoft,
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   icon,
                   size: 20,
-                  color: positive ? AppColors.green : AppColors.textSecondary,
+                  color: positive
+                      ? context.colors.green
+                      : context.colors.textSecondary,
                 ),
               ),
               const SizedBox(width: 12),
@@ -304,19 +308,19 @@ class _StatusCard extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       message,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         height: 1.4,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ],
@@ -349,11 +353,11 @@ class _SectionLabel extends StatelessWidget {
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(
         text,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 11.5,
           fontWeight: FontWeight.w700,
           letterSpacing: 0.6,
-          color: AppColors.textMuted,
+          color: context.colors.textMuted,
         ),
       ),
     );
@@ -374,10 +378,7 @@ class _LoadFailed extends StatelessWidget {
         children: [
           Text(
             message,
-            style: const TextStyle(
-              fontSize: 13,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 13, color: context.colors.textSecondary),
           ),
           const SizedBox(height: 12),
           PrimaryActionButton(

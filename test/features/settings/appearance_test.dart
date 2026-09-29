@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kinvo/src/core/navigation/app_routes.dart';
+import 'package:kinvo/src/core/theme/kinvo_colors.dart';
 import 'package:kinvo/src/features/discovery/presentation/screens/discover_screen.dart';
 import 'package:kinvo/src/features/more/presentation/screens/theme_screen.dart';
 
@@ -44,6 +45,10 @@ void main() {
 
   Finder settingsSwitch(String label) =>
       find.widgetWithText(SwitchListTile, label);
+
+  /// The palette in force on the screen, as any widget would read it.
+  KinvoColors paletteOnScreen(WidgetTester tester) =>
+      tester.element(find.byType(ThemeScreen)).colors;
 
   testWidgets('a larger text size is saved and applies at once', (
     tester,
@@ -89,25 +94,31 @@ void main() {
     expect((saved.data! as Map<String, Object?>)['reduce_motion'], true);
   });
 
-  testWidgets('higher contrast is saved and passed on to the phone', (
+  testWidgets('higher contrast is saved and paints the app in it', (
     tester,
   ) async {
     await openAppearance(tester);
+    expect(paletteOnScreen(tester).highContrast, isFalse);
 
     await tester.tap(settingsSwitch('Higher contrast'));
     await tester.pumpAndSettle();
 
     expect(server.highContrast, isTrue);
+    final colors = paletteOnScreen(tester);
+    expect(colors.highContrast, isTrue);
+    expect(colors.textSecondary, KinvoColors.lightHighContrast.textSecondary);
+    // And passed on, for anything that asks the phone rather than the theme.
     expect(
       MediaQuery.of(tester.element(find.byType(ThemeScreen))).highContrast,
       isTrue,
     );
   });
 
-  testWidgets('choosing dark saves the choice, and says what it does', (
+  testWidgets('choosing dark saves the choice and paints the app dark', (
     tester,
   ) async {
     final app = await openAppearance(tester);
+    expect(paletteOnScreen(tester).isDark, isFalse);
 
     await tester.tap(find.text('Dark'));
     await tester.pumpAndSettle();
@@ -116,9 +127,56 @@ void main() {
     final saved = app.backend.requestsTo('/settings').last;
     expect((saved.data! as Map<String, Object?>)['theme'], 'dark');
 
-    // The app is only painted light so far, and the screen says so rather
-    // than leaving someone to wonder why nothing changed.
-    expect(find.textContaining('only painted light'), findsOneWidget);
+    final screen = tester.element(find.byType(ThemeScreen));
+    expect(Theme.of(screen).brightness, Brightness.dark);
+    expect(paletteOnScreen(tester).background, KinvoColors.dark.background);
+    // Nothing is left saying the app is only painted light.
+    expect(find.textContaining('only painted light'), findsNothing);
+  });
+
+  testWidgets('dark is there on the next launch', (tester) async {
+    server.theme = 'dark';
+    await openAppearance(tester);
+
+    expect(paletteOnScreen(tester).isDark, isTrue);
+  });
+
+  testWidgets('dark with higher contrast has its own palette', (tester) async {
+    server
+      ..theme = 'dark'
+      ..highContrast = true;
+    await openAppearance(tester);
+
+    final colors = paletteOnScreen(tester);
+    expect(colors.isDark, isTrue);
+    expect(colors.highContrast, isTrue);
+    expect(colors.background, KinvoColors.darkHighContrast.background);
+  });
+
+  testWidgets("matching the phone follows the phone's dark setting", (
+    tester,
+  ) async {
+    tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
+    addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
+    await openAppearance(tester);
+    expect(paletteOnScreen(tester).isDark, isTrue);
+
+    // A choice of light holds whatever the phone says.
+    await tester.tap(find.text('Light'));
+    await tester.pumpAndSettle();
+    expect(paletteOnScreen(tester).isDark, isFalse);
+  });
+
+  testWidgets("the phone's own higher contrast is followed too", (
+    tester,
+  ) async {
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(highContrast: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+    await openAppearance(tester);
+
+    expect(server.highContrast, isFalse);
+    expect(paletteOnScreen(tester).highContrast, isTrue);
   });
 
   testWidgets('a refused change goes back and says why', (tester) async {

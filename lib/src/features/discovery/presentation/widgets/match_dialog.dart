@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/kinvo_colors.dart';
+import '../../../../core/theme/motion.dart';
 import '../../../profile/domain/user_summary.dart';
 import '../../../profile/presentation/widgets/person_photo.dart';
 
@@ -21,8 +23,8 @@ Future<MatchDialogChoice?> showMatchDialog(
     context: context,
     barrierDismissible: true,
     barrierLabel: 'Close',
-    barrierColor: Colors.black.withValues(alpha: 0.45),
-    transitionDuration: const Duration(milliseconds: 220),
+    barrierColor: OverlayColors.shade.withValues(alpha: 0.45),
+    transitionDuration: context.motion(const Duration(milliseconds: 220)),
     pageBuilder: (_, _, _) => MatchDialog(
       user: user,
       modeLabel: modeLabel,
@@ -66,13 +68,13 @@ class MatchDialog extends StatelessWidget {
             constraints: const BoxConstraints(maxWidth: 360),
             padding: const EdgeInsets.fromLTRB(24, 28, 24, 22),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: context.colors.surface,
               borderRadius: BorderRadius.circular(22),
-              boxShadow: const [
+              boxShadow: [
                 BoxShadow(
-                  color: Color(0x33000000),
+                  color: context.colors.shadow,
                   blurRadius: 28,
-                  offset: Offset(0, 12),
+                  offset: const Offset(0, 12),
                 ),
               ],
             ),
@@ -105,12 +107,12 @@ class MatchDialog extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 18),
-                  const Text(
+                  Text(
                     "It's a match!",
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                       letterSpacing: -0.4,
                     ),
                   ),
@@ -119,9 +121,9 @@ class MatchDialog extends StatelessWidget {
                     'You and ${user.displayName} liked each other in '
                     '$modeLabel.',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                       height: 1.45,
                     ),
                   ),
@@ -133,13 +135,14 @@ class MatchDialog extends StatelessWidget {
                         context,
                       ).pop(MatchDialogChoice.seeMatches),
                       style: FilledButton.styleFrom(
-                        backgroundColor: AppColors.purple,
-                        foregroundColor: Colors.white,
+                        backgroundColor: context.colors.purple,
+                        foregroundColor: context.colors.onAccent,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(999),
                         ),
                         textStyle: const TextStyle(
+                          fontFamily: AppTheme.fontFamily,
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
                         ),
@@ -152,7 +155,7 @@ class MatchDialog extends StatelessWidget {
                     onPressed: () =>
                         Navigator.of(context).pop(MatchDialogChoice.keepGoing),
                     style: TextButton.styleFrom(
-                      foregroundColor: AppColors.textSecondary,
+                      foregroundColor: context.colors.textSecondary,
                       padding: const EdgeInsets.symmetric(vertical: 10),
                     ),
                     child: const Text(

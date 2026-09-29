@@ -4,7 +4,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/assets/app_assets.dart';
 import '../../../../core/media/photo_processing.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
+import '../../../../core/theme/system_bars.dart';
 import '../../domain/chat_message.dart';
 import '../controllers/chat_controller.dart';
 
@@ -216,7 +217,7 @@ class _MessageRow extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             footer,
-            style: const TextStyle(fontSize: 10.5, color: AppColors.textMuted),
+            style: TextStyle(fontSize: 10.5, color: context.colors.textMuted),
           ),
         ],
       ),
@@ -261,29 +262,32 @@ class _OutgoingRow extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.error_outline_rounded,
                       size: 13,
-                      color: AppColors.danger,
+                      color: context.colors.danger,
                     ),
                     const SizedBox(width: 4),
                     Flexible(
                       child: Text(
                         '${outgoing.failure ?? 'Not sent'}. Tap to try again.',
                         textAlign: TextAlign.end,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 10.5,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.danger,
+                          color: context.colors.danger,
                         ),
                       ),
                     ),
                   ],
                 )
               else
-                const Text(
+                Text(
                   'Sending…',
-                  style: TextStyle(fontSize: 10.5, color: AppColors.textMuted),
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    color: context.colors.textMuted,
+                  ),
                 ),
             ],
           ),
@@ -312,8 +316,8 @@ class _TextBubble extends StatelessWidget {
       mine: mine,
       padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
       color: mine
-          ? AppColors.purple.withValues(alpha: dimmed ? 0.75 : 1)
-          : Colors.white,
+          ? context.colors.purple.withValues(alpha: dimmed ? 0.75 : 1)
+          : context.colors.surface,
       child: GestureDetector(
         onLongPress: () => _copy(context),
         child: Text(
@@ -321,7 +325,7 @@ class _TextBubble extends StatelessWidget {
           style: TextStyle(
             fontSize: 14,
             height: 1.4,
-            color: mine ? Colors.white : AppColors.textPrimary,
+            color: mine ? context.colors.onAccent : context.colors.textPrimary,
           ),
         ),
       ),
@@ -350,11 +354,11 @@ class _NoticeBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = mine ? Colors.white : AppColors.textPrimary;
+    final color = mine ? context.colors.onAccent : context.colors.textPrimary;
     return _BubbleFrame(
       mine: mine,
       padding: const EdgeInsets.fromLTRB(12, 10, 14, 10),
-      color: mine ? AppColors.purple : Colors.white,
+      color: mine ? context.colors.purple : context.colors.surface,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -433,17 +437,22 @@ class _PhotoBubble extends StatelessWidget {
   static Future<void> _openViewer(BuildContext context, Widget image) {
     return showDialog<void>(
       context: context,
-      barrierColor: Colors.black.withValues(alpha: 0.92),
-      builder: (dialogContext) => GestureDetector(
-        onTap: () => Navigator.of(dialogContext).pop(),
-        child: SafeArea(
-          child: Center(
-            child: InteractiveViewer(
-              maxScale: 4,
-              child: switch (image) {
-                Image(:final image) => Image(image: image, fit: BoxFit.contain),
-                _ => image,
-              },
+      barrierColor: OverlayColors.shade.withValues(alpha: 0.92),
+      builder: (dialogContext) => SystemBars.overDark(
+        child: GestureDetector(
+          onTap: () => Navigator.of(dialogContext).pop(),
+          child: SafeArea(
+            child: Center(
+              child: InteractiveViewer(
+                maxScale: 4,
+                child: switch (image) {
+                  Image(:final image) => Image(
+                    image: image,
+                    fit: BoxFit.contain,
+                  ),
+                  _ => image,
+                },
+              ),
             ),
           ),
         ),
@@ -460,19 +469,22 @@ class _PhotoPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ColoredBox(
-      color: AppColors.surfaceSoft,
+      color: context.colors.surfaceSoft,
       child: Center(
         child: failed
-            ? const Column(
+            ? Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.broken_image_outlined, color: AppColors.textMuted),
-                  SizedBox(height: 6),
+                  Icon(
+                    Icons.broken_image_outlined,
+                    color: context.colors.textMuted,
+                  ),
+                  const SizedBox(height: 6),
                   Text(
                     "Photo can't be shown",
                     style: TextStyle(
                       fontSize: 11.5,
-                      color: AppColors.textMuted,
+                      color: context.colors.textMuted,
                     ),
                   ),
                 ],
@@ -516,14 +528,14 @@ class _BubbleFrame extends StatelessWidget {
             bottomLeft: Radius.circular(mine ? 18 : 6),
             bottomRight: Radius.circular(mine ? 6 : 18),
           ),
-          border: mine ? null : Border.all(color: AppColors.divider),
+          border: mine ? null : Border.all(color: context.colors.divider),
           boxShadow: mine
               ? null
-              : const [
+              : [
                   BoxShadow(
-                    color: Color(0x0A0C132A),
+                    color: context.colors.shadow,
                     blurRadius: 10,
-                    offset: Offset(0, 2),
+                    offset: const Offset(0, 2),
                   ),
                 ],
         ),
@@ -545,14 +557,14 @@ class _FlaggedWarning extends StatelessWidget {
         maxWidth: MediaQuery.sizeOf(context).width * 0.75,
       ),
       decoration: BoxDecoration(
-        color: AppColors.dangerSoft,
+        color: context.colors.dangerSoft,
         borderRadius: BorderRadius.circular(10),
       ),
-      child: const Row(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.shield_outlined, size: 14, color: AppColors.danger),
-          SizedBox(width: 6),
+          Icon(Icons.shield_outlined, size: 14, color: context.colors.danger),
+          const SizedBox(width: 6),
           Flexible(
             child: Text(
               'Be careful: never send money or personal details to someone '
@@ -560,7 +572,7 @@ class _FlaggedWarning extends StatelessWidget {
               style: TextStyle(
                 fontSize: 11,
                 height: 1.35,
-                color: Color(0xFFB91C1C),
+                color: context.colors.dangerStrong,
               ),
             ),
           ),
@@ -595,16 +607,16 @@ class _DaySeparator extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: context.colors.surface,
             borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: AppColors.divider),
+            border: Border.all(color: context.colors.divider),
           ),
           child: Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ),
         ),
@@ -676,14 +688,14 @@ class _ConversationStart extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: context.colors.surface,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: AppColors.divider),
-              boxShadow: const [
+              border: Border.all(color: context.colors.divider),
+              boxShadow: [
                 BoxShadow(
-                  color: Color(0x0A0C132A),
+                  color: context.colors.shadow,
                   blurRadius: 14,
-                  offset: Offset(0, 4),
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
@@ -696,14 +708,14 @@ class _ConversationStart extends StatelessWidget {
                     AppAssets.shield,
                     width: 16,
                     height: 16,
-                    colorFilter: const ColorFilter.mode(
-                      AppColors.purple,
+                    colorFilter: ColorFilter.mode(
+                      context.colors.purple,
                       BlendMode.srcIn,
                     ),
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -712,17 +724,17 @@ class _ConversationStart extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 13.5,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
+                          color: context.colors.textPrimary,
                         ),
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text(
                         'Report or block from the menu at the top. Never send '
                         "money to someone you haven't met.",
                         style: TextStyle(
                           fontSize: 12,
                           height: 1.45,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                         ),
                       ),
                     ],
@@ -741,13 +753,13 @@ class _ConversationStart extends StatelessWidget {
                   ActionChip(
                     label: Text(reply),
                     onPressed: () => onQuickReply(reply),
-                    backgroundColor: Colors.white,
-                    side: const BorderSide(color: AppColors.divider),
+                    backgroundColor: context.colors.surface,
+                    side: BorderSide(color: context.colors.divider),
                     shape: const StadiumBorder(),
-                    labelStyle: const TextStyle(
+                    labelStyle: TextStyle(
                       fontSize: 12.5,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                     ),
                   ),
               ],

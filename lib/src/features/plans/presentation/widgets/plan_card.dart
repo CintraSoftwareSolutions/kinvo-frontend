@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/navigation/app_routes.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/time/clock.dart';
 import '../../../modes/presentation/mode_presentation.dart';
 import '../../../profile/presentation/widgets/person_photo.dart';
@@ -33,11 +34,11 @@ class _PlanCardState extends ConsumerState<PlanCard> {
     final when = planTime(context, plan.scheduledAt);
 
     return Material(
-      color: Colors.white,
+      color: context.colors.surface,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
-        side: const BorderSide(color: AppColors.divider),
+        side: BorderSide(color: context.colors.divider),
       ),
       child: InkWell(
         onTap: () => context.push(AppRoutes.plan(plan.id)),
@@ -63,7 +64,7 @@ class _PlanCardState extends ConsumerState<PlanCard> {
                         child: PersonPhoto(
                           url: plan.user.photoUrl,
                           name: plan.user.displayName,
-                          color: modeColors(plan.mode).primary,
+                          color: context.colors.mode(plan.mode).color,
                           initialSize: 20,
                         ),
                       ),
@@ -81,10 +82,10 @@ class _PlanCardState extends ConsumerState<PlanCard> {
                                   plan.placeName,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w700,
-                                    color: AppColors.textPrimary,
+                                    color: context.colors.textPrimary,
                                   ),
                                 ),
                               ),
@@ -97,9 +98,9 @@ class _PlanCardState extends ConsumerState<PlanCard> {
                             'With ${plan.user.displayName}',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12.5,
-                              color: AppColors.textSecondary,
+                              color: context.colors.textSecondary,
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -107,9 +108,9 @@ class _PlanCardState extends ConsumerState<PlanCard> {
                             when,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11.5,
-                              color: AppColors.textMuted,
+                              color: context.colors.textMuted,
                             ),
                           ),
                         ],
@@ -125,7 +126,7 @@ class _PlanCardState extends ConsumerState<PlanCard> {
                     Expanded(
                       child: OutlinedButton(
                         onPressed: _answering ? null : () => _answer(false),
-                        style: _buttonStyle(outlined: true),
+                        style: _buttonStyle(context, outlined: true),
                         child: const Text('Decline'),
                       ),
                     ),
@@ -133,7 +134,7 @@ class _PlanCardState extends ConsumerState<PlanCard> {
                     Expanded(
                       child: FilledButton(
                         onPressed: _answering ? null : () => _answer(true),
-                        style: _buttonStyle(outlined: false),
+                        style: _buttonStyle(context, outlined: false),
                         child: const Text('Accept'),
                       ),
                     ),
@@ -165,22 +166,30 @@ class _PlanCardState extends ConsumerState<PlanCard> {
       ..showSnackBar(SnackBar(content: Text(message)));
   }
 
-  static ButtonStyle _buttonStyle({required bool outlined}) {
+  static ButtonStyle _buttonStyle(
+    BuildContext context, {
+    required bool outlined,
+  }) {
+    final colors = context.colors;
     const shape = StadiumBorder();
     const padding = EdgeInsets.symmetric(vertical: 12);
-    const text = TextStyle(fontSize: 13, fontWeight: FontWeight.w700);
+    const text = TextStyle(
+      fontFamily: AppTheme.fontFamily,
+      fontSize: 13,
+      fontWeight: FontWeight.w700,
+    );
     if (outlined) {
       return OutlinedButton.styleFrom(
-        foregroundColor: AppColors.textPrimary,
-        side: const BorderSide(color: AppColors.divider),
+        foregroundColor: colors.textPrimary,
+        side: BorderSide(color: colors.divider),
         padding: padding,
         shape: shape,
         textStyle: text,
       );
     }
     return FilledButton.styleFrom(
-      backgroundColor: AppColors.purple,
-      foregroundColor: Colors.white,
+      backgroundColor: colors.purple,
+      foregroundColor: colors.onAccent,
       padding: padding,
       shape: shape,
       textStyle: text,
@@ -196,10 +205,15 @@ class PlanBadgePill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+    final (background, foreground) = switch (badge.hue) {
+      final hue? => (colors.tint(hue).soft, colors.tint(hue).onSoft),
+      null => (colors.surfaceSoft, colors.textSecondary),
+    };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: badge.background,
+        color: background,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
@@ -207,7 +221,7 @@ class PlanBadgePill extends StatelessWidget {
         style: TextStyle(
           fontSize: 10.5,
           fontWeight: FontWeight.w700,
-          color: badge.foreground,
+          color: foreground,
         ),
       ),
     );

@@ -10,7 +10,8 @@ import '../../../../core/config/server_config.dart';
 import '../../../../core/config/server_config_providers.dart';
 import '../../../../core/links/external_links.dart';
 import '../../../../core/navigation/app_routes.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../widgets/settings_tile.dart';
 
@@ -28,7 +29,7 @@ class SupportScreen extends ConsumerWidget {
     final pages = _pagesOf(links);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -46,8 +47,8 @@ class SupportScreen extends ConsumerWidget {
                   children: [
                     SettingsTile(
                       icon: AppAssets.triangleAlert,
-                      iconBg: AppColors.surfaceSoft,
-                      iconColor: AppColors.textPrimary,
+                      iconBg: context.colors.surfaceSoft,
+                      iconColor: context.colors.textPrimary,
                       title: 'Safety Center',
                       subtitle:
                           'Emergency alert, trusted contacts, and reporting '
@@ -58,8 +59,8 @@ class SupportScreen extends ConsumerWidget {
                       const SizedBox(height: 8),
                       SettingsTile(
                         icon: page.icon,
-                        iconBg: AppColors.surfaceSoft,
-                        iconColor: AppColors.textPrimary,
+                        iconBg: context.colors.surfaceSoft,
+                        iconColor: context.colors.textPrimary,
                         title: page.title,
                         subtitle: page.subtitle,
                         onTap: () => _openPage(context, ref, page.address),
@@ -73,13 +74,14 @@ class SupportScreen extends ConsumerWidget {
                           onPressed: () =>
                               _writeToSupport(context, ref, address),
                           style: FilledButton.styleFrom(
-                            backgroundColor: AppColors.purple,
-                            foregroundColor: Colors.white,
+                            backgroundColor: context.colors.purple,
+                            foregroundColor: context.colors.onAccent,
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(999),
                             ),
                             textStyle: const TextStyle(
+                              fontFamily: AppTheme.fontFamily,
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
                             ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/assets/app_assets.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/units/distance.dart';
 import '../../../profile/presentation/widgets/photo_gallery.dart';
 import '../../domain/deck_card.dart';
@@ -73,18 +74,18 @@ class DeckCardView extends StatelessWidget {
                 onTapCentre: onOpenProfile,
               ),
             ),
-            const IgnorePointer(
+            IgnorePointer(
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Color(0x00000000),
-                      Color(0x66000000),
-                      Color(0xCC000000),
+                      OverlayColors.shade.withValues(alpha: 0),
+                      OverlayColors.shade.withValues(alpha: 0.4),
+                      OverlayColors.shade.withValues(alpha: 0.8),
                     ],
-                    stops: [0.45, 0.75, 1.0],
+                    stops: const [0.45, 0.75, 1.0],
                   ),
                 ),
               ),
@@ -105,8 +106,8 @@ class DeckCardView extends StatelessWidget {
                             modeIcon,
                             width: 11,
                             height: 11,
-                            colorFilter: const ColorFilter.mode(
-                              Colors.white,
+                            colorFilter: ColorFilter.mode(
+                              context.colors.onAccent,
                               BlendMode.srcIn,
                             ),
                           ),
@@ -114,27 +115,25 @@ class DeckCardView extends StatelessWidget {
                         ),
                         if (user.isVerified)
                           _Badge(
-                            color: const Color(0xFF3B82F6),
+                            color: context.colors.blue,
                             leading: SvgPicture.asset(
                               AppAssets.shield,
                               width: 10,
                               height: 10,
-                              colorFilter: const ColorFilter.mode(
-                                Colors.white,
+                              colorFilter: ColorFilter.mode(
+                                context.colors.onAccent,
                                 BlendMode.srcIn,
                               ),
                             ),
                             label: 'Verified',
                           ),
                         if (user.isPremium)
-                          const _Badge(
-                            gradient: LinearGradient(
-                              colors: [Color(0xFFF59E0B), Color(0xFFEF8E0B)],
-                            ),
+                          _Badge(
+                            color: context.colors.tint(Hue.amber).color,
                             leading: Icon(
                               Icons.workspace_premium_rounded,
                               size: 12,
-                              color: Colors.white,
+                              color: context.colors.onAccent,
                             ),
                             label: 'Premium',
                           ),
@@ -156,7 +155,9 @@ class DeckCardView extends StatelessWidget {
                   child: _SideButton(
                     icon: Icons.arrow_back_rounded,
                     label: 'Previous mode',
-                    backgroundColor: Colors.black.withValues(alpha: 0.55),
+                    backgroundColor: OverlayColors.shade.withValues(
+                      alpha: 0.55,
+                    ),
                     onTap: onTap,
                   ),
                 ),
@@ -196,14 +197,12 @@ class _Badge extends StatelessWidget {
   const _Badge({
     required this.leading,
     required this.label,
-    this.color,
-    this.gradient,
+    required this.color,
   });
 
   final Widget leading;
   final String label;
-  final Color? color;
-  final Gradient? gradient;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
@@ -211,7 +210,6 @@ class _Badge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(
         color: color,
-        gradient: gradient,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Row(
@@ -225,8 +223,8 @@ class _Badge extends StatelessWidget {
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: context.colors.onAccent,
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
               ),
@@ -249,7 +247,7 @@ class _ActivityBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.55),
+        color: OverlayColors.shade.withValues(alpha: 0.55),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Row(
@@ -258,7 +256,7 @@ class _ActivityBadge extends StatelessWidget {
           Text(
             label,
             style: const TextStyle(
-              color: Colors.white,
+              color: OverlayColors.content,
               fontSize: 11,
               fontWeight: FontWeight.w600,
             ),
@@ -268,7 +266,9 @@ class _ActivityBadge extends StatelessWidget {
             width: 8,
             height: 8,
             decoration: BoxDecoration(
-              color: online ? const Color(0xFF22C55E) : const Color(0xFFF59E0B),
+              color: online
+                  ? context.colors.online
+                  : context.colors.tint(Hue.amber).color,
               shape: BoxShape.circle,
             ),
           ),
@@ -307,7 +307,7 @@ class _SideButton extends StatelessWidget {
             color: backgroundColor,
             shape: BoxShape.circle,
           ),
-          child: Icon(icon, color: Colors.white, size: 18),
+          child: Icon(icon, color: OverlayColors.content, size: 18),
         ),
       ),
     );
@@ -348,7 +348,7 @@ class _CardBody extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: OverlayColors.content,
                     fontSize: 30,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.8,
@@ -363,7 +363,7 @@ class _CardBody extends StatelessWidget {
                   child: Text(
                     '$age',
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: OverlayColors.content,
                       fontSize: 18,
                       fontWeight: FontWeight.w500,
                       height: 1,
@@ -383,7 +383,7 @@ class _CardBody extends StatelessWidget {
                   width: 12,
                   height: 12,
                   colorFilter: const ColorFilter.mode(
-                    Colors.white,
+                    OverlayColors.content,
                     BlendMode.srcIn,
                   ),
                 ),
@@ -394,7 +394,7 @@ class _CardBody extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: OverlayColors.content,
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                     ),
@@ -410,7 +410,7 @@ class _CardBody extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                color: Colors.white,
+                color: OverlayColors.content,
                 fontSize: 12.5,
                 height: 1.45,
               ),
@@ -435,9 +435,11 @@ class _CardBody extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.45),
+                color: OverlayColors.shade.withValues(alpha: 0.45),
                 borderRadius: BorderRadius.circular(999),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+                border: Border.all(
+                  color: OverlayColors.content.withValues(alpha: 0.18),
+                ),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -450,7 +452,7 @@ class _CardBody extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: Colors.white,
+                        color: OverlayColors.content,
                         fontSize: 11.5,
                         fontWeight: FontWeight.w500,
                       ),
@@ -476,14 +478,16 @@ class _Chip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.35),
+        color: OverlayColors.shade.withValues(alpha: 0.35),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+        border: Border.all(
+          color: OverlayColors.content.withValues(alpha: 0.18),
+        ),
       ),
       child: Text(
         label,
         style: const TextStyle(
-          color: Colors.white,
+          color: OverlayColors.content,
           fontSize: 11,
           fontWeight: FontWeight.w500,
         ),

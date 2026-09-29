@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/assets/app_assets.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/widgets/flow_widgets.dart';
 import '../../../auth/presentation/log_out.dart';
 import '../controllers/onboarding_controller.dart';
@@ -72,7 +72,7 @@ class OnboardingStepLayout extends ConsumerWidget {
               child: TextButton(
                 onPressed: () => unawaited(confirmLogOut(context, ref)),
                 style: TextButton.styleFrom(
-                  foregroundColor: AppColors.textSecondary,
+                  foregroundColor: context.colors.textSecondary,
                 ),
                 child: const Text('Log out'),
               ),

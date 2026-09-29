@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/widgets/flow_widgets.dart';
 import '../../../modes/domain/mode_filters.dart';
 import '../../../settings/presentation/controllers/settings_controllers.dart';
@@ -12,7 +12,7 @@ import '../controllers/discovery_actions.dart';
 Future<void> showFiltersSheet(BuildContext context, DiscoveryMode mode) {
   return showModalBottomSheet<void>(
     context: context,
-    backgroundColor: Colors.white,
+    backgroundColor: context.colors.surface,
     isScrollControlled: true,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -69,7 +69,7 @@ class FiltersSheet extends ConsumerWidget {
                 width: 38,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE5E7EB),
+                  color: context.colors.handle,
                   borderRadius: BorderRadius.circular(999),
                 ),
               ),
@@ -84,19 +84,19 @@ class FiltersSheet extends ConsumerWidget {
                     children: [
                       Text(
                         '${mode.label} filters',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
+                          color: context.colors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 4),
-                      const Text(
+                      Text(
                         'Who you see in this mode. Your other modes keep '
                         'their own filters.',
                         style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                           height: 1.4,
                         ),
                       ),
@@ -124,15 +124,15 @@ class FiltersSheet extends ConsumerWidget {
                         vertical: 8,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.surfaceSoft,
+                        color: context.colors.surfaceSoft,
                         borderRadius: BorderRadius.circular(999),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Reset',
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
+                          color: context.colors.textPrimary,
                         ),
                       ),
                     ),
@@ -148,7 +148,7 @@ class FiltersSheet extends ConsumerWidget {
                 value: stops.indexOf(stop).toDouble(),
                 max: (stops.length - 1).toDouble(),
                 divisions: stops.length - 1,
-                activeColor: AppColors.purple,
+                activeColor: context.colors.purple,
                 label: unit.label(stop),
                 semanticFormatterCallback: (value) =>
                     within(stops[value.round()]),
@@ -171,7 +171,7 @@ class FiltersSheet extends ConsumerWidget {
                 min: ModeFilters.youngestAge.toDouble(),
                 max: ModeFilters.oldestAge.toDouble(),
                 divisions: ModeFilters.oldestAge - ModeFilters.youngestAge,
-                activeColor: AppColors.purple,
+                activeColor: context.colors.purple,
                 labels: RangeLabels('${draft.minAge}', '${draft.maxAge}'),
                 onChanged: form.isSaving
                     ? null
@@ -233,9 +233,9 @@ class _Section extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 14, 14, 6),
       decoration: BoxDecoration(
-        color: AppColors.surfaceSoft.withValues(alpha: 0.4),
+        color: context.colors.surfaceSoft.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.divider),
+        border: Border.all(color: context.colors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -245,19 +245,19 @@ class _Section extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                 ),
               ),
               Text(
                 value,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ),
             ],
@@ -297,11 +297,11 @@ class _ToggleCard extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
           decoration: BoxDecoration(
             color: selected
-                ? AppColors.purpleChip.withValues(alpha: 0.5)
-                : AppColors.surfaceSoft.withValues(alpha: 0.4),
+                ? context.colors.purpleChip.withValues(alpha: 0.5)
+                : context.colors.surfaceSoft.withValues(alpha: 0.4),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: selected ? AppColors.purple : AppColors.divider,
+              color: selected ? context.colors.purple : context.colors.divider,
             ),
           ),
           child: Column(
@@ -312,10 +312,10 @@ class _ToggleCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                       ),
                     ),
                   ),
@@ -324,16 +324,18 @@ class _ToggleCard extends StatelessWidget {
                         ? Icons.check_circle_rounded
                         : Icons.radio_button_unchecked_rounded,
                     size: 18,
-                    color: selected ? AppColors.purple : AppColors.textMuted,
+                    color: selected
+                        ? context.colors.purple
+                        : context.colors.textMuted,
                   ),
                 ],
               ),
               const SizedBox(height: 6),
               Text(
                 description,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11.5,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                   height: 1.4,
                 ),
               ),

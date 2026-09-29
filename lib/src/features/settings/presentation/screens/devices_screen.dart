@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/forms/form_errors.dart';
 import '../../../../core/network/api_exception.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/time/clock.dart';
 import '../../../../core/widgets/flow_widgets.dart';
 import '../../../../core/widgets/page_header.dart';
@@ -23,7 +23,7 @@ class DevicesScreen extends ConsumerWidget {
     final now = ref.watch(clockProvider)();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -110,10 +110,13 @@ class _DeviceListState extends ConsumerState<_DeviceList> {
         ],
         const SettingsSectionLabel('OTHER DEVICES'),
         if (others.isEmpty)
-          const SurfaceCard(
+          SurfaceCard(
             child: Text(
               "You're not signed in anywhere else.",
-              style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+              style: TextStyle(
+                fontSize: 13,
+                color: context.colors.textSecondary,
+              ),
             ),
           )
         else ...[
@@ -138,8 +141,8 @@ class _DeviceListState extends ConsumerState<_DeviceList> {
             onPressed: _signingOut == null
                 ? () => unawaited(_signOutOthers(others.length))
                 : null,
-            foregroundColor: AppColors.danger,
-            borderColor: AppColors.danger,
+            foregroundColor: context.colors.danger,
+            borderColor: context.colors.danger,
           ),
         ],
       ],
@@ -215,7 +218,7 @@ class _DeviceListState extends ConsumerState<_DeviceList> {
           ),
           TextButton(
             onPressed: () => Navigator.of(dialog).pop(true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+            style: TextButton.styleFrom(foregroundColor: dialog.colors.danger),
             child: const Text('Sign out'),
           ),
         ],
@@ -261,20 +264,20 @@ class _DeviceRow extends StatelessWidget {
         device.platform == 'web'
             ? Icons.laptop_rounded
             : Icons.smartphone_rounded,
-        color: AppColors.textPrimary,
+        color: context.colors.textPrimary,
       ),
       minLeadingWidth: 24,
       title: Text(
         device.name,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
+          color: context.colors.textPrimary,
         ),
       ),
       subtitle: Text(
         details,
-        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+        style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
       ),
       trailing: device.isCurrent
           ? null
@@ -285,7 +288,9 @@ class _DeviceRow extends StatelessWidget {
             )
           : TextButton(
               onPressed: onSignOut,
-              style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+              style: TextButton.styleFrom(
+                foregroundColor: context.colors.danger,
+              ),
               child: const Text('Sign out'),
             ),
     );

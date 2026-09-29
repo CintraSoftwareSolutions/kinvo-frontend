@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/assets/app_assets.dart';
 import '../../../../core/navigation/app_routes.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/time/clock.dart';
 import '../../../../core/widgets/flow_widgets.dart';
 import '../../../../core/widgets/gradient_scaffold.dart';
@@ -57,7 +57,7 @@ class _PhoneSignInScreenState extends ConsumerState<PhoneSignInScreen> {
     final onCode = form.step == PhoneStep.code;
 
     return GradientScaffold(
-      background: AppColors.lightBackground,
+      background: context.colors.backgroundGradient,
       child: FlowPageLayout(
         badgeText: 'Phone sign-in',
         badgeIcon: Icons.smartphone_rounded,
@@ -94,9 +94,9 @@ class _PhoneSignInScreenState extends ConsumerState<PhoneSignInScreen> {
         hintText: '+44 7700 900123',
       ),
       const SizedBox(height: 8),
-      const Text(
+      Text(
         'Start with your country code, like +44 or +92.',
-        style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+        style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
       ),
       if (form.error case final message?) ...[
         const SizedBox(height: 14),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_colors.dart';
+import '../theme/kinvo_colors.dart';
 
 /// Full-screen scaffold with a brand gradient behind safe-area content.
 ///
@@ -19,7 +19,7 @@ class GradientScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.canvas,
+      backgroundColor: context.colors.background,
       body: DecoratedBox(
         decoration: BoxDecoration(gradient: background),
         child: SafeArea(child: SizedBox.expand(child: child)),

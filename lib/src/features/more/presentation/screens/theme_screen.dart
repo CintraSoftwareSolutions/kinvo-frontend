@@ -5,14 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/forms/form_errors.dart';
 import '../../../../core/network/api_exception.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../../../core/widgets/settings_group.dart';
 import '../../../settings/domain/user_settings.dart';
 import '../../../settings/presentation/controllers/settings_controllers.dart';
 
-/// How the app looks and moves: text size, movement, contrast and, when it is
-/// painted, dark mode.
+/// How the app looks and moves: text size, movement, contrast, and light or
+/// dark.
 ///
 /// Everything here is kept on the server rather than on the phone, so someone
 /// who needs larger text is set up that way on their next phone without having
@@ -25,7 +25,7 @@ class ThemeScreen extends ConsumerWidget {
     final settings = ref.watch(userSettingsProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -81,8 +81,8 @@ class _Settings extends ConsumerWidget {
             SettingsSwitch(
               title: 'Reduce movement',
               description:
-                  'Screens appear instead of sliding, and animations are kept '
-                  'to a minimum.',
+                  "Screens appear instead of sliding, and the app's own "
+                  'animations stop.',
               value: settings.reduceMotion,
               onChanged: (on) => _change(
                 context,
@@ -95,8 +95,8 @@ class _Settings extends ConsumerWidget {
             SettingsSwitch(
               title: 'Higher contrast',
               description:
-                  'Stronger outlines and separators, where the app can draw '
-                  'them.',
+                  'Darker text, stronger outlines and deeper colours, in '
+                  'light and in dark.',
               value: settings.highContrast,
               onChanged: (on) => _change(
                 context,
@@ -155,9 +155,9 @@ class _TextSizeCardState extends ConsumerState<_TextSizeCard> {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.divider),
+        border: Border.all(color: context.colors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -169,10 +169,10 @@ class _TextSizeCardState extends ConsumerState<_TextSizeCard> {
             textScaler: TextScaler.linear(
               scale / MediaQuery.textScalerOf(context).scale(1),
             ),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 15,
               height: 1.4,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
           ),
           const SizedBox(height: 10),
@@ -188,7 +188,7 @@ class _TextSizeCardState extends ConsumerState<_TextSizeCard> {
                   // enough that the difference between two is visible.
                   divisions: 8,
                   label: '${(scale * 100).round()}%',
-                  activeColor: AppColors.purple,
+                  activeColor: context.colors.purple,
                   onChanged: (value) => setState(() => _dragging = value),
                   onChangeEnd: _save,
                 ),
@@ -229,45 +229,27 @@ class _AppearanceCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        RadioGroup<AppThemeChoice>(
-          groupValue: settings.theme,
-          onChanged: (picked) => _pick(context, ref, picked),
-          child: SettingsGroup(
-            children: [
-              for (final choice in AppThemeChoice.values)
-                RadioListTile<AppThemeChoice>(
-                  value: choice,
-                  activeColor: AppColors.purple,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                  title: Text(
-                    _labels[choice]!,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
+    return RadioGroup<AppThemeChoice>(
+      groupValue: settings.theme,
+      onChanged: (picked) => _pick(context, ref, picked),
+      child: SettingsGroup(
+        children: [
+          for (final choice in AppThemeChoice.values)
+            RadioListTile<AppThemeChoice>(
+              value: choice,
+              activeColor: context.colors.purple,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              title: Text(
+                _labels[choice]!,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: context.colors.textPrimary,
                 ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 10),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 4),
-          child: Text(
-            'Kinvo is only painted light at the moment, so choosing dark saves '
-            'the choice and will apply as soon as the dark screens land.',
-            style: TextStyle(
-              fontSize: 12,
-              height: 1.4,
-              color: AppColors.textSecondary,
+              ),
             ),
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

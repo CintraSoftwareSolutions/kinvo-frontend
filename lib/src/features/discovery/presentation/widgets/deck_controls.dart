@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/assets/app_assets.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
+import '../../../../core/theme/motion.dart';
 
 /// The buttons under the card: pass, like and super like, in the words of
 /// the mode, and rewind.
@@ -38,14 +39,14 @@ class DeckControls extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.divider),
-        boxShadow: const [
+        border: Border.all(color: context.colors.divider),
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0A0C132A),
+            color: context.colors.shadow,
             blurRadius: 18,
-            offset: Offset(0, 6),
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -55,24 +56,24 @@ class DeckControls extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'DECK CONTROLS',
                       style: TextStyle(
-                        color: AppColors.textMuted,
+                        color: context.colors.textMuted,
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 1.6,
                       ),
                     ),
-                    SizedBox(height: 6),
+                    const SizedBox(height: 6),
                     Text(
                       'Passing never uses up your likes for today.',
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                         fontSize: 12,
                         height: 1.4,
                       ),
@@ -92,18 +93,18 @@ class DeckControls extends StatelessWidget {
               Expanded(
                 child: _ActionButton(
                   icon: AppAssets.closeX,
-                  iconColor: const Color(0xFFEF4444),
-                  backgroundColor: Colors.white,
-                  border: const Color(0xFFE5E7EB),
+                  iconColor: context.colors.danger,
+                  backgroundColor: context.colors.surface,
+                  border: context.colors.border,
                   label: 'Pass',
-                  glowColor: const Color(0xFFEF4444),
+                  glowColor: context.colors.danger,
                   onTap: enabled ? onPass : null,
                 ),
               ),
               Expanded(
                 child: _ActionButton(
                   icon: modeIcon,
-                  iconColor: Colors.white,
+                  iconColor: context.colors.onAccent,
                   backgroundColor: modeColor,
                   border: modeColor,
                   label: likeLabel,
@@ -115,11 +116,14 @@ class DeckControls extends StatelessWidget {
               Expanded(
                 child: _ActionButton(
                   icon: AppAssets.starOutline,
-                  iconColor: const Color(0xFFF59E0B),
-                  backgroundColor: const Color(0xFFFFF7E5),
-                  border: const Color(0xFFFCD34D),
+                  iconColor: context.colors.tint(Hue.amber).color,
+                  backgroundColor: context.colors.tint(Hue.amber).soft,
+                  border: context.colors
+                      .tint(Hue.amber)
+                      .color
+                      .withValues(alpha: 0.5),
                   label: superLikeLabel,
-                  glowColor: const Color(0xFFF59E0B),
+                  glowColor: context.colors.tint(Hue.amber).color,
                   onTap: enabled ? onSuperLike : null,
                 ),
               ),
@@ -149,21 +153,25 @@ class _RewindChip extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: context.colors.surface,
             borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: AppColors.divider),
+            border: Border.all(color: context.colors.divider),
           ),
-          child: const Row(
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.undo_rounded, size: 14, color: AppColors.textPrimary),
-              SizedBox(width: 6),
+              Icon(
+                Icons.undo_rounded,
+                size: 14,
+                color: context.colors.textPrimary,
+              ),
+              const SizedBox(width: 6),
               Text(
                 'Rewind',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
             ],
@@ -208,7 +216,7 @@ class _ActionButton extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         child: AnimatedOpacity(
           opacity: onTap == null ? 0.55 : 1,
-          duration: const Duration(milliseconds: 150),
+          duration: context.motion(const Duration(milliseconds: 150)),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -242,10 +250,10 @@ class _ActionButton extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
             ],

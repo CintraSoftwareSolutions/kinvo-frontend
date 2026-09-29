@@ -9,10 +9,10 @@ import 'package:kinvo/src/core/auth/auth_providers.dart';
 import 'package:kinvo/src/core/auth/session_status.dart';
 import 'package:kinvo/src/core/config/server_config_providers.dart';
 import 'package:kinvo/src/core/navigation/app_routes.dart';
-import 'package:kinvo/src/core/theme/app_colors.dart';
 import 'package:kinvo/src/core/widgets/flow_widgets.dart';
 import 'package:kinvo/src/core/widgets/gradient_scaffold.dart';
 
+import '../../../../core/theme/kinvo_colors.dart';
 import '../controllers/login_controller.dart';
 import '../controllers/social_sign_in_controller.dart';
 
@@ -43,7 +43,7 @@ class LoginScreen extends ConsumerWidget {
     }
 
     return GradientScaffold(
-      background: AppColors.lightBackground,
+      background: context.colors.backgroundGradient,
       child: FlowPageLayout(
         badgeText: 'Welcome back',
         badgeIcon: Icons.favorite_rounded,
@@ -113,7 +113,7 @@ class LoginScreen extends ConsumerWidget {
                       child: Text(
                         'Forgot password?',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: AppColors.purple,
+                          color: context.colors.purple,
                           fontSize: 11.5,
                           fontWeight: FontWeight.w600,
                         ),
@@ -146,8 +146,8 @@ class LoginScreen extends ConsumerWidget {
                   label: 'Continue with your phone number',
                   // The card underneath is white, and this button defaults to
                   // white on white.
-                  foregroundColor: AppColors.purple,
-                  borderColor: AppColors.border,
+                  foregroundColor: context.colors.purple,
+                  borderColor: context.colors.border,
                   onPressed: editable
                       ? () => context.push(AppRoutes.phoneSignIn)
                       : null,
@@ -212,7 +212,7 @@ class _RememberDeviceToggle extends StatelessWidget {
               child: Text(
                 _label,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                   fontSize: 11.5,
                   fontWeight: FontWeight.w500,
                 ),

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
+import '../../../../core/theme/motion.dart';
 import '../../../../core/widgets/flow_widgets.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../../../core/widgets/settings_group.dart';
@@ -39,7 +40,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
     final current = ref.watch(currentPlanProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -186,10 +187,10 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                 : "Buying isn't available in this version yet. The plans "
                       'above are what will be on sale.',
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
               height: 1.45,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ),
           if (activity.error case final error?) ...[
@@ -316,31 +317,28 @@ class _YourPlanCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
+          Text(
             'YOUR PLAN',
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
               letterSpacing: 1.2,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ),
           const SizedBox(height: 6),
           Text(
             cycle == null ? tier : '$tier · $cycle',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             subscription.renews ? 'Renews $until' : 'Until $until',
-            style: const TextStyle(
-              fontSize: 13,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 13, color: context.colors.textSecondary),
           ),
           if (subscription.isTest) ...[
             const SizedBox(height: 10),
@@ -352,8 +350,8 @@ class _YourPlanCard extends StatelessWidget {
               label: isEnding ? 'Ending…' : 'End test plan',
               onPressed: onEnd,
               // The button's default is for dark screens; this card is white.
-              foregroundColor: AppColors.danger,
-              borderColor: AppColors.danger,
+              foregroundColor: context.colors.danger,
+              borderColor: context.colors.danger,
             ),
           ],
         ],
@@ -370,20 +368,20 @@ class _TestPlanNote extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.purpleSoft,
+        color: context.colors.purpleSoft,
         borderRadius: BorderRadius.circular(10),
       ),
-      child: const Row(
+      child: Row(
         children: [
-          Icon(Icons.science_outlined, size: 16, color: AppColors.purple),
-          SizedBox(width: 8),
+          Icon(Icons.science_outlined, size: 16, color: context.colors.purple),
+          const SizedBox(width: 8),
           Expanded(
             child: Text(
               'Test plan — no money was taken.',
               style: TextStyle(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w600,
-                color: AppColors.purple,
+                color: context.colors.purple,
               ),
             ),
           ),
@@ -410,9 +408,9 @@ class _TierToggle extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: AppColors.divider),
+        border: Border.all(color: context.colors.divider),
       ),
       child: Row(
         children: [
@@ -425,11 +423,11 @@ class _TierToggle extends StatelessWidget {
                   behavior: HitTestBehavior.opaque,
                   onTap: onChanged == null ? null : () => onChanged!(tier),
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
+                    duration: context.motion(const Duration(milliseconds: 180)),
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
                       color: tier == selected
-                          ? AppColors.purple
+                          ? context.colors.purple
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(999),
                     ),
@@ -440,8 +438,8 @@ class _TierToggle extends StatelessWidget {
                         fontSize: 13.5,
                         fontWeight: FontWeight.w700,
                         color: tier == selected
-                            ? Colors.white
-                            : AppColors.textPrimary,
+                            ? context.colors.onAccent
+                            : context.colors.textPrimary,
                       ),
                     ),
                   ),
@@ -466,11 +464,7 @@ class _TierCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF6E47CB), Color(0xFFA87EF6), Color(0xFFF59E0B)],
-        ),
+        gradient: context.colors.premiumGradient,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
@@ -482,7 +476,7 @@ class _TierCard extends StatelessWidget {
               fontSize: 11,
               fontWeight: FontWeight.w700,
               letterSpacing: 1.4,
-              color: Colors.white,
+              color: OverlayColors.content,
             ),
           ),
           const SizedBox(height: 8),
@@ -491,7 +485,7 @@ class _TierCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w700,
-              color: Colors.white,
+              color: OverlayColors.content,
               height: 1.25,
             ),
           ),
@@ -507,7 +501,7 @@ class _TierCard extends StatelessWidget {
                     child: Icon(
                       Icons.check_circle_rounded,
                       size: 16,
-                      color: Colors.white,
+                      color: OverlayColors.content,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -517,7 +511,7 @@ class _TierCard extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 13,
                         height: 1.35,
-                        color: Colors.white,
+                        color: OverlayColors.content,
                       ),
                     ),
                   ),
@@ -567,10 +561,10 @@ class _PlanCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: context.colors.surface,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: selected ? AppColors.purple : AppColors.divider,
+              color: selected ? context.colors.purple : context.colors.divider,
               width: selected ? 1.5 : 1,
             ),
           ),
@@ -581,10 +575,10 @@ class _PlanCard extends StatelessWidget {
                 children: [
                   Text(
                     plan.cycle.label,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                     ),
                   ),
                   const Spacer(),
@@ -596,8 +590,8 @@ class _PlanCard extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         color: isCurrent
-                            ? AppColors.greenSoft
-                            : AppColors.purpleChip,
+                            ? context.colors.greenSoft
+                            : context.colors.purpleChip,
                         borderRadius: BorderRadius.circular(999),
                       ),
                       child: Text(
@@ -605,7 +599,9 @@ class _PlanCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 10.5,
                           fontWeight: FontWeight.w700,
-                          color: isCurrent ? AppColors.green : AppColors.purple,
+                          color: isCurrent
+                              ? context.colors.green
+                              : context.colors.purple,
                         ),
                       ),
                     ),
@@ -617,7 +613,7 @@ class _PlanCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: price == null ? 14 : 22,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
               const SizedBox(height: 2),
@@ -630,9 +626,9 @@ class _PlanCard extends StatelessWidget {
                   },
                   ?perMonth,
                 ].join(' · '),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11.5,
-                  color: AppColors.textMuted,
+                  color: context.colors.textMuted,
                 ),
               ),
             ],

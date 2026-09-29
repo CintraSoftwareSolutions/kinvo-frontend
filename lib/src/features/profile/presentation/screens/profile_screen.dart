@@ -6,7 +6,8 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/assets/app_assets.dart';
 import '../../../../core/forms/form_errors.dart';
 import '../../../../core/navigation/app_routes.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../../../core/widgets/settings_group.dart';
 import '../../../discovery/presentation/controllers/discovery_modes_controller.dart';
@@ -43,8 +44,8 @@ class ProfileScreen extends ConsumerWidget {
                   AppAssets.settingsAlt,
                   width: 22,
                   height: 22,
-                  colorFilter: const ColorFilter.mode(
-                    AppColors.textPrimary,
+                  colorFilter: ColorFilter.mode(
+                    context.colors.textPrimary,
                     BlendMode.srcIn,
                   ),
                 ),
@@ -110,14 +111,14 @@ class _ProfileBody extends ConsumerWidget {
         Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: context.colors.surface,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.divider),
-            boxShadow: const [
+            border: Border.all(color: context.colors.divider),
+            boxShadow: [
               BoxShadow(
-                color: Color(0x0A0C132A),
+                color: context.colors.shadow,
                 blurRadius: 18,
-                offset: Offset(0, 6),
+                offset: const Offset(0, 6),
               ),
             ],
           ),
@@ -134,7 +135,7 @@ class _ProfileBody extends ConsumerWidget {
                     child: PersonPhoto(
                       url: mainPhoto?.url,
                       name: profile.displayName,
-                      color: AppColors.purpleLight,
+                      color: context.colors.purpleLight,
                     ),
                   ),
                 ),
@@ -151,19 +152,19 @@ class _ProfileBody extends ConsumerWidget {
                       ].join(', '),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                       ),
                     ),
                   ),
                   if (profile.isVerified) ...[
                     const SizedBox(width: 6),
-                    const Icon(
+                    Icon(
                       Icons.verified_rounded,
                       size: 18,
-                      color: AppColors.blue,
+                      color: context.colors.blue,
                       semanticLabel: 'Verified',
                     ),
                   ],
@@ -174,9 +175,9 @@ class _ProfileBody extends ConsumerWidget {
                 Text(
                   work,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12.5,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
               ],
@@ -185,9 +186,9 @@ class _ProfileBody extends ConsumerWidget {
                 Text(
                   place,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12.5,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
               ],
@@ -231,13 +232,14 @@ class _ProfileBody extends ConsumerWidget {
               child: FilledButton(
                 onPressed: () => context.push(AppRoutes.profileEdit),
                 style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.purple,
-                  foregroundColor: Colors.white,
+                  backgroundColor: context.colors.purple,
+                  foregroundColor: context.colors.onAccent,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(999),
                   ),
                   textStyle: const TextStyle(
+                    fontFamily: AppTheme.fontFamily,
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                   ),
@@ -250,13 +252,14 @@ class _ProfileBody extends ConsumerWidget {
               child: OutlinedButton(
                 onPressed: () => context.push(AppRoutes.profileReview),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.textPrimary,
-                  side: const BorderSide(color: AppColors.divider),
+                  foregroundColor: context.colors.textPrimary,
+                  side: BorderSide(color: context.colors.divider),
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(999),
                   ),
                   textStyle: const TextStyle(
+                    fontFamily: AppTheme.fontFamily,
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                   ),
@@ -301,30 +304,27 @@ class _BreakBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.purpleSoft,
+      color: context.colors.purpleSoft,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       clipBehavior: Clip.antiAlias,
       child: ListTile(
         onTap: () => context.push(AppRoutes.privacy),
-        leading: const Icon(
-          Icons.pause_circle_rounded,
-          color: AppColors.purple,
-        ),
-        title: const Text(
+        leading: Icon(Icons.pause_circle_rounded, color: context.colors.purple),
+        title: Text(
           "You're taking a break",
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
-        subtitle: const Text(
+        subtitle: Text(
           "Nobody new sees you in Discover. Tap to come back.",
-          style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+          style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
         ),
-        trailing: const Icon(
+        trailing: Icon(
           Icons.chevron_right_rounded,
-          color: AppColors.textMuted,
+          color: context.colors.textMuted,
         ),
       ),
     );
@@ -346,10 +346,10 @@ class _CompletionCard extends StatelessWidget {
 
     // A Material rather than a decorated box, so the rows' ripples show.
     return Material(
-      color: Colors.white,
+      color: context.colors.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: const BorderSide(color: AppColors.divider),
+        side: BorderSide(color: context.colors.divider),
       ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
@@ -358,19 +358,22 @@ class _CompletionCard extends StatelessWidget {
           children: [
             Semantics(
               header: true,
-              child: const Text(
+              child: Text(
                 'Finish your profile',
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
             ),
             const SizedBox(height: 4),
-            const Text(
+            Text(
               'Complete profiles are shown to more people.',
-              style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+              style: TextStyle(
+                fontSize: 12.5,
+                color: context.colors.textSecondary,
+              ),
             ),
             const SizedBox(height: 10),
             ClipRRect(
@@ -378,8 +381,8 @@ class _CompletionCard extends StatelessWidget {
               child: LinearProgressIndicator(
                 value: profile.completionPercentage / 100,
                 minHeight: 6,
-                color: AppColors.purple,
-                backgroundColor: AppColors.surfaceSoft,
+                color: context.colors.purple,
+                backgroundColor: context.colors.surfaceSoft,
                 semanticsLabel: 'Profile complete',
                 semanticsValue: '${profile.completionPercentage}%',
               ),
@@ -390,23 +393,23 @@ class _CompletionCard extends StatelessWidget {
                 onTap: () => context.push(AppRoutes.profileEdit),
                 contentPadding: EdgeInsets.zero,
                 dense: true,
-                leading: const Icon(
+                leading: Icon(
                   Icons.add_circle_outline_rounded,
-                  color: AppColors.purple,
+                  color: context.colors.purple,
                   size: 20,
                 ),
                 minLeadingWidth: 20,
                 title: Text(
                   step.label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13.5,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                 ),
-                trailing: const Icon(
+                trailing: Icon(
                   Icons.chevron_right_rounded,
-                  color: AppColors.textMuted,
+                  color: context.colors.textMuted,
                 ),
               ),
           ],
@@ -434,35 +437,32 @@ class _StatBox extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
-        child: _box(),
+        child: _box(context.colors),
       ),
     );
   }
 
-  Widget _box() {
+  Widget _box(KinvoColors colors) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.surfaceSoft.withValues(alpha: 0.55),
+        color: colors.surfaceSoft.withValues(alpha: 0.55),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
         children: [
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
           ),
           const SizedBox(height: 2),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 10.5,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 10.5, color: colors.textSecondary),
           ),
         ],
       ),

@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../controllers/location_step_controller.dart';
 import '../controllers/onboarding_controller.dart';
 import '../widgets/onboarding_step_layout.dart';
@@ -97,7 +97,9 @@ class _LocationSummary extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: hasLocation ? AppColors.greenSoft : AppColors.surfaceSoft,
+          color: hasLocation
+              ? context.colors.greenSoft
+              : context.colors.surfaceSoft,
           borderRadius: BorderRadius.circular(14),
         ),
         child: Row(
@@ -106,7 +108,7 @@ class _LocationSummary extends StatelessWidget {
               hasLocation
                   ? Icons.check_circle_rounded
                   : Icons.location_on_outlined,
-              color: hasLocation ? AppColors.green : AppColors.purple,
+              color: hasLocation ? context.colors.green : context.colors.purple,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -118,7 +120,7 @@ class _LocationSummary extends StatelessWidget {
                     style: textTheme.titleLarge?.copyWith(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -126,7 +128,7 @@ class _LocationSummary extends StatelessWidget {
                     detail,
                     style: textTheme.bodyMedium?.copyWith(
                       fontSize: 12.5,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                 ],
@@ -153,7 +155,7 @@ class _ProblemNotice extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
         decoration: BoxDecoration(
-          color: AppColors.dangerSoft,
+          color: context.colors.dangerSoft,
           borderRadius: BorderRadius.circular(14),
         ),
         child: Column(
@@ -162,7 +164,7 @@ class _ProblemNotice extends StatelessWidget {
             Text(
               problem.message,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AppColors.danger,
+                color: context.colors.danger,
                 fontSize: 12.5,
                 height: 1.45,
                 fontWeight: FontWeight.w500,
@@ -172,7 +174,7 @@ class _ProblemNotice extends StatelessWidget {
               TextButton(
                 onPressed: onOpenSettings,
                 style: TextButton.styleFrom(
-                  foregroundColor: AppColors.danger,
+                  foregroundColor: context.colors.danger,
                   padding: EdgeInsets.zero,
                 ),
                 child: const Text('Open Settings'),

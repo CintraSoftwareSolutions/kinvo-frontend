@@ -3,7 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
+import '../../../../core/theme/motion.dart';
 import '../../../../core/widgets/photo_source_sheet.dart';
 import '../../domain/profile_photo.dart';
 import '../controllers/profile_controllers.dart';
@@ -95,7 +96,7 @@ class PhotoEditorGrid extends ConsumerWidget {
     final photos = album.photos;
     final choice = await showModalBottomSheet<_PhotoAction>(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: context.colors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -136,7 +137,7 @@ class PhotoEditorGrid extends ConsumerWidget {
           ),
           TextButton(
             onPressed: () => Navigator.of(dialog).pop(true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+            style: TextButton.styleFrom(foregroundColor: dialog.colors.danger),
             child: const Text('Delete'),
           ),
         ],
@@ -178,7 +179,7 @@ class _PhotoOptionsSheet extends StatelessWidget {
                 width: 38,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.border,
+                  color: context.colors.border,
                   borderRadius: BorderRadius.circular(999),
                 ),
               ),
@@ -186,10 +187,10 @@ class _PhotoOptionsSheet extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               isMain ? 'Your main photo' : 'Photo',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
             ),
             const SizedBox(height: 8),
@@ -197,19 +198,16 @@ class _PhotoOptionsSheet extends StatelessWidget {
               ListTile(
                 onTap: () => choose(_PhotoAction.makeMain),
                 contentPadding: EdgeInsets.zero,
-                leading: const Icon(
-                  Icons.star_rounded,
-                  color: AppColors.purple,
-                ),
+                leading: Icon(Icons.star_rounded, color: context.colors.purple),
                 title: const Text('Make it my main photo'),
               ),
             if (canMoveEarlier)
               ListTile(
                 onTap: () => choose(_PhotoAction.moveEarlier),
                 contentPadding: EdgeInsets.zero,
-                leading: const Icon(
+                leading: Icon(
                   Icons.arrow_back_rounded,
-                  color: AppColors.purple,
+                  color: context.colors.purple,
                 ),
                 title: const Text('Move earlier'),
               ),
@@ -217,9 +215,9 @@ class _PhotoOptionsSheet extends StatelessWidget {
               ListTile(
                 onTap: () => choose(_PhotoAction.moveLater),
                 contentPadding: EdgeInsets.zero,
-                leading: const Icon(
+                leading: Icon(
                   Icons.arrow_forward_rounded,
-                  color: AppColors.purple,
+                  color: context.colors.purple,
                 ),
                 title: const Text('Move later'),
               ),
@@ -229,12 +227,16 @@ class _PhotoOptionsSheet extends StatelessWidget {
               contentPadding: EdgeInsets.zero,
               leading: Icon(
                 Icons.delete_outline_rounded,
-                color: canDelete ? AppColors.danger : AppColors.textMuted,
+                color: canDelete
+                    ? context.colors.danger
+                    : context.colors.textMuted,
               ),
               title: Text(
                 'Delete photo',
                 style: TextStyle(
-                  color: canDelete ? AppColors.danger : AppColors.textMuted,
+                  color: canDelete
+                      ? context.colors.danger
+                      : context.colors.textMuted,
                 ),
               ),
               subtitle: canDelete
@@ -303,11 +305,13 @@ class _DraggablePhoto extends StatelessWidget {
             onTap: isRemoving ? null : onTap,
             behavior: HitTestBehavior.opaque,
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 150),
+              duration: context.motion(const Duration(milliseconds: 150)),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: highlighted ? AppColors.purple : Colors.transparent,
+                  color: highlighted
+                      ? context.colors.purple
+                      : Colors.transparent,
                   width: 2,
                 ),
               ),
@@ -358,7 +362,7 @@ class _PhotoTile extends StatelessWidget {
           PersonPhoto(
             url: photo.url,
             name: name,
-            color: AppColors.purpleLight,
+            color: context.colors.purpleLight,
             initialSize: 32,
           ),
           if (isMain)
@@ -371,9 +375,9 @@ class _PhotoTile extends StatelessWidget {
               child: _Badge(label: 'Removed by moderators', warning: true),
             ),
           if (isRemoving)
-            const ColoredBox(
-              color: Color(0x99FFFFFF),
-              child: Center(
+            ColoredBox(
+              color: context.colors.surface.withValues(alpha: 0.6),
+              child: const Center(
                 child: SizedBox.square(
                   dimension: 22,
                   child: CircularProgressIndicator(strokeWidth: 2.5),
@@ -397,7 +401,7 @@ class _Badge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: warning ? AppColors.danger : AppColors.purple,
+        color: warning ? context.colors.danger : context.colors.purple,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
@@ -405,8 +409,8 @@ class _Badge extends StatelessWidget {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         textAlign: TextAlign.center,
-        style: const TextStyle(
-          color: Colors.white,
+        style: TextStyle(
+          color: context.colors.onAccent,
           fontSize: 10.5,
           fontWeight: FontWeight.w700,
         ),
@@ -434,18 +438,20 @@ class _AddTile extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         child: Container(
           decoration: BoxDecoration(
-            color: isNext ? AppColors.purpleSoft : AppColors.surfaceSoft,
+            color: isNext
+                ? context.colors.purpleSoft
+                : context.colors.surfaceSoft,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: isNext
-                  ? AppColors.purple.withValues(alpha: 0.4)
-                  : AppColors.divider,
+                  ? context.colors.purple.withValues(alpha: 0.4)
+                  : context.colors.divider,
             ),
           ),
           child: Icon(
             Icons.add_rounded,
             size: 26,
-            color: isNext ? AppColors.purple : AppColors.textMuted,
+            color: isNext ? context.colors.purple : context.colors.textMuted,
           ),
         ),
       ),
@@ -464,7 +470,7 @@ class _UploadingTile extends StatelessWidget {
       excludeSemantics: true,
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.surfaceSoft,
+          color: context.colors.surfaceSoft,
           borderRadius: BorderRadius.circular(14),
         ),
         child: const Center(

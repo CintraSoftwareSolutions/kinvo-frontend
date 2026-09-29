@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../modes/presentation/mode_presentation.dart';
 import '../../domain/discovery_mode.dart';
 
@@ -14,7 +14,7 @@ Future<DiscoveryMode?> showModePickerSheet(
 }) {
   return showModalBottomSheet<DiscoveryMode>(
     context: context,
-    backgroundColor: Colors.white,
+    backgroundColor: context.colors.surface,
     isScrollControlled: true,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -50,24 +50,27 @@ class ModePickerSheet extends StatelessWidget {
                 width: 38,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE5E7EB),
+                  color: context.colors.handle,
                   borderRadius: BorderRadius.circular(999),
                 ),
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Select Mode',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
             ),
             const SizedBox(height: 4),
-            const Text(
+            Text(
               'Each mode has its own deck, filters and matches.',
-              style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+              style: TextStyle(
+                fontSize: 12.5,
+                color: context.colors.textSecondary,
+              ),
             ),
             const SizedBox(height: 14),
             Flexible(
@@ -105,7 +108,7 @@ class _ModeRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = modeColors(mode.value);
+    final modeTint = context.colors.mode(mode.value);
     return Semantics(
       button: true,
       selected: active,
@@ -118,7 +121,7 @@ class _ModeRow extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 8),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
-            color: active ? AppColors.purple : AppColors.surfaceSoft,
+            color: active ? context.colors.purple : context.colors.surfaceSoft,
             borderRadius: BorderRadius.circular(14),
           ),
           child: Row(
@@ -128,8 +131,8 @@ class _ModeRow extends StatelessWidget {
                 height: 34,
                 decoration: BoxDecoration(
                   color: active
-                      ? Colors.white.withValues(alpha: 0.18)
-                      : colors.soft,
+                      ? context.colors.onAccent.withValues(alpha: 0.18)
+                      : modeTint.soft,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Center(
@@ -138,7 +141,7 @@ class _ModeRow extends StatelessWidget {
                     width: 16,
                     height: 16,
                     colorFilter: ColorFilter.mode(
-                      active ? Colors.white : colors.primary,
+                      active ? context.colors.onAccent : modeTint.color,
                       BlendMode.srcIn,
                     ),
                   ),
@@ -153,17 +156,19 @@ class _ModeRow extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: active ? Colors.white : AppColors.textPrimary,
+                    color: active
+                        ? context.colors.onAccent
+                        : context.colors.textPrimary,
                   ),
                 ),
               ),
               if (mode.isPrimary && !active)
-                const Padding(
-                  padding: EdgeInsets.only(right: 8),
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
                   child: Text(
                     'MAIN',
                     style: TextStyle(
-                      color: AppColors.textMuted,
+                      color: context.colors.textMuted,
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 1.2,
@@ -177,13 +182,13 @@ class _ModeRow extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.22),
+                    color: context.colors.onAccent.withValues(alpha: 0.22),
                     borderRadius: BorderRadius.circular(999),
                   ),
-                  child: const Text(
+                  child: Text(
                     'ACTIVE',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: context.colors.onAccent,
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 1.2,

@@ -7,11 +7,11 @@ import 'package:kinvo/src/core/assets/app_assets.dart';
 import 'package:kinvo/src/core/auth/auth_providers.dart';
 import 'package:kinvo/src/core/auth/session_status.dart';
 import 'package:kinvo/src/core/config/server_config_providers.dart';
-import 'package:kinvo/src/core/theme/app_colors.dart';
 import 'package:kinvo/src/core/time/clock.dart';
 import 'package:kinvo/src/core/widgets/flow_widgets.dart';
 import 'package:kinvo/src/core/widgets/gradient_scaffold.dart';
 
+import '../../../../core/theme/kinvo_colors.dart';
 import '../controllers/signup_controller.dart';
 import '../controllers/social_sign_in_controller.dart';
 import '../date_of_birth_picker.dart';
@@ -37,7 +37,7 @@ class SignupScreen extends ConsumerWidget {
     });
 
     return GradientScaffold(
-      background: AppColors.lightBackground,
+      background: context.colors.backgroundGradient,
       child: FlowPageLayout(
         badgeText: 'Kinvo',
         badgeIcon: Icons.favorite_rounded,
@@ -129,12 +129,12 @@ class SignupScreen extends ConsumerWidget {
                 onTap: () => unawaited(_pickDateOfBirth(context, ref)),
               ),
               const SizedBox(height: 14),
-              const InfoBanner(
+              InfoBanner(
                 title: 'Trust-first onboarding',
                 description:
                     'Verification, privacy controls, and trusted contacts can all be added later.',
-                backgroundColor: Color(0xFFEAF2FF),
-                iconColor: AppColors.blue,
+                backgroundColor: context.colors.tint(Hue.blue).soft,
+                iconColor: context.colors.blue,
               ),
               if (form.formError case final message?) ...[
                 const SizedBox(height: 14),

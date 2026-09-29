@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/assets/app_assets.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/network/api_exception.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/time/clock.dart';
 import '../../../../core/time/relative_time.dart';
 import '../../../../core/widgets/flow_widgets.dart';
@@ -90,14 +90,16 @@ class _Tabs extends StatelessWidget {
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    color: tab == selected ? Colors.white : Colors.transparent,
+                    color: tab == selected
+                        ? context.colors.surface
+                        : Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: tab == selected
-                        ? const [
+                        ? [
                             BoxShadow(
-                              color: Color(0x14000000),
+                              color: context.colors.shadow,
                               blurRadius: 10,
-                              offset: Offset(0, 3),
+                              offset: const Offset(0, 3),
                             ),
                           ]
                         : null,
@@ -112,8 +114,8 @@ class _Tabs extends StatelessWidget {
                           ? FontWeight.w700
                           : FontWeight.w500,
                       color: tab == selected
-                          ? AppColors.textPrimary
-                          : AppColors.textMuted,
+                          ? context.colors.textPrimary
+                          : context.colors.textMuted,
                     ),
                   ),
                 ),
@@ -239,7 +241,7 @@ class _MatchesList extends ConsumerWidget {
     await showProfileSheet<void>(
       context,
       user: match.user,
-      accent: modeColors(match.mode).primary,
+      accent: context.colors.mode(match.mode).color,
       actions: (sheetContext) => Row(
         children: [
           Expanded(
@@ -259,8 +261,8 @@ class _MatchesList extends ConsumerWidget {
                 _say(messenger, 'You unmatched ${match.user.displayName}.');
               },
               style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.danger,
-                side: const BorderSide(color: AppColors.dangerSoft),
+                foregroundColor: sheetContext.colors.danger,
+                side: BorderSide(color: sheetContext.colors.dangerSoft),
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(999),
@@ -293,7 +295,7 @@ class _MatchesList extends ConsumerWidget {
                   }
                 },
                 style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.purple,
+                  backgroundColor: sheetContext.colors.purple,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(999),
@@ -327,7 +329,9 @@ class _MatchesList extends ConsumerWidget {
           ),
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+            style: TextButton.styleFrom(
+              foregroundColor: dialogContext.colors.danger,
+            ),
             child: const Text('Unmatch'),
           ),
         ],
@@ -347,7 +351,7 @@ class _MatchTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final now = ref.watch(clockProvider)();
     final modeLabel = ref.watch(modeLabelProvider(match.mode));
-    final colors = modeColors(match.mode);
+    final modeTint = context.colors.mode(match.mode);
     final user = match.user;
 
     final preview = match.lastMessagePreview?.trim() ?? '';
@@ -382,7 +386,7 @@ class _MatchTile extends ConsumerWidget {
             children: [
               _Avatar(
                 user: user,
-                color: colors.primary,
+                color: modeTint.color,
                 unread: match.unreadCount,
               ),
               const SizedBox(width: 12),
@@ -397,10 +401,10 @@ class _MatchTile extends ConsumerWidget {
                             user.displayName,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
+                              color: context.colors.textPrimary,
                             ),
                           ),
                         ),
@@ -410,8 +414,8 @@ class _MatchTile extends ConsumerWidget {
                             AppAssets.shield,
                             width: 13,
                             height: 13,
-                            colorFilter: const ColorFilter.mode(
-                              Color(0xFF3B82F6),
+                            colorFilter: ColorFilter.mode(
+                              context.colors.blue,
                               BlendMode.srcIn,
                             ),
                           ),
@@ -424,7 +428,7 @@ class _MatchTile extends ConsumerWidget {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: colors.soft,
+                              color: modeTint.soft,
                               borderRadius: BorderRadius.circular(999),
                             ),
                             child: Text(
@@ -434,7 +438,7 @@ class _MatchTile extends ConsumerWidget {
                               style: TextStyle(
                                 fontSize: 10.5,
                                 fontWeight: FontWeight.w700,
-                                color: colors.primary,
+                                color: modeTint.color,
                               ),
                             ),
                           ),
@@ -446,9 +450,9 @@ class _MatchTile extends ConsumerWidget {
                       subtitle,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12.5,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ],
@@ -462,8 +466,8 @@ class _MatchTile extends ConsumerWidget {
                     fontSize: 11.5,
                     fontWeight: FontWeight.w600,
                     color: match.isExpired
-                        ? AppColors.textMuted
-                        : AppColors.danger,
+                        ? context.colors.textMuted
+                        : context.colors.danger,
                   ),
                 ),
               ],
@@ -596,7 +600,7 @@ class _LikesTab extends ConsumerWidget {
     DiscoveryMode mode,
     LikeReceived like,
   ) async {
-    final colors = modeColors(mode.value);
+    final modeTint = context.colors.mode(mode.value);
     final notifier = ref.read(likesInboxProvider(mode.value).notifier);
 
     Future<void> answer(BuildContext sheetContext, SwipeAction action) async {
@@ -610,8 +614,8 @@ class _LikesTab extends ConsumerWidget {
               context,
               user: like.user,
               modeLabel: mode.label,
-              modeColor: colors.primary,
-              modeSoftColor: colors.soft,
+              modeColor: modeTint.color,
+              modeSoftColor: modeTint.soft,
             );
             if (choice == MatchDialogChoice.seeMatches) {
               ref.read(matchesTabProvider.notifier).select(MatchesTab.matches);
@@ -629,15 +633,15 @@ class _LikesTab extends ConsumerWidget {
     await showProfileSheet<void>(
       context,
       user: like.user,
-      accent: colors.primary,
+      accent: modeTint.color,
       actions: (sheetContext) => Row(
         children: [
           Expanded(
             child: OutlinedButton(
               onPressed: () => answer(sheetContext, SwipeAction.pass),
               style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.textPrimary,
-                side: const BorderSide(color: AppColors.divider),
+                foregroundColor: sheetContext.colors.textPrimary,
+                side: BorderSide(color: sheetContext.colors.divider),
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(999),
@@ -651,7 +655,7 @@ class _LikesTab extends ConsumerWidget {
             child: FilledButton(
               onPressed: () => answer(sheetContext, SwipeAction.like),
               style: FilledButton.styleFrom(
-                backgroundColor: colors.primary,
+                backgroundColor: modeTint.color,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(999),
@@ -674,7 +678,7 @@ class _ModeChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = modeColors(mode.value);
+    final modeTint = context.colors.mode(mode.value);
     return Align(
       alignment: Alignment.centerLeft,
       child: Semantics(
@@ -689,7 +693,7 @@ class _ModeChip extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
             decoration: BoxDecoration(
-              color: colors.soft,
+              color: modeTint.soft,
               borderRadius: BorderRadius.circular(999),
             ),
             child: Row(
@@ -703,7 +707,7 @@ class _ModeChip extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12.5,
                       fontWeight: FontWeight.w700,
-                      color: colors.primary,
+                      color: modeTint.color,
                     ),
                   ),
                 ),
@@ -711,7 +715,7 @@ class _ModeChip extends StatelessWidget {
                   Icon(
                     Icons.keyboard_arrow_down_rounded,
                     size: 18,
-                    color: colors.primary,
+                    color: modeTint.color,
                   ),
               ],
             ),
@@ -746,7 +750,7 @@ class _LikeTile extends ConsumerWidget {
           padding: const EdgeInsets.all(14),
           child: Row(
             children: [
-              _Avatar(user: user, color: AppColors.purple, unread: 0),
+              _Avatar(user: user, color: context.colors.purple, unread: 0),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -759,10 +763,10 @@ class _LikeTile extends ConsumerWidget {
                       ].join(', '),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -770,18 +774,18 @@ class _LikeTile extends ConsumerWidget {
                       '$what $when',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12.5,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ],
                 ),
               ),
               if (like.isSuperLike)
-                const Icon(
+                Icon(
                   Icons.star_rounded,
-                  color: Color(0xFFF59E0B),
+                  color: context.colors.tint(Hue.amber).color,
                   size: 20,
                 ),
             ],
@@ -816,22 +820,22 @@ class _LockedLikes extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.divider),
+        border: Border.all(color: context.colors.divider),
       ),
       child: Column(
         children: [
           Container(
             width: 56,
             height: 56,
-            decoration: const BoxDecoration(
-              color: AppColors.purpleSoft,
+            decoration: BoxDecoration(
+              color: context.colors.purpleSoft,
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.favorite_rounded,
-              color: AppColors.purple,
+              color: context.colors.purple,
               size: 26,
             ),
           ),
@@ -839,10 +843,10 @@ class _LockedLikes extends StatelessWidget {
           Text(
             title,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
           ),
           const SizedBox(height: 6),
@@ -850,10 +854,10 @@ class _LockedLikes extends StatelessWidget {
             'Premium shows you who liked you in $modeLabel, so you can like '
             'them back and match straight away.',
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               height: 1.5,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ),
           const SizedBox(height: 18),
@@ -903,15 +907,15 @@ class _Avatar extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                 constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEF4458),
+                  color: context.colors.danger,
                   borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: Colors.white, width: 2),
+                  border: Border.all(color: context.colors.surface, width: 2),
                 ),
                 child: Center(
                   child: Text(
                     unread > 99 ? '99+' : '$unread',
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: context.colors.onAccent,
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
                       height: 1,
@@ -928,9 +932,9 @@ class _Avatar extends StatelessWidget {
                 width: 14,
                 height: 14,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF22C55E),
+                  color: context.colors.online,
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2.4),
+                  border: Border.all(color: context.colors.surface, width: 2.4),
                 ),
               ),
             ),
@@ -949,14 +953,14 @@ class _Card extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.divider),
-        boxShadow: const [
+        border: Border.all(color: context.colors.divider),
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0A0C132A),
+            color: context.colors.shadow,
             blurRadius: 14,
-            offset: Offset(0, 4),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -965,9 +969,9 @@ class _Card extends StatelessWidget {
           for (final (index, child) in children.indexed) ...[
             child,
             if (index < children.length - 1)
-              const Divider(
+              Divider(
                 height: 1,
-                color: AppColors.divider,
+                color: context.colors.divider,
                 indent: 78,
                 endIndent: 14,
               ),
@@ -994,38 +998,38 @@ class _Empty extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 38, horizontal: 24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.divider),
+        border: Border.all(color: context.colors.divider),
       ),
       child: Column(
         children: [
           Container(
             width: 56,
             height: 56,
-            decoration: const BoxDecoration(
-              color: AppColors.surfaceSoft,
+            decoration: BoxDecoration(
+              color: context.colors.surfaceSoft,
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, size: 26, color: AppColors.textMuted),
+            child: Icon(icon, size: 26, color: context.colors.textMuted),
           ),
           const SizedBox(height: 14),
           Text(
             title,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             message,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
               height: 1.45,
             ),
           ),
@@ -1054,29 +1058,29 @@ class _Message extends StatelessWidget {
         Container(
           padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: context.colors.surface,
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: AppColors.divider),
+            border: Border.all(color: context.colors.divider),
           ),
           child: Column(
             children: [
               Text(
                 title,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 message,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   height: 1.5,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ),
               const SizedBox(height: 18),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/kinvo_colors.dart';
+
 /// Someone's photo, or their initial on [color] while it loads, when they
 /// have none, or when it can't be shown.
 ///
@@ -55,7 +57,7 @@ class _Initial extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [color, Color.lerp(color, Colors.black, 0.4)!],
+          colors: [color, Color.lerp(color, OverlayColors.shade, 0.4)!],
         ),
       ),
       child: Center(
@@ -63,7 +65,7 @@ class _Initial extends StatelessWidget {
           child: Text(
             trimmed.isEmpty ? '?' : trimmed.characters.first.toUpperCase(),
             style: TextStyle(
-              color: Colors.white,
+              color: context.colors.onAccent,
               fontSize: size,
               fontWeight: FontWeight.w700,
             ),

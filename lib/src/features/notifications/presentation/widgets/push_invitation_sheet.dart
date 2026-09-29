@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/widgets/flow_widgets.dart';
 
 /// Invites the user to turn notifications on, before the system asks.
@@ -11,7 +11,7 @@ import '../../../../core/widgets/flow_widgets.dart';
 Future<bool> showPushInvitationSheet(BuildContext context) async {
   final accepted = await showModalBottomSheet<bool>(
     context: context,
-    backgroundColor: Colors.white,
+    backgroundColor: context.colors.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
@@ -28,7 +28,7 @@ Future<bool> showPushInvitationSheet(BuildContext context) async {
                 width: 38,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE5E7EB),
+                  color: sheet.colors.handle,
                   borderRadius: BorderRadius.circular(999),
                 ),
               ),
@@ -38,29 +38,29 @@ Future<bool> showPushInvitationSheet(BuildContext context) async {
               child: Container(
                 width: 56,
                 height: 56,
-                decoration: const BoxDecoration(
-                  color: AppColors.purpleSoft,
+                decoration: BoxDecoration(
+                  color: sheet.colors.purpleSoft,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.notifications_active_rounded,
-                  color: AppColors.purple,
+                  color: sheet.colors.purple,
                   size: 26,
                 ),
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               "Don't miss a match",
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 19,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: sheet.colors.textPrimary,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Turn on notifications to hear when someone likes you back, '
               'sends you a message, or confirms a plan. You can choose which '
               'ones in Settings.',
@@ -68,7 +68,7 @@ Future<bool> showPushInvitationSheet(BuildContext context) async {
               style: TextStyle(
                 fontSize: 13.5,
                 height: 1.5,
-                color: AppColors.textSecondary,
+                color: sheet.colors.textSecondary,
               ),
             ),
             const SizedBox(height: 22),
@@ -81,7 +81,7 @@ Future<bool> showPushInvitationSheet(BuildContext context) async {
             TextButton(
               onPressed: () => Navigator.of(sheet).pop(false),
               style: TextButton.styleFrom(
-                foregroundColor: AppColors.textSecondary,
+                foregroundColor: sheet.colors.textSecondary,
               ),
               child: const Text('Not now'),
             ),

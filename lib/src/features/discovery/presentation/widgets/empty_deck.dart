@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/assets/app_assets.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../domain/deck_stats.dart';
 
 /// What Discover shows once today's deck for a mode has run out.
@@ -33,14 +34,14 @@ class EmptyDeck extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 32, 20, 24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.divider),
-        boxShadow: const [
+        border: Border.all(color: context.colors.divider),
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0A0C132A),
+            color: context.colors.shadow,
             blurRadius: 18,
-            offset: Offset(0, 6),
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -49,8 +50,8 @@ class EmptyDeck extends StatelessWidget {
           Container(
             width: 72,
             height: 72,
-            decoration: const BoxDecoration(
-              color: AppColors.surfaceSoft,
+            decoration: BoxDecoration(
+              color: context.colors.surfaceSoft,
               shape: BoxShape.circle,
             ),
             child: Center(
@@ -58,8 +59,8 @@ class EmptyDeck extends StatelessWidget {
                 AppAssets.searchOff,
                 width: 32,
                 height: 32,
-                colorFilter: const ColorFilter.mode(
-                  AppColors.textMuted,
+                colorFilter: ColorFilter.mode(
+                  context.colors.textMuted,
                   BlendMode.srcIn,
                 ),
               ),
@@ -69,15 +70,15 @@ class EmptyDeck extends StatelessWidget {
           Text(
             "You're all caught up in $modeLabel",
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Text(
               'New people arrive every day. Widen your filters to see more '
               'now, or bring back the last person you passed.',
@@ -85,7 +86,7 @@ class EmptyDeck extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 height: 1.55,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
           ),
@@ -116,13 +117,14 @@ class EmptyDeck extends StatelessWidget {
             child: FilledButton(
               onPressed: onAdjustFilters,
               style: FilledButton.styleFrom(
-                backgroundColor: AppColors.purple,
-                foregroundColor: Colors.white,
+                backgroundColor: context.colors.purple,
+                foregroundColor: context.colors.onAccent,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(999),
                 ),
                 textStyle: const TextStyle(
+                  fontFamily: AppTheme.fontFamily,
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
                 ),
@@ -152,7 +154,7 @@ class _StatTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: AppColors.surfaceSoft.withValues(alpha: 0.55),
+          color: context.colors.surfaceSoft.withValues(alpha: 0.55),
           borderRadius: BorderRadius.circular(14),
         ),
         child: Column(
@@ -161,20 +163,20 @@ class _StatTile extends StatelessWidget {
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 1.6,
-                color: AppColors.textMuted,
+                color: context.colors.textMuted,
               ),
             ),
             const SizedBox(height: 6),
             Text(
               value,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
             ),
           ],
@@ -203,17 +205,17 @@ class _OutlineButton extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 14),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: context.colors.surface,
             borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: AppColors.divider),
+            border: Border.all(color: context.colors.divider),
           ),
           child: Center(
             child: Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
             ),
           ),

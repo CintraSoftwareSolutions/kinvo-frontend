@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/api_exception.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/widgets/flow_widgets.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../../safety/data/trusted_contacts_repository.dart';
@@ -21,7 +21,7 @@ class TrustedContactsScreen extends ConsumerWidget {
         (contacts.value?.length ?? maxTrustedContacts) < maxTrustedContacts;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -35,9 +35,12 @@ class TrustedContactsScreen extends ConsumerWidget {
                       onPressed: () => showContactSheet(context),
                       tooltip: 'Add contact',
                       style: IconButton.styleFrom(
-                        backgroundColor: AppColors.purple,
+                        backgroundColor: context.colors.purple,
                       ),
-                      icon: const Icon(Icons.add_rounded, color: Colors.white),
+                      icon: Icon(
+                        Icons.add_rounded,
+                        color: context.colors.onAccent,
+                      ),
                     )
                   : null,
             ),
@@ -55,13 +58,13 @@ class TrustedContactsScreen extends ConsumerWidget {
                       padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
                       child: Column(
                         children: [
-                          const Text(
+                          Text(
                             "Your contacts didn't load",
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
+                              color: context.colors.textPrimary,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -70,10 +73,10 @@ class TrustedContactsScreen extends ConsumerWidget {
                                 ? error.message
                                 : 'Something went wrong. Please try again.',
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 13,
                               height: 1.5,
-                              color: AppColors.textSecondary,
+                              color: context.colors.textSecondary,
                             ),
                           ),
                           const SizedBox(height: 18),
@@ -107,32 +110,28 @@ class _ContactList extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(18, 6, 18, 24),
       children: [
-        const Text(
+        Text(
           "They're emailed if you press the emergency button, or when you "
           "share a plan with them. They don't need the app.",
           style: TextStyle(
             fontSize: 13,
             height: 1.45,
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
         ),
         const SizedBox(height: 12),
         Material(
-          color: Colors.white,
+          color: context.colors.surface,
           clipBehavior: Clip.antiAlias,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
-            side: const BorderSide(color: AppColors.divider),
+            side: BorderSide(color: context.colors.divider),
           ),
           child: Column(
             children: [
               for (final (index, contact) in contacts.indexed) ...[
                 if (index > 0)
-                  const Divider(
-                    height: 1,
-                    indent: 68,
-                    color: AppColors.divider,
-                  ),
+                  Divider(height: 1, indent: 68, color: context.colors.divider),
                 _ContactTile(contact: contact),
               ],
             ],
@@ -143,9 +142,9 @@ class _ContactList extends StatelessWidget {
           OutlinedButton.icon(
             onPressed: () => showContactSheet(context),
             style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.textPrimary,
-              side: const BorderSide(color: AppColors.divider),
-              backgroundColor: Colors.white,
+              foregroundColor: context.colors.textPrimary,
+              side: BorderSide(color: context.colors.divider),
+              backgroundColor: context.colors.surface,
               padding: const EdgeInsets.symmetric(vertical: 13),
               shape: const StadiumBorder(),
             ),
@@ -153,10 +152,13 @@ class _ContactList extends StatelessWidget {
             label: const Text('Add another'),
           )
         else
-          const Text(
+          Text(
             'You have 5 trusted contacts, the most you can add.',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+            style: TextStyle(
+              fontSize: 12.5,
+              color: context.colors.textSecondary,
+            ),
           ),
       ],
     );
@@ -181,8 +183,8 @@ class _ContactTile extends StatelessWidget {
       onTap: () => showContactSheet(context, existing: contact),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       leading: CircleAvatar(
-        backgroundColor: AppColors.purpleSoft,
-        foregroundColor: AppColors.purple,
+        backgroundColor: context.colors.purpleSoft,
+        foregroundColor: context.colors.purple,
         child: Text(
           contact.name.isEmpty ? '?' : contact.name.characters.first,
           style: const TextStyle(fontWeight: FontWeight.w700),
@@ -192,10 +194,10 @@ class _ContactTile extends StatelessWidget {
         contact.name,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 14.5,
           fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
+          color: context.colors.textPrimary,
         ),
       ),
       subtitle: Text(
@@ -207,13 +209,13 @@ class _ContactTile extends StatelessWidget {
         style: TextStyle(
           fontSize: 12.5,
           color: contact.canBeAlerted
-              ? AppColors.textSecondary
-              : AppColors.danger,
+              ? context.colors.textSecondary
+              : context.colors.danger,
         ),
       ),
-      trailing: const Icon(
+      trailing: Icon(
         Icons.chevron_right_rounded,
-        color: AppColors.textMuted,
+        color: context.colors.textMuted,
       ),
     );
   }
@@ -234,35 +236,35 @@ class _Empty extends StatelessWidget {
               Container(
                 width: 56,
                 height: 56,
-                decoration: const BoxDecoration(
-                  color: AppColors.surfaceSoft,
+                decoration: BoxDecoration(
+                  color: context.colors.surfaceSoft,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.people_outline_rounded,
                   size: 26,
-                  color: AppColors.textMuted,
+                  color: context.colors.textMuted,
                 ),
               ),
               const SizedBox(height: 14),
-              const Text(
+              Text(
                 'No trusted contacts yet',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
               const SizedBox(height: 4),
-              const Text(
+              Text(
                 'Add up to 5 people Kinvo should email if you press the '
                 'emergency button, or when you share a plan with them.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 12,
                   height: 1.45,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ),
               const SizedBox(height: 16),

@@ -8,7 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/assets/app_assets.dart';
 import '../../../core/media/photo_picker.dart';
 import '../../../core/navigation/app_routes.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/kinvo_colors.dart';
 import '../../../core/widgets/photo_source_sheet.dart';
 import '../../../core/widgets/flow_widgets.dart';
 import '../../../core/widgets/page_header.dart';
@@ -49,7 +49,7 @@ class VerificationCaptureScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -61,7 +61,7 @@ class VerificationCaptureScreen extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 10),
             ),
             const VerificationSteps(stepIndex: 1),
-            const Divider(height: 1, color: AppColors.divider),
+            Divider(height: 1, color: context.colors.divider),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
@@ -71,10 +71,10 @@ class VerificationCaptureScreen extends ConsumerWidget {
                     Center(
                       child: Text(
                         isId ? 'Photograph your ID' : 'Take a selfie',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
+                          color: context.colors.textPrimary,
                         ),
                       ),
                     ),
@@ -87,9 +87,9 @@ class VerificationCaptureScreen extends ConsumerWidget {
                             : 'Look at the camera, with your face lit and '
                                   'nothing covering it.',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12.5,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                         ),
                       ),
                     ),
@@ -98,7 +98,7 @@ class VerificationCaptureScreen extends ConsumerWidget {
                       aspectRatio: isId ? 1.45 : 0.95,
                       child: Container(
                         decoration: BoxDecoration(
-                          color: AppColors.surfaceSoft,
+                          color: context.colors.surfaceSoft,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Center(
@@ -185,7 +185,7 @@ class _Placeholder extends StatelessWidget {
     final label = isId ? 'Fit your ID in the frame' : 'Position your face here';
 
     return CustomPaint(
-      painter: _DashedOutline(isId: isId),
+      painter: _DashedOutline(isId: isId, color: context.colors.textMuted),
       child: SizedBox(
         width: isId ? 260 : 200,
         height: isId ? 170 : 260,
@@ -197,17 +197,17 @@ class _Placeholder extends StatelessWidget {
                 AppAssets.camera,
                 width: 32,
                 height: 32,
-                colorFilter: const ColorFilter.mode(
-                  AppColors.textMuted,
+                colorFilter: ColorFilter.mode(
+                  context.colors.textMuted,
                   BlendMode.srcIn,
                 ),
               ),
               const SizedBox(height: 10),
               Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11.5,
-                  color: AppColors.textMuted,
+                  color: context.colors.textMuted,
                 ),
               ),
             ],
@@ -220,14 +220,15 @@ class _Placeholder extends StatelessWidget {
 
 /// An oval for a face, a rectangle for a card.
 class _DashedOutline extends CustomPainter {
-  const _DashedOutline({required this.isId});
+  const _DashedOutline({required this.isId, required this.color});
 
   final bool isId;
+  final Color color;
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.textMuted
+      ..color = color
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
     final rect = Rect.fromCenter(
@@ -254,5 +255,5 @@ class _DashedOutline extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _DashedOutline oldDelegate) =>
-      oldDelegate.isId != isId;
+      oldDelegate.isId != isId || oldDelegate.color != color;
 }

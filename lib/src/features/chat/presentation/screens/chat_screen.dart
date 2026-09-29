@@ -8,7 +8,7 @@ import '../../../../core/media/photo_picker.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/network/api_error_code.dart';
 import '../../../../core/network/api_exception.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/time/clock.dart';
 import '../../../../core/widgets/flow_widgets.dart';
 import '../../../../core/widgets/paywall_sheet.dart';
@@ -63,7 +63,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final thread = ref.watch(_provider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: switch (thread) {
           AsyncValue(value: final thread?) => _conversation(thread),
@@ -105,7 +105,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 )
               : null,
         ),
-        const Divider(height: 1, color: AppColors.divider),
+        Divider(height: 1, color: context.colors.divider),
         Expanded(
           child: ChatTimeline(
             thread: thread,
@@ -189,7 +189,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Future<void> _offerRetry(OutgoingMessage outgoing) async {
     final retry = await showModalBottomSheet<bool>(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: context.colors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -206,13 +206,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 onTap: () => Navigator.of(sheet).pop(true),
               ),
               ListTile(
-                leading: const Icon(
+                leading: Icon(
                   Icons.delete_outline_rounded,
-                  color: AppColors.danger,
+                  color: sheet.colors.danger,
                 ),
-                title: const Text(
+                title: Text(
                   'Delete message',
-                  style: TextStyle(color: AppColors.danger),
+                  style: TextStyle(color: sheet.colors.danger),
                 ),
                 onTap: () => Navigator.of(sheet).pop(false),
               ),
@@ -234,7 +234,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     return showProfileSheet<void>(
       context,
       user: conversation.user,
-      accent: modeColors(conversation.mode).primary,
+      accent: context.colors.mode(conversation.mode).color,
     );
   }
 
@@ -392,7 +392,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+            style: TextButton.styleFrom(
+              foregroundColor: dialogContext.colors.danger,
+            ),
             child: Text(action),
           ),
         ],
@@ -480,10 +482,10 @@ class _Failed extends StatelessWidget {
           child: HeaderCircleButton(
             tooltip: MaterialLocalizations.of(context).backButtonTooltip,
             onTap: onBack,
-            child: const Icon(
+            child: Icon(
               Icons.arrow_back_rounded,
               size: 20,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
           ),
         ),
@@ -524,20 +526,20 @@ class _CenteredMessage extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 height: 1.5,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
             const SizedBox(height: 18),

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../domain/trusted_contact.dart';
 import '../controllers/trusted_contacts_controllers.dart';
 import 'contact_outcome_row.dart';
@@ -12,7 +13,7 @@ Future<void> showEmergencySheet(BuildContext context) {
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: Colors.white,
+    backgroundColor: context.colors.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
@@ -56,7 +57,7 @@ class _EmergencySheetState extends ConsumerState<_EmergencySheet> {
                   width: 38,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE5E7EB),
+                    color: context.colors.handle,
                     borderRadius: BorderRadius.circular(999),
                   ),
                 ),
@@ -122,7 +123,7 @@ class _EmergencySheetState extends ConsumerState<_EmergencySheet> {
       FilledButton(
         onPressed: () => Navigator.of(context).pop(),
         style: FilledButton.styleFrom(
-          backgroundColor: AppColors.purple,
+          backgroundColor: context.colors.purple,
           padding: const EdgeInsets.symmetric(vertical: 14),
           shape: const StadiumBorder(),
         ),
@@ -179,11 +180,11 @@ class _Title extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 18,
         height: 1.3,
         fontWeight: FontWeight.w700,
-        color: AppColors.textPrimary,
+        color: context.colors.textPrimary,
       ),
     );
   }
@@ -203,7 +204,9 @@ class _Body extends StatelessWidget {
         fontSize: 13.5,
         height: 1.45,
         fontWeight: strong ? FontWeight.w600 : FontWeight.w400,
-        color: strong ? AppColors.textPrimary : AppColors.textSecondary,
+        color: strong
+            ? context.colors.textPrimary
+            : context.colors.textSecondary,
       ),
     );
   }
@@ -225,19 +228,23 @@ class _DangerButton extends StatelessWidget {
     return FilledButton(
       onPressed: onPressed,
       style: FilledButton.styleFrom(
-        backgroundColor: AppColors.danger,
-        foregroundColor: Colors.white,
+        backgroundColor: context.colors.danger,
+        foregroundColor: context.colors.onAccent,
         padding: const EdgeInsets.symmetric(vertical: 14),
         shape: const StadiumBorder(),
-        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+        textStyle: const TextStyle(
+          fontFamily: AppTheme.fontFamily,
+          fontSize: 14,
+          fontWeight: FontWeight.w700,
+        ),
       ),
       child: loading
-          ? const SizedBox(
+          ? SizedBox(
               width: 20,
               height: 20,
               child: CircularProgressIndicator(
                 strokeWidth: 2.4,
-                color: Colors.white,
+                color: context.colors.onAccent,
               ),
             )
           : Text(label),

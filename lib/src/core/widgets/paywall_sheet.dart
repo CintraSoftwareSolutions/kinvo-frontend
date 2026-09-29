@@ -3,13 +3,14 @@ import 'package:go_router/go_router.dart';
 
 import '../entitlements/paywall.dart';
 import '../navigation/app_routes.dart';
-import '../theme/app_colors.dart';
+import '../theme/app_theme.dart';
+import '../theme/kinvo_colors.dart';
 
 /// Explains a [paywall] and offers the upgrade that lifts it.
 Future<void> showPaywallSheet(BuildContext context, Paywall paywall) {
   return showModalBottomSheet<void>(
     context: context,
-    backgroundColor: Colors.white,
+    backgroundColor: context.colors.surface,
     isScrollControlled: true,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -49,7 +50,7 @@ class PaywallSheet extends StatelessWidget {
               width: 38,
               height: 4,
               decoration: BoxDecoration(
-                color: const Color(0xFFE5E7EB),
+                color: context.colors.handle,
                 borderRadius: BorderRadius.circular(999),
               ),
             ),
@@ -57,30 +58,30 @@ class PaywallSheet extends StatelessWidget {
             Container(
               width: 56,
               height: 56,
-              decoration: const BoxDecoration(
-                color: AppColors.purpleSoft,
+              decoration: BoxDecoration(
+                color: context.colors.purpleSoft,
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: AppColors.purple, size: 28),
+              child: Icon(icon, color: context.colors.purple, size: 28),
             ),
             const SizedBox(height: 16),
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               paywall.message,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13.5,
                 height: 1.5,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
             if (resetsAt != null) ...[
@@ -88,10 +89,10 @@ class PaywallSheet extends StatelessWidget {
               Text(
                 'It comes back at $resetsAt.',
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13.5,
                   height: 1.5,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ),
             ],
@@ -105,13 +106,14 @@ class PaywallSheet extends StatelessWidget {
                     context.push(AppRoutes.premium);
                   },
                   style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.purple,
-                    foregroundColor: Colors.white,
+                    backgroundColor: context.colors.purple,
+                    foregroundColor: context.colors.onAccent,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(999),
                     ),
                     textStyle: const TextStyle(
+                      fontFamily: AppTheme.fontFamily,
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
                     ),
@@ -124,7 +126,7 @@ class PaywallSheet extends StatelessWidget {
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               style: TextButton.styleFrom(
-                foregroundColor: AppColors.textSecondary,
+                foregroundColor: context.colors.textSecondary,
               ),
               child: Text(paywall.canUpgrade ? 'Not now' : 'OK'),
             ),

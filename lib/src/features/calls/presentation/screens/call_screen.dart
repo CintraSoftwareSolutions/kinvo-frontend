@@ -3,7 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
+import '../../../../core/theme/system_bars.dart';
 import '../../../profile/presentation/widgets/person_photo.dart';
 import '../../domain/call.dart';
 import '../../media/call_media.dart';
@@ -81,7 +82,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
     if (call == null) {
       // The call ended and was dismissed. The shell closes this screen; this
       // is what it shows in the frame between the two.
-      return const ColoredBox(color: Colors.black);
+      return const ColoredBox(color: OverlayColors.shade);
     }
 
     final media = call.media;
@@ -101,14 +102,16 @@ class _CallScreenState extends ConsumerState<CallScreen> {
           unawaited(ref.read(callControllerProvider.notifier).hangUp());
         }
       },
-      child: Scaffold(
-        backgroundColor: Colors.black,
-        body: media == null
-            ? _CallBody(call: call, media: null)
-            : ListenableBuilder(
-                listenable: media,
-                builder: (context, _) => _CallBody(call: call, media: media),
-              ),
+      child: SystemBars.overDark(
+        child: Scaffold(
+          backgroundColor: OverlayColors.shade,
+          body: media == null
+              ? _CallBody(call: call, media: null)
+              : ListenableBuilder(
+                  listenable: media,
+                  builder: (context, _) => _CallBody(call: call, media: media),
+                ),
+        ),
       ),
     );
   }
@@ -137,7 +140,7 @@ class _CallBody extends ConsumerWidget {
           PersonPhoto(
             url: other.photoUrl,
             name: other.displayName,
-            color: AppColors.purple,
+            color: context.colors.purple,
             initialSize: 120,
           ),
         const _Scrim(),
@@ -219,7 +222,7 @@ class _Header extends StatelessWidget {
           style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w700,
-            color: Colors.white,
+            color: OverlayColors.content,
           ),
         ),
       ],
@@ -278,7 +281,7 @@ class _Controls extends StatelessWidget {
           _CallButton(
             icon: Icons.call_end_rounded,
             label: 'Decline',
-            background: AppColors.danger,
+            background: context.colors.danger,
             size: 64,
             onTap: call.ending ? null : () => unawaited(controller.decline()),
           ),
@@ -287,7 +290,7 @@ class _Controls extends StatelessWidget {
                 ? Icons.call_rounded
                 : Icons.videocam_rounded,
             label: 'Answer',
-            background: AppColors.success,
+            background: context.colors.success,
             size: 64,
             onTap: call.ending ? null : () => unawaited(controller.answer()),
           ),
@@ -299,7 +302,7 @@ class _Controls extends StatelessWidget {
       return Center(
         child: TextButton(
           onPressed: () => unawaited(controller.dismiss()),
-          style: TextButton.styleFrom(foregroundColor: Colors.white),
+          style: TextButton.styleFrom(foregroundColor: OverlayColors.content),
           child: const Text('Done'),
         ),
       );
@@ -354,7 +357,7 @@ class _Controls extends StatelessWidget {
         _CallButton(
           icon: Icons.call_end_rounded,
           label: 'End',
-          background: AppColors.danger,
+          background: context.colors.danger,
           size: 60,
           onTap: call.ending ? null : () => unawaited(controller.hangUp()),
         ),
@@ -389,7 +392,9 @@ class _CallButton extends StatelessWidget {
     // The label is part of the button, not a caption beside it: a 52-pixel
     // circle is a small target for a thumb during a call, and someone aiming
     // for "End" hits the word as often as the icon.
-    final foreground = active ? Colors.black87 : Colors.white;
+    final foreground = active
+        ? OverlayColors.shade.withValues(alpha: 0.87)
+        : OverlayColors.content;
 
     return Expanded(
       child: Semantics(
@@ -411,12 +416,17 @@ class _CallButton extends StatelessWidget {
                   height: size,
                   decoration: BoxDecoration(
                     color:
-                        background ?? (active ? Colors.white : Colors.white24),
+                        background ??
+                        (active
+                            ? OverlayColors.content
+                            : OverlayColors.content.withValues(alpha: 0.24)),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     icon,
-                    color: background == null ? foreground : Colors.white,
+                    color: background == null
+                        ? foreground
+                        : OverlayColors.content,
                     size: size * 0.44,
                   ),
                 ),
@@ -426,7 +436,10 @@ class _CallButton extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 11, color: Colors.white70),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: OverlayColors.content.withValues(alpha: 0.7),
+                  ),
                 ),
               ],
             ),
@@ -447,7 +460,7 @@ class _Pill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.55),
+        color: OverlayColors.shade.withValues(alpha: 0.55),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
@@ -457,7 +470,7 @@ class _Pill extends StatelessWidget {
         style: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w600,
-          color: Colors.white,
+          color: OverlayColors.content,
         ),
       ),
     );
@@ -474,7 +487,7 @@ class _Note extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.55),
+        color: OverlayColors.shade.withValues(alpha: 0.55),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Text(
@@ -482,7 +495,7 @@ class _Note extends StatelessWidget {
         style: const TextStyle(
           fontSize: 12.5,
           height: 1.4,
-          color: Colors.white,
+          color: OverlayColors.content,
         ),
       ),
     );
@@ -500,9 +513,9 @@ class _Scrim extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Colors.black.withValues(alpha: 0.55),
+            OverlayColors.shade.withValues(alpha: 0.55),
             Colors.transparent,
-            Colors.black.withValues(alpha: 0.8),
+            OverlayColors.shade.withValues(alpha: 0.8),
           ],
           stops: const [0, 0.4, 1],
         ),
@@ -522,9 +535,11 @@ class _SelfPreview extends StatelessWidget {
       width: 96,
       height: 128,
       decoration: BoxDecoration(
-        color: const Color(0xFF111827),
+        color: OverlayColors.shade,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white24),
+        border: Border.all(
+          color: OverlayColors.content.withValues(alpha: 0.24),
+        ),
       ),
       clipBehavior: Clip.antiAlias,
       child: child,

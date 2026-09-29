@@ -7,7 +7,8 @@ import '../../../core/auth/account_providers.dart';
 import '../../../core/auth/auth_providers.dart';
 import '../../../core/auth/session_status.dart';
 import '../../../core/network/api_exception.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/kinvo_colors.dart';
+import '../../../core/theme/system_bars.dart';
 import '../../../core/widgets/gradient_scaffold.dart';
 import '../../../core/widgets/kinvo_logo.dart';
 
@@ -27,34 +28,36 @@ class SplashScreen extends ConsumerWidget {
         ? account.error
         : null;
 
-    return GradientScaffold(
-      background: AppColors.welcomeBackground,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const KinvoLogo(),
-            const SizedBox(height: 32),
-            if (failure == null)
-              const SizedBox.square(
-                dimension: 28,
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2.5,
-                  semanticsLabel: 'Loading',
+    return SystemBars.overDark(
+      child: GradientScaffold(
+        background: context.colors.welcomeGradient,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const KinvoLogo(),
+              const SizedBox(height: 32),
+              if (failure == null)
+                const SizedBox.square(
+                  dimension: 28,
+                  child: CircularProgressIndicator(
+                    color: OverlayColors.content,
+                    strokeWidth: 2.5,
+                    semanticsLabel: 'Loading',
+                  ),
+                )
+              else
+                _LoadFailure(
+                  message: failure is ApiException
+                      ? failure.message
+                      : 'Something went wrong. Please try again.',
+                  onRetry: () => ref.invalidate(currentAccountProvider),
+                  onSignOut: () =>
+                      unawaited(ref.read(sessionManagerProvider).signOut()),
                 ),
-              )
-            else
-              _LoadFailure(
-                message: failure is ApiException
-                    ? failure.message
-                    : 'Something went wrong. Please try again.',
-                onRetry: () => ref.invalidate(currentAccountProvider),
-                onSignOut: () =>
-                    unawaited(ref.read(sessionManagerProvider).signOut()),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -81,7 +84,7 @@ class _LoadFailure extends StatelessWidget {
           message,
           textAlign: TextAlign.center,
           style: textTheme.bodyLarge?.copyWith(
-            color: Colors.white,
+            color: OverlayColors.content,
             fontSize: 14,
             height: 1.5,
           ),
@@ -92,8 +95,8 @@ class _LoadFailure extends StatelessWidget {
           child: FilledButton(
             onPressed: onRetry,
             style: FilledButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: AppColors.purple,
+              backgroundColor: OverlayColors.content,
+              foregroundColor: context.colors.purple,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(28),
@@ -105,7 +108,7 @@ class _LoadFailure extends StatelessWidget {
         const SizedBox(height: 8),
         TextButton(
           onPressed: onSignOut,
-          style: TextButton.styleFrom(foregroundColor: Colors.white),
+          style: TextButton.styleFrom(foregroundColor: OverlayColors.content),
           child: const Text('Sign out'),
         ),
       ],

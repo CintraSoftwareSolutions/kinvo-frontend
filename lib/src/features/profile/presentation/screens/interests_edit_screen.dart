@@ -5,7 +5,7 @@ import '../../../../core/config/server_config.dart';
 import '../../../../core/config/server_config_providers.dart';
 import '../../../../core/forms/form_errors.dart';
 import '../../../../core/network/api_exception.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/widgets/flow_widgets.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../../../core/widgets/settings_group.dart';
@@ -48,7 +48,7 @@ class _InterestsEditScreenState extends ConsumerState<InterestsEditScreen> {
     final selected = _selected;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -171,9 +171,9 @@ class _Picker extends StatelessWidget {
           liveRegion: true,
           child: Text(
             '${selected.length} of $maxInterests chosen',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12.5,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ),
         ),

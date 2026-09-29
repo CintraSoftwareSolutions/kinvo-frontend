@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kinvo/src/core/assets/app_assets.dart';
 import 'package:kinvo/src/core/navigation/app_routes.dart';
-import 'package:kinvo/src/core/theme/app_colors.dart';
 import 'package:kinvo/src/core/widgets/flow_widgets.dart';
 import 'package:kinvo/src/core/widgets/gradient_scaffold.dart';
 
+import '../../../../core/theme/kinvo_colors.dart';
 import '../controllers/password_reset_controller.dart';
 
 /// Step one of a forgotten password: where to send the code.
@@ -26,7 +26,7 @@ class PasswordResetScreen extends ConsumerWidget {
     }
 
     return GradientScaffold(
-      background: AppColors.lightBackground,
+      background: context.colors.backgroundGradient,
       child: FlowPageLayout(
         badgeText: 'Account recovery',
         badgeAsset: AppAssets.lock,

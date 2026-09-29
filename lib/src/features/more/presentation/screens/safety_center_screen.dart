@@ -4,7 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/assets/app_assets.dart';
 import '../../../../core/navigation/app_routes.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../../safety/data/trusted_contacts_repository.dart';
 import '../../../safety/presentation/controllers/trusted_contacts_controllers.dart';
@@ -26,7 +27,7 @@ class SafetyCenterScreen extends ConsumerWidget {
     };
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -44,8 +45,8 @@ class SafetyCenterScreen extends ConsumerWidget {
                   const SizedBox(height: 12),
                   SettingsTile(
                     icon: AppAssets.usersPink,
-                    iconBg: AppColors.surfaceSoft,
-                    iconColor: AppColors.textPrimary,
+                    iconBg: context.colors.surfaceSoft,
+                    iconColor: context.colors.textPrimary,
                     title: 'Trusted contacts',
                     subtitle: contactsLine,
                     onTap: () => context.push(AppRoutes.trustedContacts),
@@ -53,8 +54,8 @@ class SafetyCenterScreen extends ConsumerWidget {
                   const SizedBox(height: 8),
                   SettingsTile(
                     icon: AppAssets.flag,
-                    iconBg: AppColors.surfaceSoft,
-                    iconColor: AppColors.textPrimary,
+                    iconBg: context.colors.surfaceSoft,
+                    iconColor: context.colors.textPrimary,
                     title: 'Report a user',
                     subtitle: 'Tell us about someone who made you feel unsafe.',
                     onTap: () => context.push(AppRoutes.reportPath),
@@ -62,8 +63,8 @@ class SafetyCenterScreen extends ConsumerWidget {
                   const SizedBox(height: 8),
                   SettingsTile(
                     icon: AppAssets.mailIcon,
-                    iconBg: AppColors.surfaceSoft,
-                    iconColor: AppColors.textPrimary,
+                    iconBg: context.colors.surfaceSoft,
+                    iconColor: context.colors.textPrimary,
                     title: 'Support',
                     subtitle: 'Get help with your account or your safety.',
                     onTap: () => context.push(AppRoutes.support),
@@ -86,58 +87,59 @@ class _EmergencyCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF1F2),
+        color: context.colors.dangerSoft,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFFECDD3)),
+        border: Border.all(color: context.colors.danger.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.sos_rounded, color: AppColors.danger, size: 26),
-              SizedBox(width: 10),
+              Icon(Icons.sos_rounded, color: context.colors.danger, size: 26),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   'Emergency help',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'If you are in danger, call your local emergency number first.',
             style: TextStyle(
               fontSize: 13,
               height: 1.45,
               fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
+          Text(
             'Kinvo can email your trusted contacts that you need help, with '
             'roughly where you are.',
             style: TextStyle(
               fontSize: 13,
               height: 1.45,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ),
           const SizedBox(height: 14),
           FilledButton(
             onPressed: () => showEmergencySheet(context),
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.danger,
-              foregroundColor: Colors.white,
+              backgroundColor: context.colors.danger,
+              foregroundColor: context.colors.onAccent,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: const StadiumBorder(),
               textStyle: const TextStyle(
+                fontFamily: AppTheme.fontFamily,
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
               ),

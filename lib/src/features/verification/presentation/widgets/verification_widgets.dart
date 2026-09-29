@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 
 /// How far through the three steps the attempt is, under the page header.
 class VerificationSteps extends StatelessWidget {
@@ -22,8 +22,8 @@ class VerificationSteps extends StatelessWidget {
                 height: 3,
                 decoration: BoxDecoration(
                   color: step <= stepIndex
-                      ? AppColors.purple
-                      : AppColors.divider,
+                      ? context.colors.purple
+                      : context.colors.divider,
                   borderRadius: BorderRadius.circular(999),
                 ),
               ),
@@ -96,10 +96,10 @@ class VerificationMethodCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
+      color: context.colors.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppColors.divider),
+        side: BorderSide(color: context.colors.divider),
       ),
       child: InkWell(
         onTap: onTap,
@@ -131,27 +131,27 @@ class VerificationMethodCard extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11.5,
                         height: 1.4,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       meta,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 10.5,
-                        color: AppColors.textMuted,
+                        color: context.colors.textMuted,
                       ),
                     ),
                   ],
@@ -170,22 +170,27 @@ class VerificationTips extends StatelessWidget {
   const VerificationTips({
     required this.title,
     required this.tips,
-    this.background = const Color(0xFFFFE4E8),
-    this.titleColor = const Color(0xFFB91C1C),
+    this.background,
+    this.titleColor,
     super.key,
   });
 
   final String title;
   final List<String> tips;
-  final Color background;
-  final Color titleColor;
+
+  /// The soft danger colour unless given: most advice is about what went
+  /// wrong.
+  final Color? background;
+
+  /// Danger text unless given.
+  final Color? titleColor;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: background,
+        color: background ?? context.colors.dangerSoft,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -196,7 +201,7 @@ class VerificationTips extends StatelessWidget {
             style: TextStyle(
               fontSize: 12.5,
               fontWeight: FontWeight.w700,
-              color: titleColor,
+              color: titleColor ?? context.colors.dangerStrong,
             ),
           ),
           const SizedBox(height: 6),
@@ -206,20 +211,20 @@ class VerificationTips extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     '• ',
                     style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                   Expanded(
                     child: Text(
                       tip,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         height: 1.4,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ),

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/navigation/app_routes.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../safety/domain/trusted_contact.dart';
 import '../../../safety/presentation/controllers/trusted_contacts_controllers.dart';
 import '../../../safety/presentation/widgets/contact_outcome_row.dart';
@@ -16,7 +16,7 @@ Future<void> showSharePlanSheet(BuildContext context, Plan plan) {
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: Colors.white,
+    backgroundColor: context.colors.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
@@ -54,28 +54,28 @@ class _SharePlanSheetState extends ConsumerState<_SharePlanSheet> {
                 width: 38,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE5E7EB),
+                  color: context.colors.handle,
                   borderRadius: BorderRadius.circular(999),
                 ),
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Tell a trusted contact',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               "We'll email them that you're meeting "
               '${widget.plan.user.displayName}, and where and when.',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 height: 1.45,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
             const SizedBox(height: 14),
@@ -93,9 +93,9 @@ class _SharePlanSheetState extends ConsumerState<_SharePlanSheet> {
     final contacts = ref.watch(trustedContactsProvider);
     return switch (contacts) {
       AsyncValue(value: final contacts?) when contacts.isEmpty => [
-        const Text(
+        Text(
           "You haven't added any trusted contacts yet.",
-          style: TextStyle(fontSize: 14, color: AppColors.textPrimary),
+          style: TextStyle(fontSize: 14, color: context.colors.textPrimary),
         ),
         const SizedBox(height: 12),
         OutlinedButton(
@@ -103,7 +103,7 @@ class _SharePlanSheetState extends ConsumerState<_SharePlanSheet> {
             Navigator.of(context).pop();
             context.push(AppRoutes.trustedContacts);
           },
-          style: _outlined,
+          style: _outlined(context),
           child: const Text('Add a trusted contact'),
         ),
       ],
@@ -113,33 +113,33 @@ class _SharePlanSheetState extends ConsumerState<_SharePlanSheet> {
           const SizedBox(height: 8),
           Text(
             message,
-            style: const TextStyle(fontSize: 13, color: AppColors.danger),
+            style: TextStyle(fontSize: 13, color: context.colors.danger),
           ),
         ],
         const SizedBox(height: 12),
         FilledButton(
           onPressed: _chosen.isEmpty || _sending ? null : _send,
           style: FilledButton.styleFrom(
-            backgroundColor: AppColors.purple,
+            backgroundColor: context.colors.purple,
             padding: const EdgeInsets.symmetric(vertical: 14),
             shape: const StadiumBorder(),
           ),
           child: _sending
-              ? const SizedBox(
+              ? SizedBox(
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(
                     strokeWidth: 2.4,
-                    color: Colors.white,
+                    color: context.colors.onAccent,
                   ),
                 )
               : const Text('Send'),
         ),
       ],
       AsyncValue(hasError: true) => [
-        const Text(
+        Text(
           "Your trusted contacts didn't load.",
-          style: TextStyle(fontSize: 14, color: AppColors.textPrimary),
+          style: TextStyle(fontSize: 14, color: context.colors.textPrimary),
         ),
         TextButton(
           onPressed: () => ref.invalidate(trustedContactsProvider),
@@ -168,7 +168,7 @@ class _SharePlanSheetState extends ConsumerState<_SharePlanSheet> {
             })
           : null,
       contentPadding: EdgeInsets.zero,
-      activeColor: AppColors.purple,
+      activeColor: context.colors.purple,
       title: Text(
         contact.name,
         style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w600),
@@ -183,9 +183,9 @@ class _SharePlanSheetState extends ConsumerState<_SharePlanSheet> {
   List<Widget> _result(PlanShare shared) {
     return [
       if (shared.contacts.isEmpty)
-        const Text(
+        Text(
           'Nobody was emailed.',
-          style: TextStyle(fontSize: 14, color: AppColors.textPrimary),
+          style: TextStyle(fontSize: 14, color: context.colors.textPrimary),
         )
       else
         for (final contact in shared.contacts)
@@ -194,7 +194,7 @@ class _SharePlanSheetState extends ConsumerState<_SharePlanSheet> {
       FilledButton(
         onPressed: () => Navigator.of(context).pop(),
         style: FilledButton.styleFrom(
-          backgroundColor: AppColors.purple,
+          backgroundColor: context.colors.purple,
           padding: const EdgeInsets.symmetric(vertical: 14),
           shape: const StadiumBorder(),
         ),
@@ -219,10 +219,12 @@ class _SharePlanSheetState extends ConsumerState<_SharePlanSheet> {
     });
   }
 
-  static final _outlined = OutlinedButton.styleFrom(
-    foregroundColor: AppColors.textPrimary,
-    side: const BorderSide(color: AppColors.divider),
-    padding: const EdgeInsets.symmetric(vertical: 13),
-    shape: const StadiumBorder(),
-  );
+  static ButtonStyle _outlined(BuildContext context) {
+    return OutlinedButton.styleFrom(
+      foregroundColor: context.colors.textPrimary,
+      side: BorderSide(color: context.colors.divider),
+      padding: const EdgeInsets.symmetric(vertical: 13),
+      shape: const StadiumBorder(),
+    );
+  }
 }

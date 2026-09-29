@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/kinvo_colors.dart';
 import '../domain/plan.dart';
 import '../domain/venue.dart';
 
@@ -27,41 +27,30 @@ String durationLabel(int minutes) {
   return hourPart.isEmpty ? '$rest min' : '$hourPart $rest min';
 }
 
-/// How a plan's state reads on its pill, and its colours.
-typedef PlanBadge = ({String label, Color background, Color foreground});
+/// How a plan's state reads on its pill: its words, and the hue it's drawn
+/// in. No hue for a plan that's over, or that hasn't been sent: those are
+/// grey.
+typedef PlanBadge = ({String label, Hue? hue});
 
 /// The pill a plan shows, at [now].
 PlanBadge planBadge(Plan plan, DateTime now) {
-  const green = (background: Color(0xFFD1FAE5), foreground: Color(0xFF047857));
-  const orange = (background: Color(0xFFFFEDD5), foreground: Color(0xFFC2410C));
-  const purple = (
-    background: AppColors.purpleSoft,
-    foreground: AppColors.purple,
-  );
-  const grey = (
-    background: AppColors.surfaceSoft,
-    foreground: AppColors.textSecondary,
-  );
-  const red = (background: Color(0xFFFFE4E8), foreground: Color(0xFFBE123C));
-
   final started = plan.hasStarted(now);
-  final (label, colors) = switch (plan.status) {
-    PlanStatus.draft => ('Draft', grey),
-    PlanStatus.proposed when started => ('Time passed', grey),
-    PlanStatus.proposed when plan.awaitingMyResponse => ('Your answer', purple),
-    PlanStatus.proposed => ('Waiting', orange),
-    PlanStatus.confirmed when started => ('Past', grey),
-    PlanStatus.confirmed => ('Confirmed', green),
-    PlanStatus.declined => ('Declined', red),
-    PlanStatus.cancelled => ('Cancelled', red),
-    PlanStatus.completed => ('Past', grey),
-    PlanStatus.unknown => ('Plan', grey),
+  final (label, hue) = switch (plan.status) {
+    PlanStatus.draft => ('Draft', null),
+    PlanStatus.proposed when started => ('Time passed', null),
+    PlanStatus.proposed when plan.awaitingMyResponse => (
+      'Your answer',
+      Hue.purple,
+    ),
+    PlanStatus.proposed => ('Waiting', Hue.orange),
+    PlanStatus.confirmed when started => ('Past', null),
+    PlanStatus.confirmed => ('Confirmed', Hue.green),
+    PlanStatus.declined => ('Declined', Hue.red),
+    PlanStatus.cancelled => ('Cancelled', Hue.red),
+    PlanStatus.completed => ('Past', null),
+    PlanStatus.unknown => ('Plan', null),
   };
-  return (
-    label: label,
-    background: colors.background,
-    foreground: colors.foreground,
-  );
+  return (label: label, hue: hue);
 }
 
 /// An icon for a kind of place.

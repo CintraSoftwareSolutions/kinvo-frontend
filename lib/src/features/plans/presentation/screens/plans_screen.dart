@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/network/api_exception.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/widgets/flow_widgets.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../data/plans_repository.dart';
@@ -38,11 +38,14 @@ class PlansScreen extends ConsumerWidget {
                 child: Container(
                   width: 40,
                   height: 40,
-                  decoration: const BoxDecoration(
-                    color: AppColors.purple,
+                  decoration: BoxDecoration(
+                    color: context.colors.purple,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.add_rounded, color: Colors.white),
+                  child: Icon(
+                    Icons.add_rounded,
+                    color: context.colors.onAccent,
+                  ),
                 ),
               ),
             ),
@@ -100,14 +103,16 @@ class _Tabs extends StatelessWidget {
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    color: tab == selected ? Colors.white : Colors.transparent,
+                    color: tab == selected
+                        ? context.colors.surface
+                        : Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: tab == selected
-                        ? const [
+                        ? [
                             BoxShadow(
-                              color: Color(0x14000000),
+                              color: context.colors.shadow,
                               blurRadius: 10,
-                              offset: Offset(0, 3),
+                              offset: const Offset(0, 3),
                             ),
                           ]
                         : null,
@@ -126,8 +131,8 @@ class _Tabs extends StatelessWidget {
                                 ? FontWeight.w700
                                 : FontWeight.w500,
                             color: tab == selected
-                                ? AppColors.textPrimary
-                                : AppColors.textMuted,
+                                ? context.colors.textPrimary
+                                : context.colors.textMuted,
                           ),
                         ),
                       ),
@@ -139,15 +144,15 @@ class _Tabs extends StatelessWidget {
                             vertical: 1,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.purple,
+                            color: context.colors.purple,
                             borderRadius: BorderRadius.circular(999),
                           ),
                           child: Text(
                             '$awaiting',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 10.5,
                               fontWeight: FontWeight.w700,
-                              color: Colors.white,
+                              color: context.colors.onAccent,
                             ),
                           ),
                         ),
@@ -274,38 +279,38 @@ class _Empty extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 38, horizontal: 24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.divider),
+        border: Border.all(color: context.colors.divider),
       ),
       child: Column(
         children: [
           Container(
             width: 56,
             height: 56,
-            decoration: const BoxDecoration(
-              color: AppColors.surfaceSoft,
+            decoration: BoxDecoration(
+              color: context.colors.surfaceSoft,
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, size: 26, color: AppColors.textMuted),
+            child: Icon(icon, size: 26, color: context.colors.textMuted),
           ),
           const SizedBox(height: 14),
           Text(
             title,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             message,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
               height: 1.45,
             ),
           ),
@@ -337,29 +342,29 @@ class _LoadFailed extends StatelessWidget {
         Container(
           padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: context.colors.surface,
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: AppColors.divider),
+            border: Border.all(color: context.colors.divider),
           ),
           child: Column(
             children: [
-              const Text(
+              Text(
                 "Your plans didn't load",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 message,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   height: 1.5,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ),
               const SizedBox(height: 18),

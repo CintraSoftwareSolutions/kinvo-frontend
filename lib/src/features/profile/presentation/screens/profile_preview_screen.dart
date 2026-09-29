@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/forms/form_errors.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../../../core/widgets/settings_group.dart';
 import '../../../settings/presentation/controllers/settings_controllers.dart';
@@ -20,7 +20,7 @@ class ProfilePreviewScreen extends ConsumerWidget {
     final settings = ref.watch(userSettingsProvider).value;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: context.colors.surface,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -37,7 +37,7 @@ class ProfilePreviewScreen extends ConsumerWidget {
                   children: [
                     PublicProfilePhotoHeader(
                       user: profile.user,
-                      accent: AppColors.purpleLight,
+                      accent: context.colors.purpleLight,
                       photos: profile.photos,
                     ),
                     const SizedBox(height: 16),
@@ -93,25 +93,25 @@ class _PrivacyNote extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surfaceSoft.withValues(alpha: 0.55),
+        color: context.colors.surfaceSoft.withValues(alpha: 0.55),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
+          Icon(
             Icons.privacy_tip_outlined,
             size: 18,
-            color: AppColors.purple,
+            color: context.colors.purple,
           ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               '$distance $activity You can change this in Privacy.',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12.5,
                 height: 1.45,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
           ),

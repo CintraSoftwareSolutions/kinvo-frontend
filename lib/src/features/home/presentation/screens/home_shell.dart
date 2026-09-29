@@ -8,7 +8,7 @@ import '../../../../core/ads/ads_controller.dart';
 import '../../../../core/ads/banner_slot.dart';
 import '../../../../core/assets/app_assets.dart';
 import '../../../../core/navigation/app_routes.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/widgets/gradient_scaffold.dart';
 import '../../../chat/data/live_updates.dart';
 import '../../../chat/domain/live_update.dart';
@@ -98,7 +98,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     ];
 
     return GradientScaffold(
-      background: AppColors.lightBackground,
+      background: context.colors.backgroundGradient,
       child: Column(
         children: [
           Expanded(child: navigationShell),

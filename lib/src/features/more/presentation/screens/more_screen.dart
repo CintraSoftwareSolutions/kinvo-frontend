@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/assets/app_assets.dart';
 import '../../../../core/navigation/app_routes.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../premium/domain/plans.dart';
 import '../../../premium/presentation/controllers/premium_controllers.dart';
 import '../../../profile/presentation/controllers/profile_controllers.dart';
@@ -32,8 +32,8 @@ class MoreScreen extends StatelessWidget {
                 const SizedBox(height: 10),
                 SettingsTile(
                   icon: AppAssets.shield,
-                  iconBg: const Color(0xFFE0E7FF),
-                  iconColor: const Color(0xFF6366F1),
+                  iconBg: context.colors.tint(Hue.indigo).soft,
+                  iconColor: context.colors.tint(Hue.indigo).color,
                   title: 'Safety Center',
                   subtitle: 'Review trusted contacts, tips, and reports.',
                   onTap: () => context.push(AppRoutes.safetyCenter),
@@ -41,8 +41,8 @@ class MoreScreen extends StatelessWidget {
                 const SizedBox(height: 10),
                 SettingsTile(
                   icon: AppAssets.bell,
-                  iconBg: const Color(0xFFFFE4E8),
-                  iconColor: const Color(0xFFEF4458),
+                  iconBg: context.colors.dangerSoft,
+                  iconColor: context.colors.danger,
                   title: 'Notifications',
                   subtitle: 'Check match, message, and plan alerts.',
                   onTap: () => context.push(AppRoutes.notifications),
@@ -50,8 +50,8 @@ class MoreScreen extends StatelessWidget {
                 const SizedBox(height: 10),
                 SettingsTile(
                   icon: AppAssets.video,
-                  iconBg: AppColors.purpleSoft,
-                  iconColor: AppColors.purple,
+                  iconBg: context.colors.purpleSoft,
+                  iconColor: context.colors.purple,
                   title: 'Calls',
                   subtitle: 'Video and voice calls, and who you missed.',
                   onTap: () => context.push(AppRoutes.calls),
@@ -59,8 +59,8 @@ class MoreScreen extends StatelessWidget {
                 const SizedBox(height: 10),
                 SettingsTile(
                   icon: AppAssets.settingsAlt,
-                  iconBg: AppColors.surfaceSoft,
-                  iconColor: AppColors.textPrimary,
+                  iconBg: context.colors.surfaceSoft,
+                  iconColor: context.colors.textPrimary,
                   title: 'Privacy',
                   subtitle:
                       'What others see, taking a break, and your devices.',
@@ -68,12 +68,12 @@ class MoreScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 SettingsTile(
-                  iconWidget: const Icon(
+                  iconWidget: Icon(
                     Icons.public_outlined,
                     size: 20,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
-                  iconBg: AppColors.surfaceSoft,
+                  iconBg: context.colors.surfaceSoft,
                   title: 'Support & guidelines',
                   subtitle: 'Help, the rules, and safety.',
                   onTap: () => context.push(AppRoutes.support),
@@ -81,8 +81,8 @@ class MoreScreen extends StatelessWidget {
                 const SizedBox(height: 10),
                 SettingsTile(
                   icon: AppAssets.contrast,
-                  iconBg: const Color(0xFFEDE9FE),
-                  iconColor: AppColors.purple,
+                  iconBg: context.colors.tint(Hue.purple).soft,
+                  iconColor: context.colors.purple,
                   title: 'Theme & accessibility',
                   subtitle: 'Tune contrast, motion, text size, and dark mode.',
                   onTap: () => context.push(AppRoutes.theme),
@@ -90,7 +90,7 @@ class MoreScreen extends StatelessWidget {
                 const SizedBox(height: 10),
                 SettingsTile(
                   icon: AppAssets.settingsAlt,
-                  iconBg: AppColors.surfaceSoft,
+                  iconBg: context.colors.surfaceSoft,
                   title: 'Settings',
                   subtitle: 'Filters, units, notifications and your account.',
                   onTap: () => context.push(AppRoutes.settings),
@@ -114,35 +114,35 @@ class _MoreHeader extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.colors.surface,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.divider),
-          boxShadow: const [
+          border: Border.all(color: context.colors.divider),
+          boxShadow: [
             BoxShadow(
-              color: Color(0x0A0C132A),
+              color: context.colors.shadow,
               blurRadius: 12,
-              offset: Offset(0, 4),
+              offset: const Offset(0, 4),
             ),
           ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
+          children: [
             Text(
               'More',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
                 letterSpacing: -0.5,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
             ),
-            SizedBox(height: 4),
+            const SizedBox(height: 4),
             Text(
               'Account hub, safety, support, and premium entry',
               style: TextStyle(
                 fontSize: 12.5,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 height: 1.45,
               ),
             ),
@@ -168,12 +168,12 @@ class _PlanTile extends ConsumerWidget {
           ).formatMediumDate(live.periodEnd.toLocal());
 
     return SettingsTile(
-      iconWidget: const Icon(
+      iconWidget: Icon(
         Icons.workspace_premium_rounded,
         size: 22,
-        color: Color(0xFFD97706),
+        color: context.colors.tint(Hue.amber).onSoft,
       ),
-      iconBg: const Color(0xFFFEF3C7),
+      iconBg: context.colors.tint(Hue.amber).soft,
       title: live == null
           ? 'Upgrade to Premium'
           : 'Your plan: ${live.tier?.label ?? 'Paid plan'}',
@@ -215,14 +215,14 @@ class _IdentityCard extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.divider),
-        boxShadow: const [
+        border: Border.all(color: context.colors.divider),
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0A0C132A),
+            color: context.colors.shadow,
             blurRadius: 18,
-            offset: Offset(0, 6),
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -233,14 +233,14 @@ class _IdentityCard extends ConsumerWidget {
               Container(
                 width: 48,
                 height: 48,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFEDE9FE),
+                decoration: BoxDecoration(
+                  color: context.colors.tint(Hue.purple).soft,
                   shape: BoxShape.circle,
                 ),
-                child: const Center(
+                child: Center(
                   child: Icon(
                     Icons.person_outline_rounded,
-                    color: AppColors.purple,
+                    color: context.colors.purple,
                   ),
                 ),
               ),
@@ -253,19 +253,19 @@ class _IdentityCard extends ConsumerWidget {
                       profile?.displayName ?? 'Your profile',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                       ),
                     ),
                     if (details.isNotEmpty) ...[
                       const SizedBox(height: 2),
                       Text(
                         details,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                         ),
                       ),
                     ],
@@ -278,15 +278,15 @@ class _IdentityCard extends ConsumerWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceSoft,
+                  color: context.colors.surfaceSoft,
                   borderRadius: BorderRadius.circular(999),
                 ),
-                child: const Text(
+                child: Text(
                   'View',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                 ),
               ),
@@ -296,7 +296,7 @@ class _IdentityCard extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.surfaceSoft.withValues(alpha: 0.55),
+              color: context.colors.surfaceSoft.withValues(alpha: 0.55),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Row(
@@ -308,14 +308,14 @@ class _IdentityCard extends ConsumerWidget {
                     AppAssets.sparkles,
                     width: 18,
                     height: 18,
-                    colorFilter: const ColorFilter.mode(
-                      AppColors.purple,
+                    colorFilter: ColorFilter.mode(
+                      context.colors.purple,
                       BlendMode.srcIn,
                     ),
                   ),
                 ),
                 const SizedBox(width: 10),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -324,16 +324,16 @@ class _IdentityCard extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
+                          color: context.colors.textPrimary,
                         ),
                       ),
-                      SizedBox(height: 2),
+                      const SizedBox(height: 2),
                       Text(
                         'Discovery, plans, profile, safety, and notifications all have local working paths.',
                         style: TextStyle(
                           fontSize: 11.5,
                           height: 1.45,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                         ),
                       ),
                     ],

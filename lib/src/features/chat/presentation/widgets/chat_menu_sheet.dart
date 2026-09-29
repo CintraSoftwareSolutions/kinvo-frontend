@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 
 /// Something the user can do with a conversation from its menu.
 enum ChatMenuAction {
@@ -25,7 +25,7 @@ Future<ChatMenuAction?> showChatMenuSheet(
 }) {
   return showModalBottomSheet<ChatMenuAction>(
     context: context,
-    backgroundColor: Colors.white,
+    backgroundColor: context.colors.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
@@ -42,7 +42,7 @@ Future<ChatMenuAction?> showChatMenuSheet(
                 width: 38,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE5E7EB),
+                  color: sheet.colors.handle,
                   borderRadius: BorderRadius.circular(999),
                 ),
               ),
@@ -106,7 +106,7 @@ class _MenuRow extends StatelessWidget {
       ChatMenuAction.unmatch => (Icons.heart_broken_outlined, 'Unmatch', true),
       ChatMenuAction.block => (Icons.block_rounded, 'Block $name', true),
     };
-    final color = danger ? AppColors.danger : AppColors.textPrimary;
+    final color = danger ? context.colors.danger : context.colors.textPrimary;
 
     return InkWell(
       onTap: onTap,

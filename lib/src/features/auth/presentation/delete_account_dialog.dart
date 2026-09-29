@@ -7,7 +7,7 @@ import '../../../core/auth/account_providers.dart';
 import '../../../core/auth/auth_providers.dart';
 import '../../../core/forms/form_errors.dart';
 import '../../../core/network/api_exception.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/kinvo_colors.dart';
 
 /// Asks the user to confirm deleting their account, then deletes it and signs
 /// out.
@@ -83,13 +83,13 @@ class _DeleteAccountDialogState extends ConsumerState<_DeleteAccountDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               "Your profile and personal details will be erased, and you'll "
               "be signed out on every device. This can't be undone.",
               style: TextStyle(
                 fontSize: 13,
                 height: 1.45,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
             if (error != null) ...[
@@ -98,10 +98,10 @@ class _DeleteAccountDialogState extends ConsumerState<_DeleteAccountDialog> {
                 liveRegion: true,
                 child: Text(
                   error,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     height: 1.45,
-                    color: AppColors.danger,
+                    color: context.colors.danger,
                   ),
                 ),
               ),
@@ -116,9 +116,9 @@ class _DeleteAccountDialogState extends ConsumerState<_DeleteAccountDialog> {
           FilledButton(
             onPressed: _deleting ? null : () => unawaited(_delete()),
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.danger,
-              disabledBackgroundColor: AppColors.danger,
-              disabledForegroundColor: Colors.white,
+              backgroundColor: context.colors.danger,
+              disabledBackgroundColor: context.colors.danger,
+              disabledForegroundColor: context.colors.onAccent,
             ),
             child: Stack(
               alignment: Alignment.center,
@@ -130,11 +130,11 @@ class _DeleteAccountDialogState extends ConsumerState<_DeleteAccountDialog> {
                   child: const Text('Delete'),
                 ),
                 if (_deleting)
-                  const SizedBox.square(
+                  SizedBox.square(
                     dimension: 16,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: Colors.white,
+                      color: context.colors.onAccent,
                     ),
                   ),
               ],

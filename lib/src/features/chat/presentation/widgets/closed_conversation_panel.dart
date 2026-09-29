@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/widgets/flow_widgets.dart';
 import '../controllers/chat_controller.dart';
 
@@ -29,9 +29,9 @@ class ClosedConversationPanel extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.colors.surface,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.divider),
+          border: Border.all(color: context.colors.divider),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -41,10 +41,10 @@ class ClosedConversationPanel extends ConsumerWidget {
               liveRegion: true,
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.lock_outline_rounded,
                     size: 18,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -53,10 +53,10 @@ class ClosedConversationPanel extends ConsumerWidget {
                           ? 'This match has expired. Extend it to keep '
                                 'talking.'
                           : "You can't reply to this conversation any more.",
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
                         height: 1.4,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ),

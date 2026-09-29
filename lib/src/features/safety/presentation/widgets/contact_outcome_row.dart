@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../domain/trusted_contact.dart';
 
 /// What happened when Kinvo tried to tell one trusted contact something.
@@ -14,17 +14,17 @@ class ContactOutcomeRow extends StatelessWidget {
     final (icon, color, status) = switch (alert.delivery) {
       ContactDelivery.emailed || ContactDelivery.alreadyTold => (
         Icons.check_circle_rounded,
-        const Color(0xFF059669),
+        context.colors.green,
         'Emailed',
       ),
       ContactDelivery.noEmail => (
         Icons.mail_outline_rounded,
-        AppColors.textMuted,
+        context.colors.textMuted,
         'No email address',
       ),
       ContactDelivery.failed || ContactDelivery.unknown => (
         Icons.error_outline_rounded,
-        AppColors.danger,
+        context.colors.danger,
         "Couldn't send",
       ),
     };
@@ -40,10 +40,10 @@ class ContactOutcomeRow extends StatelessWidget {
               alert.name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
             ),
           ),

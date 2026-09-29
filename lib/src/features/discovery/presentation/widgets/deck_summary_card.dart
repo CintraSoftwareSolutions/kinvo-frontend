@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../domain/deck_stats.dart';
 import '../../domain/swipe.dart';
 
@@ -47,14 +47,14 @@ class DeckSummaryCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.divider),
-        boxShadow: const [
+        border: Border.all(color: context.colors.divider),
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0A0C132A),
+            color: context.colors.shadow,
             blurRadius: 18,
-            offset: Offset(0, 6),
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -65,10 +65,10 @@ class DeckSummaryCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'DISCOVER',
                   style: TextStyle(
-                    color: AppColors.textMuted,
+                    color: context.colors.textMuted,
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 2,
@@ -79,10 +79,10 @@ class DeckSummaryCard extends StatelessWidget {
                   modeLabel,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                     letterSpacing: -0.4,
                   ),
                 ),
@@ -91,9 +91,9 @@ class DeckSummaryCard extends StatelessWidget {
                   allowanceText,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                     height: 1.4,
                   ),
                 ),
@@ -226,10 +226,10 @@ class _BoostRunning extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             'until $until',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 10.5,
               fontWeight: FontWeight.w600,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ),
         ],

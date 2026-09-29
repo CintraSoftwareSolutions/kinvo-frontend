@@ -14,7 +14,7 @@ import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/push/push_messaging.dart';
 import '../../../../core/push/push_providers.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/units/distance.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../../../core/widgets/settings_group.dart';
@@ -45,7 +45,7 @@ class SettingsScreen extends ConsumerWidget {
     final modes = ref.watch(discoveryModesProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -205,7 +205,7 @@ class SettingsScreen extends ConsumerWidget {
     final messenger = ScaffoldMessenger.of(context);
     final unit = await showModalBottomSheet<DistanceUnit>(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: context.colors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -242,46 +242,46 @@ class _UnitSheet extends StatelessWidget {
                 width: 38,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.border,
+                  color: context.colors.border,
                   borderRadius: BorderRadius.circular(999),
                 ),
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Distance units',
               style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
             ),
             const SizedBox(height: 6),
-            const Text(
+            Text(
               'How far away people and places are shown, on every screen.',
               style: TextStyle(
                 fontSize: 13,
                 height: 1.45,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
             const SizedBox(height: 8),
             RadioGroup<DistanceUnit>(
               groupValue: current,
               onChanged: (unit) => Navigator.of(context).pop(unit),
-              child: const Column(
+              child: Column(
                 children: [
                   RadioListTile<DistanceUnit>(
                     value: DistanceUnit.miles,
                     contentPadding: EdgeInsets.zero,
-                    activeColor: AppColors.purple,
-                    title: Text('Miles'),
+                    activeColor: context.colors.purple,
+                    title: const Text('Miles'),
                   ),
                   RadioListTile<DistanceUnit>(
                     value: DistanceUnit.kilometres,
                     contentPadding: EdgeInsets.zero,
-                    activeColor: AppColors.purple,
-                    title: Text('Kilometres'),
+                    activeColor: context.colors.purple,
+                    title: const Text('Kilometres'),
                   ),
                 ],
               ),
@@ -310,7 +310,7 @@ class _DeleteAccountTile extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
           decoration: BoxDecoration(
-            color: AppColors.dangerSoft,
+            color: context.colors.dangerSoft,
             borderRadius: BorderRadius.circular(18),
           ),
           child: Row(
@@ -319,26 +319,26 @@ class _DeleteAccountTile extends StatelessWidget {
                 AppAssets.trash,
                 width: 20,
                 height: 20,
-                colorFilter: const ColorFilter.mode(
-                  AppColors.danger,
+                colorFilter: ColorFilter.mode(
+                  context.colors.danger,
                   BlendMode.srcIn,
                 ),
               ),
               const SizedBox(width: 14),
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Delete Account',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.danger,
+                    color: context.colors.danger,
                   ),
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.chevron_right_rounded,
                 size: 18,
-                color: AppColors.danger,
+                color: context.colors.danger,
               ),
             ],
           ),

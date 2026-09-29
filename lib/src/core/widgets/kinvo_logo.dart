@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../assets/app_assets.dart';
+import '../theme/kinvo_colors.dart';
 
 /// The Kinvo heart mark, drawn in white for gradient backgrounds.
 class KinvoLogo extends StatelessWidget {
@@ -24,7 +25,7 @@ class KinvoLogo extends StatelessWidget {
               height: 78,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.18),
+                color: OverlayColors.content.withValues(alpha: 0.18),
               ),
             ),
             SvgPicture.asset(
@@ -32,7 +33,7 @@ class KinvoLogo extends StatelessWidget {
               width: 28,
               height: 26,
               colorFilter: const ColorFilter.mode(
-                Colors.white,
+                OverlayColors.content,
                 BlendMode.srcIn,
               ),
             ),

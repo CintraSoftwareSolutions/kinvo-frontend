@@ -5,7 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/network/api_error_code.dart';
 import '../../../../core/network/api_exception.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/time/clock.dart';
 import '../../../../core/widgets/flow_widgets.dart';
 import '../../../../core/widgets/page_header.dart';
@@ -30,7 +31,7 @@ class PlanDetailScreen extends ConsumerWidget {
     final plan = ref.watch(planProvider(planId));
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -95,7 +96,7 @@ class _PlanBodyState extends ConsumerState<_PlanBody> {
                   child: PersonPhoto(
                     url: plan.user.photoUrl,
                     name: name,
-                    color: modeColors(plan.mode).primary,
+                    color: context.colors.mode(plan.mode).color,
                     initialSize: 22,
                   ),
                 ),
@@ -109,19 +110,19 @@ class _PlanBodyState extends ConsumerState<_PlanBody> {
                       'With $name',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       _explanation(plan, now),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12.5,
                         height: 1.4,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ],
@@ -142,7 +143,7 @@ class _PlanBodyState extends ConsumerState<_PlanBody> {
                 title: plan.placeName,
                 subtitle: plan.address,
               ),
-              const Divider(height: 24, color: AppColors.divider),
+              Divider(height: 24, color: context.colors.divider),
               _DetailRow(
                 icon: Icons.event_outlined,
                 title: planTime(context, plan.scheduledAt),
@@ -151,11 +152,11 @@ class _PlanBodyState extends ConsumerState<_PlanBody> {
                     : 'For ${durationLabel(duration)}',
               ),
               if (notes.isNotEmpty) ...[
-                const Divider(height: 24, color: AppColors.divider),
+                Divider(height: 24, color: context.colors.divider),
                 _DetailRow(icon: Icons.notes_rounded, title: notes),
               ],
               if (plan.sharedWithContacts > 0) ...[
-                const Divider(height: 24, color: AppColors.divider),
+                Divider(height: 24, color: context.colors.divider),
                 _DetailRow(
                   icon: Icons.shield_outlined,
                   title: plan.sharedWithContacts == 1
@@ -182,7 +183,7 @@ class _PlanBodyState extends ConsumerState<_PlanBody> {
             Expanded(
               child: OutlinedButton(
                 onPressed: _busy ? null : () => _answer(accept: false),
-                style: _outlined,
+                style: _outlined(context),
                 child: const Text('Decline'),
               ),
             ),
@@ -190,7 +191,7 @@ class _PlanBodyState extends ConsumerState<_PlanBody> {
             Expanded(
               child: FilledButton(
                 onPressed: _busy ? null : () => _answer(accept: true),
-                style: _filled,
+                style: _filled(context),
                 child: const Text('Accept'),
               ),
             ),
@@ -202,7 +203,7 @@ class _PlanBodyState extends ConsumerState<_PlanBody> {
             Expanded(
               child: OutlinedButton(
                 onPressed: _busy ? null : _edit,
-                style: _outlined,
+                style: _outlined(context),
                 child: const Text('Edit'),
               ),
             ),
@@ -210,7 +211,7 @@ class _PlanBodyState extends ConsumerState<_PlanBody> {
             Expanded(
               child: FilledButton(
                 onPressed: _busy ? null : _send,
-                style: _filled,
+                style: _filled(context),
                 child: Text('Send to $name', overflow: TextOverflow.ellipsis),
               ),
             ),
@@ -219,14 +220,14 @@ class _PlanBodyState extends ConsumerState<_PlanBody> {
       else if (plan.canEdit)
         OutlinedButton(
           onPressed: _busy ? null : _edit,
-          style: _outlined,
+          style: _outlined(context),
           child: const Text('Edit plan'),
         ),
       if (plan.status == PlanStatus.confirmed && !plan.hasStarted(now)) ...[
         const SizedBox(height: 10),
         OutlinedButton.icon(
           onPressed: _busy ? null : () => showSharePlanSheet(context, plan),
-          style: _outlined,
+          style: _outlined(context),
           icon: const Icon(Icons.shield_outlined, size: 18),
           label: const Text('Tell a trusted contact'),
         ),
@@ -234,7 +235,7 @@ class _PlanBodyState extends ConsumerState<_PlanBody> {
       const SizedBox(height: 10),
       OutlinedButton.icon(
         onPressed: _busy ? null : _message,
-        style: _outlined,
+        style: _outlined(context),
         icon: const Icon(Icons.chat_bubble_outline_rounded, size: 18),
         label: Text('Message $name', overflow: TextOverflow.ellipsis),
       ),
@@ -242,14 +243,14 @@ class _PlanBodyState extends ConsumerState<_PlanBody> {
         const SizedBox(height: 6),
         TextButton(
           onPressed: _busy ? null : _deleteDraft,
-          style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+          style: TextButton.styleFrom(foregroundColor: context.colors.danger),
           child: const Text('Delete draft'),
         ),
       ] else if (plan.canCancel(now)) ...[
         const SizedBox(height: 6),
         TextButton(
           onPressed: _busy ? null : _cancel,
-          style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+          style: TextButton.styleFrom(foregroundColor: context.colors.danger),
           child: const Text('Cancel plan'),
         ),
       ],
@@ -313,7 +314,7 @@ class _PlanBodyState extends ConsumerState<_PlanBody> {
           ),
           TextButton(
             onPressed: () => Navigator.of(dialog).pop(true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+            style: TextButton.styleFrom(foregroundColor: dialog.colors.danger),
             child: const Text('Delete'),
           ),
         ],
@@ -406,22 +407,34 @@ class _PlanBodyState extends ConsumerState<_PlanBody> {
       ..showSnackBar(SnackBar(content: Text(message)));
   }
 
-  static final _outlined = OutlinedButton.styleFrom(
-    foregroundColor: AppColors.textPrimary,
-    side: const BorderSide(color: AppColors.divider),
-    backgroundColor: Colors.white,
-    padding: const EdgeInsets.symmetric(vertical: 14),
-    shape: const StadiumBorder(),
-    textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-  );
+  static ButtonStyle _outlined(BuildContext context) {
+    return OutlinedButton.styleFrom(
+      foregroundColor: context.colors.textPrimary,
+      side: BorderSide(color: context.colors.divider),
+      backgroundColor: context.colors.surface,
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      shape: const StadiumBorder(),
+      textStyle: const TextStyle(
+        fontFamily: AppTheme.fontFamily,
+        fontSize: 14,
+        fontWeight: FontWeight.w700,
+      ),
+    );
+  }
 
-  static final _filled = FilledButton.styleFrom(
-    backgroundColor: AppColors.purple,
-    foregroundColor: Colors.white,
-    padding: const EdgeInsets.symmetric(vertical: 14),
-    shape: const StadiumBorder(),
-    textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-  );
+  static ButtonStyle _filled(BuildContext context) {
+    return FilledButton.styleFrom(
+      backgroundColor: context.colors.purple,
+      foregroundColor: context.colors.onAccent,
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      shape: const StadiumBorder(),
+      textStyle: const TextStyle(
+        fontFamily: AppTheme.fontFamily,
+        fontSize: 14,
+        fontWeight: FontWeight.w700,
+      ),
+    );
+  }
 }
 
 /// Asks whether to call a plan off, with an optional reason. Closes with the
@@ -471,7 +484,7 @@ class _CancelDialogState extends State<_CancelDialog> {
         ),
         TextButton(
           onPressed: () => Navigator.of(context).pop(_reason.text),
-          style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+          style: TextButton.styleFrom(foregroundColor: context.colors.danger),
           child: const Text('Cancel plan'),
         ),
       ],
@@ -496,10 +509,10 @@ class _DetailRow extends StatelessWidget {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: AppColors.purpleSoft,
+            color: context.colors.purpleSoft,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, size: 18, color: AppColors.purple),
+          child: Icon(icon, size: 18, color: context.colors.purple),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -508,20 +521,20 @@ class _DetailRow extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   height: 1.4,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
               if (subtitle != null) ...[
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12.5,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
               ],
@@ -545,24 +558,24 @@ class _Gone extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
           child: Column(
             children: [
-              const Text(
+              Text(
                 "This plan isn't available",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'It may have been deleted, or the match it belongs to has '
                 'ended.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 13,
                   height: 1.5,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ),
               const SizedBox(height: 18),
@@ -593,23 +606,23 @@ class _LoadFailed extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
           child: Column(
             children: [
-              const Text(
+              Text(
                 "This plan didn't load",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 message,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   height: 1.5,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ),
               const SizedBox(height: 18),

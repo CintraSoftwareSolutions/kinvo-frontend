@@ -6,7 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/assets/app_assets.dart';
 import '../../../../core/forms/form_errors.dart';
 import '../../../../core/network/api_exception.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
+import '../../../../core/theme/motion.dart';
 import '../../../../core/widgets/flow_widgets.dart';
 import '../../../../core/widgets/gradient_scaffold.dart';
 import '../../../auth/presentation/log_out.dart';
@@ -36,7 +37,7 @@ class OnboardingScreen extends ConsumerWidget {
           if (!didPop) controller.back();
         },
         child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 250),
+          duration: context.motion(const Duration(milliseconds: 250)),
           child: KeyedSubtree(
             key: ValueKey(state.step),
             child: switch (state.step) {
@@ -58,15 +59,18 @@ class OnboardingScreen extends ConsumerWidget {
         onRetry: controller.reload,
       );
     } else {
-      body = const Center(
+      body = Center(
         child: CircularProgressIndicator(
-          color: AppColors.purple,
+          color: context.colors.purple,
           semanticsLabel: 'Loading your profile',
         ),
       );
     }
 
-    return GradientScaffold(background: AppColors.lightBackground, child: body);
+    return GradientScaffold(
+      background: context.colors.backgroundGradient,
+      child: body,
+    );
   }
 }
 
@@ -95,7 +99,7 @@ class _LoadFailure extends ConsumerWidget {
               child: TextButton(
                 onPressed: () => unawaited(confirmLogOut(context, ref)),
                 style: TextButton.styleFrom(
-                  foregroundColor: AppColors.textSecondary,
+                  foregroundColor: context.colors.textSecondary,
                 ),
                 child: const Text('Log out'),
               ),

@@ -7,7 +7,8 @@ import '../../../../core/config/server_config.dart';
 import '../../../../core/media/photo_picker.dart';
 import '../../../../core/media/photo_processing.dart';
 import '../../../../core/network/api_exception.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/widgets/flow_widgets.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../../../core/widgets/photo_source_sheet.dart';
@@ -28,7 +29,7 @@ class ReportScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final target = this.target;
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -59,9 +60,9 @@ class _WhereToReport extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.fromLTRB(18, 6, 18, 24),
-      children: const [
-        _AnonymousNotice(),
-        SizedBox(height: 12),
+      children: [
+        const _AnonymousNotice(),
+        const SizedBox(height: 12),
         SurfaceCard(
           child: Text(
             'To report someone, open your conversation with them or their '
@@ -70,7 +71,7 @@ class _WhereToReport extends StatelessWidget {
             style: TextStyle(
               fontSize: 13,
               height: 1.5,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ),
         ),
@@ -138,17 +139,17 @@ class _ReportForm extends ConsumerWidget {
                 maxLength: ReportDraft.maxDetailsLength,
                 textCapitalization: TextCapitalization.sentences,
                 onChanged: controller.setDetails,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   isDense: true,
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.zero,
                   hintText: 'What happened? Anything you add helps our team.',
-                  hintStyle: TextStyle(color: AppColors.textMuted),
+                  hintStyle: TextStyle(color: context.colors.textMuted),
                 ),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   height: 1.4,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
               const SizedBox(height: 8),
@@ -177,26 +178,29 @@ class _ReportForm extends ConsumerWidget {
         FilledButton(
           onPressed: form.isSubmitting ? null : () => _submit(context, ref),
           style: FilledButton.styleFrom(
-            backgroundColor: AppColors.danger,
-            foregroundColor: Colors.white,
-            disabledBackgroundColor: AppColors.danger.withValues(alpha: 0.5),
-            disabledForegroundColor: Colors.white,
+            backgroundColor: context.colors.danger,
+            foregroundColor: context.colors.onAccent,
+            disabledBackgroundColor: context.colors.danger.withValues(
+              alpha: 0.5,
+            ),
+            disabledForegroundColor: context.colors.onAccent,
             padding: const EdgeInsets.symmetric(vertical: 14),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(999),
             ),
             textStyle: const TextStyle(
+              fontFamily: AppTheme.fontFamily,
               fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
           ),
           child: form.isSubmitting
-              ? const SizedBox(
+              ? SizedBox(
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(
                     strokeWidth: 2.4,
-                    color: Colors.white,
+                    color: context.colors.onAccent,
                   ),
                 )
               : const Text('Submit report'),
@@ -237,7 +241,7 @@ class _AnonymousNotice extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.dangerSoft,
+        color: context.colors.dangerSoft,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
@@ -247,13 +251,13 @@ class _AnonymousNotice extends StatelessWidget {
             AppAssets.triangleAlert,
             width: 18,
             height: 18,
-            colorFilter: const ColorFilter.mode(
-              AppColors.danger,
+            colorFilter: ColorFilter.mode(
+              context.colors.danger,
               BlendMode.srcIn,
             ),
           ),
           const SizedBox(width: 10),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -262,16 +266,16 @@ class _AnonymousNotice extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFFB91C1C),
+                    color: context.colors.dangerStrong,
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
                   'The person you report is never told who reported them.',
                   style: TextStyle(
                     fontSize: 11.5,
                     height: 1.4,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
               ],
@@ -294,19 +298,19 @@ class _Section extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.divider),
+        border: Border.all(color: context.colors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
           ),
           const SizedBox(height: 10),
@@ -346,7 +350,7 @@ class _ReasonRow extends StatelessWidget {
             border: Border(
               top: isFirst
                   ? BorderSide.none
-                  : const BorderSide(color: AppColors.divider),
+                  : BorderSide(color: context.colors.divider),
             ),
           ),
           child: Row(
@@ -357,7 +361,9 @@ class _ReasonRow extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                    color: selected ? AppColors.danger : AppColors.textPrimary,
+                    color: selected
+                        ? context.colors.danger
+                        : context.colors.textPrimary,
                   ),
                 ),
               ),
@@ -368,16 +374,16 @@ class _ReasonRow extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.dangerSoft,
+                    color: context.colors.dangerSoft,
                     borderRadius: BorderRadius.circular(999),
-                    border: Border.all(color: AppColors.danger),
+                    border: Border.all(color: context.colors.danger),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Selected',
                     style: TextStyle(
                       fontSize: 10.5,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.danger,
+                      color: context.colors.danger,
                     ),
                   ),
                 ),
@@ -402,10 +408,7 @@ class _ReasonsFailed extends StatelessWidget {
       children: [
         Text(
           message,
-          style: const TextStyle(
-            fontSize: 12.5,
-            color: AppColors.textSecondary,
-          ),
+          style: TextStyle(fontSize: 12.5, color: context.colors.textSecondary),
         ),
         TextButton(onPressed: onRetry, child: const Text('Try again')),
       ],
@@ -443,19 +446,19 @@ class _EvidencePicker extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 10),
               decoration: BoxDecoration(
-                color: AppColors.surfaceSoft.withValues(alpha: 0.55),
+                color: context.colors.surfaceSoft.withValues(alpha: 0.55),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 children: [
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'Attach evidence',
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                       ),
                     ),
                   ),
@@ -466,9 +469,9 @@ class _EvidencePicker extends StatelessWidget {
                       _ when onAdd == null => '$count screenshots (most)',
                       _ => '$count screenshots',
                     },
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
-                      color: AppColors.textMuted,
+                      color: context.colors.textMuted,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -476,8 +479,8 @@ class _EvidencePicker extends StatelessWidget {
                     AppAssets.uploadTray,
                     width: 16,
                     height: 16,
-                    colorFilter: const ColorFilter.mode(
-                      AppColors.textPrimary,
+                    colorFilter: ColorFilter.mode(
+                      context.colors.textPrimary,
                       BlendMode.srcIn,
                     ),
                   ),
@@ -550,14 +553,17 @@ class _EvidenceThumbnail extends StatelessWidget {
                     width: 22,
                     height: 22,
                     decoration: BoxDecoration(
-                      color: AppColors.textPrimary,
+                      color: OverlayColors.shade,
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
+                      border: Border.all(
+                        color: OverlayColors.content,
+                        width: 2,
+                      ),
                     ),
                     child: const Icon(
                       Icons.close_rounded,
                       size: 12,
-                      color: Colors.white,
+                      color: OverlayColors.content,
                     ),
                   ),
                 ),
@@ -593,7 +599,7 @@ class _AlsoBlockToggle extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: AppColors.dangerSoft,
+            color: context.colors.dangerSoft,
             borderRadius: BorderRadius.circular(14),
           ),
           child: Row(
@@ -604,19 +610,19 @@ class _AlsoBlockToggle extends StatelessWidget {
                   children: [
                     Text(
                       'Also block $name',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.danger,
+                        color: context.colors.danger,
                       ),
                     ),
                     const SizedBox(height: 4),
-                    const Text(
+                    Text(
                       "You won't see each other again, and any match between "
                       'you ends.',
                       style: TextStyle(
                         fontSize: 11.5,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ],
@@ -627,15 +633,15 @@ class _AlsoBlockToggle extends StatelessWidget {
                 width: 22,
                 height: 22,
                 decoration: BoxDecoration(
-                  color: value ? AppColors.danger : Colors.white,
+                  color: value ? context.colors.danger : context.colors.surface,
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.danger, width: 1.5),
+                  border: Border.all(color: context.colors.danger, width: 1.5),
                 ),
                 child: value
-                    ? const Icon(
+                    ? Icon(
                         Icons.check_rounded,
                         size: 14,
-                        color: Colors.white,
+                        color: context.colors.onAccent,
                       )
                     : null,
               ),

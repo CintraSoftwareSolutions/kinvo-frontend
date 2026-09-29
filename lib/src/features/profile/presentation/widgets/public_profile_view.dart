@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/units/distance.dart';
 import '../../../settings/presentation/controllers/settings_controllers.dart';
 import '../../domain/profile_fields.dart';
@@ -45,14 +45,17 @@ class PublicProfilePhotoHeader extends StatelessWidget {
             // A DecoratedBox answers hit tests inside its own shape, so the
             // gradient would otherwise swallow every tap meant for the
             // photos underneath it.
-            const IgnorePointer(
+            IgnorePointer(
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Color(0x00000000), Color(0xAA000000)],
-                    stops: [0.55, 1],
+                    colors: [
+                      OverlayColors.shade.withValues(alpha: 0),
+                      OverlayColors.shade.withValues(alpha: 0.67),
+                    ],
+                    stops: const [0.55, 1],
                   ),
                 ),
               ),
@@ -73,7 +76,7 @@ class PublicProfilePhotoHeader extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: OverlayColors.content,
                         fontSize: 26,
                         fontWeight: FontWeight.w700,
                         letterSpacing: -0.6,
@@ -82,12 +85,12 @@ class PublicProfilePhotoHeader extends StatelessWidget {
                   ),
                   if (user.isVerified) ...[
                     const SizedBox(width: 8),
-                    const Padding(
-                      padding: EdgeInsets.only(bottom: 5),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 5),
                       child: Icon(
                         Icons.verified_rounded,
                         size: 20,
-                        color: Color(0xFF60A5FA),
+                        color: context.colors.blue,
                         semanticLabel: 'Verified',
                       ),
                     ),
@@ -149,10 +152,10 @@ class PublicProfileDetails extends ConsumerWidget {
           const _Heading('About'),
           Text(
             bio,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               height: 1.5,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
           ),
         ],
@@ -181,9 +184,9 @@ class PublicProfileDetails extends ConsumerWidget {
                   Expanded(
                     child: Text(
                       label,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ),
@@ -191,10 +194,10 @@ class PublicProfileDetails extends ConsumerWidget {
                     child: Text(
                       value,
                       textAlign: TextAlign.end,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                       ),
                     ),
                   ),
@@ -218,15 +221,15 @@ class InterestChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.surfaceSoft,
+        color: context.colors.surfaceSoft,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
         label,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 12.5,
           fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
+          color: context.colors.textPrimary,
         ),
       ),
     );
@@ -253,7 +256,7 @@ class PromptCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surfaceSoft.withValues(alpha: 0.55),
+        color: context.colors.surfaceSoft.withValues(alpha: 0.55),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -265,10 +268,10 @@ class PromptCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   question,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
               ),
@@ -278,11 +281,11 @@ class PromptCard extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             answer,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w600,
               height: 1.4,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
           ),
         ],
@@ -304,11 +307,11 @@ class _Heading extends StatelessWidget {
         header: true,
         child: Text(
           text.toUpperCase(),
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w700,
             letterSpacing: 1.6,
-            color: AppColors.textMuted,
+            color: context.colors.textMuted,
           ),
         ),
       ),
@@ -328,14 +331,14 @@ class _Line extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 6),
       child: Row(
         children: [
-          Icon(icon, size: 16, color: AppColors.textMuted),
+          Icon(icon, size: 16, color: context.colors.textMuted),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13.5,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
           ),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/api_exception.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../domain/call.dart';
 import '../controllers/call_controller.dart';
 
@@ -14,7 +14,7 @@ Future<void> showCallSafetySheet(BuildContext context) {
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: Colors.white,
+    backgroundColor: context.colors.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
@@ -49,28 +49,28 @@ class _CallSafetySheetState extends ConsumerState<_CallSafetySheet> {
                 width: 38,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE5E7EB),
+                  color: context.colors.handle,
                   borderRadius: BorderRadius.circular(999),
                 ),
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Safety',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
             ),
             const SizedBox(height: 4),
-            const Text(
+            Text(
               'Kinvo keeps a record of anything you use here. Nobody on the '
               'call is told.',
               style: TextStyle(
                 fontSize: 13,
                 height: 1.4,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
             const SizedBox(height: 16),
@@ -171,12 +171,12 @@ class _Action extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colour = danger ? AppColors.danger : AppColors.purple;
+    final colour = danger ? context.colors.danger : context.colors.purple;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Material(
-        color: danger ? AppColors.dangerSoft : AppColors.surfaceSoft,
+        color: danger ? context.colors.dangerSoft : context.colors.surfaceSoft,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         child: InkWell(
           onTap: busy ? null : onTap,
@@ -203,17 +203,17 @@ class _Action extends StatelessWidget {
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
                           color: danger
-                              ? AppColors.danger
-                              : AppColors.textPrimary,
+                              ? context.colors.danger
+                              : context.colors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         description,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           height: 1.35,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                         ),
                       ),
                     ],
@@ -241,7 +241,9 @@ class _Message extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isFailure ? AppColors.dangerSoft : AppColors.greenSoft,
+          color: isFailure
+              ? context.colors.dangerSoft
+              : context.colors.greenSoft,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Text(
@@ -249,7 +251,7 @@ class _Message extends StatelessWidget {
           style: TextStyle(
             fontSize: 12.5,
             height: 1.4,
-            color: isFailure ? AppColors.danger : AppColors.green,
+            color: isFailure ? context.colors.danger : context.colors.green,
           ),
         ),
       ),

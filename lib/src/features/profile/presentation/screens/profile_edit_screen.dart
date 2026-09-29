@@ -7,7 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/config/server_config.dart';
 import '../../../../core/forms/form_errors.dart';
 import '../../../../core/navigation/app_routes.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/widgets/flow_widgets.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../../../core/widgets/settings_group.dart';
@@ -29,7 +29,7 @@ class ProfileEditScreen extends ConsumerWidget {
     final profile = ref.watch(ownProfileProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -153,13 +153,13 @@ class _Photos extends ConsumerWidget {
         children: [
           PhotoEditorGrid(album: album, edits: edits, name: name),
           const SizedBox(height: 10),
-          const Text(
+          Text(
             'Hold a photo and drag it to change the order, or tap it for '
             'more. Your first photo is your main one.',
             style: TextStyle(
               fontSize: 12,
               height: 1.45,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ),
           if (edits.error case final error?) ...[
@@ -212,10 +212,10 @@ class _FieldRow extends StatelessWidget {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       title: Text(
         field.label,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w600,
-          color: AppColors.textSecondary,
+          color: context.colors.textSecondary,
         ),
       ),
       subtitle: Text(
@@ -225,12 +225,14 @@ class _FieldRow extends StatelessWidget {
         style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w600,
-          color: shown == null ? AppColors.purple : AppColors.textPrimary,
+          color: shown == null
+              ? context.colors.purple
+              : context.colors.textPrimary,
         ),
       ),
-      trailing: const Icon(
+      trailing: Icon(
         Icons.chevron_right_rounded,
-        color: AppColors.textMuted,
+        color: context.colors.textMuted,
       ),
     );
   }
@@ -252,17 +254,20 @@ class _Interests extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.divider),
+        border: Border.all(color: context.colors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (interests.isEmpty)
-            const Text(
+            Text(
               'Add interests so people can see what you have in common.',
-              style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+              style: TextStyle(
+                fontSize: 13,
+                color: context.colors.textSecondary,
+              ),
             )
           else
             Wrap(
@@ -279,15 +284,17 @@ class _Interests extends StatelessWidget {
               Expanded(
                 child: Text(
                   count,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
               ),
               TextButton(
                 onPressed: () => context.push(AppRoutes.profileInterests),
-                style: TextButton.styleFrom(foregroundColor: AppColors.purple),
+                style: TextButton.styleFrom(
+                  foregroundColor: context.colors.purple,
+                ),
                 child: Text(interests.isEmpty ? 'Add interests' : 'Change'),
               ),
             ],
@@ -334,10 +341,10 @@ class _Prompts extends StatelessWidget {
               child: PromptCard(
                 question: answer.question,
                 answer: answer.answer,
-                trailing: const Icon(
+                trailing: Icon(
                   Icons.edit_outlined,
                   size: 18,
-                  color: AppColors.textMuted,
+                  color: context.colors.textMuted,
                 ),
               ),
             ),
@@ -358,17 +365,17 @@ class _Prompts extends StatelessWidget {
                       questions: questions,
                     ),
                   ),
-            foregroundColor: AppColors.purple,
-            borderColor: AppColors.purple,
+            foregroundColor: context.colors.purple,
+            borderColor: context.colors.purple,
           )
         else
           Text(
             'You have answered $maxPrompts prompts, the most a profile '
             'shows. Tap one to change or remove it.',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
               height: 1.45,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ),
       ],

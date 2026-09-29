@@ -71,7 +71,7 @@ lib/src/
     realtime/    the live connection (Socket.IO) and when it's open
     storage/     secure storage and preferences
     navigation/  routes, router and route guard
-    theme/       colours and typography
+    theme/       colours, light and dark, typography and movement
     time/        clock and calendar dates
     units/       distance units (miles or kilometres) and their wording
     widgets/     shared widgets
@@ -112,6 +112,31 @@ The router is go_router, from `appRouterProvider`. Every location is in
 - Each feature reads and writes through a repository interface whose provider
   returns the API's implementation. Tests keep the real client and answer its
   requests from a fake server (`test/helpers/fake_kinvo_server.dart`).
+
+## Colours, dark mode and accessibility
+
+Every colour comes from the theme: read `context.colors` (`KinvoColors`, in
+`core/theme/kinvo_colors.dart`), never a colour value.
+
+- `KinvoColors` names colours by what they're for, such as `surface`,
+  `textSecondary`, `onAccent` and `danger`, and has four palettes: light,
+  dark, and a higher-contrast version of each. `AppTheme.of` makes the
+  Material theme from one, so Material's own widgets follow it too.
+- A mode's colours are `context.colors.mode('dating')`; other hues are
+  `context.colors.tint(Hue.amber)`, each with `color`, `soft` (the fill
+  behind it) and `onSoft` (text on that fill).
+- What's drawn over a photo, a video or the brand gradient uses
+  `OverlayColors`, which is the same in every theme.
+- `KinvoApp` picks the palette: light, dark or the phone's setting, as the
+  account chose, in higher contrast when the account or the phone asks for it.
+- The status bar's icons follow the theme (`SystemBars`). A screen that's dark
+  in either theme wraps itself in `SystemBars.overDark`.
+- Reduce movement, the account's or the phone's, arrives as
+  `MediaQuery.disableAnimations`: screens appear instead of sliding, and an
+  animation's duration goes through `context.motion(...)` so it stops too.
+- `test/core/theme/kinvo_colors_test.dart` holds each palette to WCAG contrast
+  for its text and controls, and `colours_come_from_the_theme_test.dart` fails
+  on a colour value written anywhere outside `core/theme`.
 
 ## Calling the API
 

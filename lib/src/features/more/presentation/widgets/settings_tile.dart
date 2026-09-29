@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 
 class SettingsTile extends StatelessWidget {
   const SettingsTile({
@@ -36,10 +36,12 @@ class SettingsTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
         decoration: BoxDecoration(
-          color: danger ? const Color(0xFFFFE4E8) : Colors.white,
+          color: danger ? context.colors.dangerSoft : context.colors.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: danger ? const Color(0xFFFFD6DD) : AppColors.divider,
+            color: danger
+                ? context.colors.danger.withValues(alpha: 0.3)
+                : context.colors.divider,
           ),
         ),
         child: Row(
@@ -49,7 +51,7 @@ class SettingsTile extends StatelessWidget {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: iconBg ?? AppColors.surfaceSoft,
+                  color: iconBg ?? context.colors.surfaceSoft,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Center(
@@ -62,8 +64,8 @@ class SettingsTile extends StatelessWidget {
                         colorFilter: ColorFilter.mode(
                           iconColor ??
                               (danger
-                                  ? const Color(0xFFEF4458)
-                                  : AppColors.textPrimary),
+                                  ? context.colors.danger
+                                  : context.colors.textPrimary),
                           BlendMode.srcIn,
                         ),
                       ),
@@ -81,18 +83,18 @@ class SettingsTile extends StatelessWidget {
                       fontSize: 13.5,
                       fontWeight: FontWeight.w700,
                       color: danger
-                          ? const Color(0xFFEF4458)
-                          : AppColors.textPrimary,
+                          ? context.colors.danger
+                          : context.colors.textPrimary,
                     ),
                   ),
                   if (subtitle != null) ...[
                     const SizedBox(height: 2),
                     Text(
                       subtitle!,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11.5,
                         height: 1.4,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ],
@@ -107,7 +109,9 @@ class SettingsTile extends StatelessWidget {
               Icon(
                 Icons.chevron_right_rounded,
                 size: 18,
-                color: danger ? const Color(0xFFEF4458) : AppColors.textMuted,
+                color: danger
+                    ? context.colors.danger
+                    : context.colors.textMuted,
               ),
             ],
           ],
@@ -131,7 +135,9 @@ class OnOffToggle extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
-          color: value ? const Color(0xFFD1FAE5) : AppColors.surfaceSoft,
+          color: value
+              ? context.colors.tint(Hue.green).soft
+              : context.colors.surfaceSoft,
           borderRadius: BorderRadius.circular(999),
         ),
         child: Text(
@@ -139,7 +145,9 @@ class OnOffToggle extends StatelessWidget {
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w700,
-            color: value ? const Color(0xFF10B981) : AppColors.textMuted,
+            color: value
+                ? context.colors.tint(Hue.green).color
+                : context.colors.textMuted,
           ),
         ),
       ),

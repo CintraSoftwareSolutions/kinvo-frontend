@@ -5,7 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/config/server_config.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
+import '../../../../core/theme/motion.dart';
 import '../../../modes/presentation/mode_presentation.dart';
 import '../controllers/modes_step_controller.dart';
 import '../controllers/onboarding_controller.dart';
@@ -97,13 +98,17 @@ class _ModeTile extends StatelessWidget {
           onTap: available ? onTap : null,
           behavior: HitTestBehavior.opaque,
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
+            duration: context.motion(const Duration(milliseconds: 150)),
             padding: const EdgeInsets.fromLTRB(12, 12, 14, 12),
             decoration: BoxDecoration(
-              color: isSelected ? AppColors.purpleSoft : AppColors.surfaceSoft,
+              color: isSelected
+                  ? context.colors.purpleSoft
+                  : context.colors.surfaceSoft,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: isSelected ? AppColors.purpleLight : Colors.transparent,
+                color: isSelected
+                    ? context.colors.purpleLight
+                    : Colors.transparent,
               ),
             ),
             child: Opacity(
@@ -113,8 +118,8 @@ class _ModeTile extends StatelessWidget {
                   Container(
                     width: 40,
                     height: 40,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
+                    decoration: BoxDecoration(
+                      color: context.colors.surface,
                       shape: BoxShape.circle,
                     ),
                     child: Center(
@@ -139,7 +144,7 @@ class _ModeTile extends StatelessWidget {
                                 style: textTheme.titleLarge?.copyWith(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.textPrimary,
+                                  color: context.colors.textPrimary,
                                 ),
                               ),
                             ),
@@ -155,7 +160,7 @@ class _ModeTile extends StatelessWidget {
                           style: textTheme.bodyMedium?.copyWith(
                             fontSize: 12,
                             height: 1.35,
-                            color: AppColors.textSecondary,
+                            color: context.colors.textSecondary,
                           ),
                         ),
                       ],
@@ -168,7 +173,9 @@ class _ModeTile extends StatelessWidget {
                         : canEnable
                         ? Icons.radio_button_unchecked_rounded
                         : Icons.lock_outline_rounded,
-                    color: isSelected ? AppColors.purple : AppColors.textMuted,
+                    color: isSelected
+                        ? context.colors.purple
+                        : context.colors.textMuted,
                     size: 22,
                   ),
                 ],
@@ -189,13 +196,13 @@ class _MainBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
       decoration: BoxDecoration(
-        color: AppColors.purple,
+        color: context.colors.purple,
         borderRadius: BorderRadius.circular(999),
       ),
-      child: const Text(
+      child: Text(
         'Main',
         style: TextStyle(
-          color: Colors.white,
+          color: context.colors.onAccent,
           fontSize: 10,
           fontWeight: FontWeight.w700,
         ),

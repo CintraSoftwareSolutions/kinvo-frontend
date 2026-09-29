@@ -8,6 +8,7 @@ import 'core/navigation/app_router.dart';
 import 'core/push/push_providers.dart';
 import 'core/realtime/realtime_providers.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/system_bars.dart';
 import 'features/settings/presentation/controllers/settings_controllers.dart';
 import 'core/widgets/app_messenger.dart';
 import 'features/calls/presentation/call_screen_keeper.dart';
@@ -63,7 +64,20 @@ class _KinvoAppState extends ConsumerState<KinvoApp> {
     return MaterialApp.router(
       title: 'Kinvo',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light(reduceMotion: appearance.reduceMotion),
+      // Light or dark as the account chose, or as the phone is set; in
+      // higher contrast when the account asks for it. The last two are for
+      // a phone that asks for higher contrast itself, which Flutter reads
+      // from the phone before any of this.
+      theme: AppTheme.of(
+        Brightness.light,
+        highContrast: appearance.highContrast,
+      ),
+      darkTheme: AppTheme.of(
+        Brightness.dark,
+        highContrast: appearance.highContrast,
+      ),
+      highContrastTheme: AppTheme.of(Brightness.light, highContrast: true),
+      highContrastDarkTheme: AppTheme.of(Brightness.dark, highContrast: true),
       themeMode: appearance.themeMode,
       scaffoldMessengerKey: messengerKey,
       routerConfig: ref.watch(appRouterProvider),
@@ -72,7 +86,7 @@ class _KinvoAppState extends ConsumerState<KinvoApp> {
       // one decision instead of each remembering to ask.
       builder: (context, child) => MediaQuery(
         data: appearance.applyTo(MediaQuery.of(context)),
-        child: child ?? const SizedBox.shrink(),
+        child: SystemBars(child: child ?? const SizedBox.shrink()),
       ),
     );
   }

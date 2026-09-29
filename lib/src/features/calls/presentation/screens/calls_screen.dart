@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/network/paged_list.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/time/clock.dart';
 import '../../../../core/time/relative_time.dart';
 import '../../../../core/widgets/page_header.dart';
@@ -26,7 +26,7 @@ class CallsScreen extends ConsumerWidget {
     final history = ref.watch(callHistoryProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -106,11 +106,11 @@ class _CallRow extends ConsumerWidget {
     final other = call.otherUser;
 
     return Material(
-      color: Colors.white,
+      color: context.colors.surface,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppColors.divider),
+        side: BorderSide(color: context.colors.divider),
       ),
       child: InkWell(
         onTap: () => unawaited(_openChat(ref)),
@@ -125,7 +125,7 @@ class _CallRow extends ConsumerWidget {
                   child: PersonPhoto(
                     url: other.photoUrl,
                     name: other.displayName,
-                    color: AppColors.purple,
+                    color: context.colors.purple,
                     initialSize: 40,
                   ),
                 ),
@@ -143,8 +143,8 @@ class _CallRow extends ConsumerWidget {
                         fontSize: 14.5,
                         fontWeight: FontWeight.w600,
                         color: missed
-                            ? AppColors.danger
-                            : AppColors.textPrimary,
+                            ? context.colors.danger
+                            : context.colors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 3),
@@ -154,8 +154,8 @@ class _CallRow extends ConsumerWidget {
                           _directionIcon(call),
                           size: 14,
                           color: missed
-                              ? AppColors.danger
-                              : AppColors.textSecondary,
+                              ? context.colors.danger
+                              : context.colors.textSecondary,
                         ),
                         const SizedBox(width: 5),
                         Flexible(
@@ -163,9 +163,9 @@ class _CallRow extends ConsumerWidget {
                             _describe(call, now),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.textSecondary,
+                              color: context.colors.textSecondary,
                             ),
                           ),
                         ),
@@ -185,7 +185,7 @@ class _CallRow extends ConsumerWidget {
                   call.kind == CallKind.audio
                       ? Icons.call_rounded
                       : Icons.videocam_rounded,
-                  color: AppColors.purple,
+                  color: context.colors.purple,
                 ),
                 onPressed: () => unawaited(_callAgain(context, ref)),
               ),
@@ -299,23 +299,27 @@ class _Empty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Center(
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 32),
+        padding: const EdgeInsets.symmetric(horizontal: 32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.videocam_outlined, size: 44, color: AppColors.textMuted),
-            SizedBox(height: 12),
+            Icon(
+              Icons.videocam_outlined,
+              size: 44,
+              color: context.colors.textMuted,
+            ),
+            const SizedBox(height: 12),
             Text(
               'No calls yet',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
             ),
-            SizedBox(height: 6),
+            const SizedBox(height: 6),
             Text(
               'Call a match from your chat with them, with the camera or the '
               'phone at the top.',
@@ -323,7 +327,7 @@ class _Empty extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 height: 1.45,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
           ],
@@ -350,10 +354,10 @@ class _Failed extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 height: 1.45,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
             const SizedBox(height: 12),

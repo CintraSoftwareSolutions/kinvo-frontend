@@ -7,7 +7,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/network/api_exception.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../../../core/widgets/settings_group.dart';
 import '../../domain/mode_choice.dart';
@@ -39,7 +39,7 @@ class _ModesScreenState extends ConsumerState<ModesScreen> {
     final list = choices.value;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -151,27 +151,29 @@ class _PlanNote extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
       decoration: BoxDecoration(
-        color: AppColors.purpleSoft,
+        color: context.colors.purpleSoft,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
         children: [
-          const Icon(Icons.layers_outlined, size: 20, color: AppColors.purple),
+          Icon(Icons.layers_outlined, size: 20, color: context.colors.purple),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12.5,
                 height: 1.4,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
             ),
           ),
           if (full)
             TextButton(
               onPressed: () => context.push(AppRoutes.premium),
-              style: TextButton.styleFrom(foregroundColor: AppColors.purple),
+              style: TextButton.styleFrom(
+                foregroundColor: context.colors.purple,
+              ),
               child: const Text('See plans'),
             ),
         ],
@@ -204,7 +206,7 @@ class _ModeTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = modeColors(choice.value);
+    final modeTint = context.colors.mode(choice.value);
     final needsVerifying = !choice.isOn && choice.needsVerification;
     final description = choice.isUnavailable
         ? "This mode isn't available to you yet."
@@ -213,10 +215,10 @@ class _ModeTile extends StatelessWidget {
         : choice.description;
 
     return Material(
-      color: Colors.white,
+      color: context.colors.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppColors.divider),
+        side: BorderSide(color: context.colors.divider),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -236,8 +238,8 @@ class _ModeTile extends StatelessWidget {
                       height: 40,
                       decoration: BoxDecoration(
                         color: choice.isOn
-                            ? colors.soft
-                            : AppColors.surfaceSoft,
+                            ? modeTint.soft
+                            : context.colors.surfaceSoft,
                         shape: BoxShape.circle,
                       ),
                       child: Center(
@@ -247,7 +249,7 @@ class _ModeTile extends StatelessWidget {
                           height: 18,
                           excludeFromSemantics: true,
                           colorFilter: ColorFilter.mode(
-                            colors.primary,
+                            modeTint.color,
                             BlendMode.srcIn,
                           ),
                         ),
@@ -263,10 +265,10 @@ class _ModeTile extends StatelessWidget {
                               Flexible(
                                 child: Text(
                                   choice.label,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w700,
-                                    color: AppColors.textPrimary,
+                                    color: context.colors.textPrimary,
                                   ),
                                 ),
                               ),
@@ -280,10 +282,10 @@ class _ModeTile extends StatelessWidget {
                             const SizedBox(height: 2),
                             Text(
                               description,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12,
                                 height: 1.35,
-                                color: AppColors.textSecondary,
+                                color: context.colors.textSecondary,
                               ),
                             ),
                           ],
@@ -300,18 +302,18 @@ class _ModeTile extends StatelessWidget {
                         ),
                       )
                     else if (needsVerifying || choice.isUnavailable)
-                      const Padding(
-                        padding: EdgeInsets.all(14),
+                      Padding(
+                        padding: const EdgeInsets.all(14),
                         child: Icon(
                           Icons.lock_outline_rounded,
                           size: 20,
-                          color: AppColors.textMuted,
+                          color: context.colors.textMuted,
                         ),
                       )
                     else
                       Switch(
                         value: choice.isOn,
-                        activeTrackColor: AppColors.purple,
+                        activeTrackColor: context.colors.purple,
                         onChanged: locked ? null : onSwitch,
                       ),
                   ],
@@ -323,7 +325,7 @@ class _ModeTile extends StatelessWidget {
                   child: TextButton(
                     onPressed: locked ? null : onMakeMain,
                     style: TextButton.styleFrom(
-                      foregroundColor: AppColors.purple,
+                      foregroundColor: context.colors.purple,
                       visualDensity: VisualDensity.compact,
                     ),
                     child: Text('Make ${choice.label} my main mode'),
@@ -345,13 +347,13 @@ class _MainBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
       decoration: BoxDecoration(
-        color: AppColors.purple,
+        color: context.colors.purple,
         borderRadius: BorderRadius.circular(999),
       ),
-      child: const Text(
+      child: Text(
         'Main',
         style: TextStyle(
-          color: Colors.white,
+          color: context.colors.onAccent,
           fontSize: 10,
           fontWeight: FontWeight.w700,
         ),

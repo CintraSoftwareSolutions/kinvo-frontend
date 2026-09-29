@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../domain/trusted_contact.dart';
 import '../controllers/trusted_contacts_controllers.dart';
 
@@ -13,7 +13,7 @@ Future<void> showContactSheet(
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: Colors.white,
+    backgroundColor: context.colors.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
@@ -80,7 +80,7 @@ class _ContactSheetState extends ConsumerState<_ContactSheet> {
                   width: 38,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE5E7EB),
+                    color: context.colors.handle,
                     borderRadius: BorderRadius.circular(999),
                   ),
                 ),
@@ -88,20 +88,20 @@ class _ContactSheetState extends ConsumerState<_ContactSheet> {
               const SizedBox(height: 16),
               Text(
                 existing == null ? 'Add a trusted contact' : 'Edit contact',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
               const SizedBox(height: 4),
-              const Text(
+              Text(
                 "Kinvo emails them if you press the emergency button, or share "
                 "a plan with them. They don't need the app.",
                 style: TextStyle(
                   fontSize: 13,
                   height: 1.45,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ),
               const SizedBox(height: 16),
@@ -136,24 +136,24 @@ class _ContactSheetState extends ConsumerState<_ContactSheet> {
               if (_error case final message?) ...[
                 Text(
                   message,
-                  style: const TextStyle(fontSize: 13, color: AppColors.danger),
+                  style: TextStyle(fontSize: 13, color: context.colors.danger),
                 ),
                 const SizedBox(height: 10),
               ],
               FilledButton(
                 onPressed: _saving ? null : _save,
                 style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.purple,
+                  backgroundColor: context.colors.purple,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: const StadiumBorder(),
                 ),
                 child: _saving
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2.4,
-                          color: Colors.white,
+                          color: context.colors.onAccent,
                         ),
                       )
                     : const Text('Save'),
@@ -162,7 +162,7 @@ class _ContactSheetState extends ConsumerState<_ContactSheet> {
                 TextButton(
                   onPressed: _saving ? null : () => _delete(existing),
                   style: TextButton.styleFrom(
-                    foregroundColor: AppColors.danger,
+                    foregroundColor: context.colors.danger,
                   ),
                   child: const Text('Remove contact'),
                 ),
@@ -286,7 +286,7 @@ class _ContactSheetState extends ConsumerState<_ContactSheet> {
           ),
           TextButton(
             onPressed: () => Navigator.of(dialog).pop(true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+            style: TextButton.styleFrom(foregroundColor: dialog.colors.danger),
             child: const Text('Remove'),
           ),
         ],

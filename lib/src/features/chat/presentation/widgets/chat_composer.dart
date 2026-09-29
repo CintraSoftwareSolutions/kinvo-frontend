@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/assets/app_assets.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 
 /// Where the user writes a message or adds a photo.
 class ChatComposer extends StatelessWidget {
@@ -31,14 +31,14 @@ class ChatComposer extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.colors.surface,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: AppColors.divider),
-          boxShadow: const [
+          border: Border.all(color: context.colors.divider),
+          boxShadow: [
             BoxShadow(
-              color: Color(0x0A0C132A),
+              color: context.colors.shadow,
               blurRadius: 14,
-              offset: Offset(0, 4),
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -47,14 +47,14 @@ class ChatComposer extends StatelessWidget {
           children: [
             _RoundButton(
               label: 'Send a photo',
-              color: AppColors.surfaceSoft,
+              color: context.colors.surfaceSoft,
               onTap: onAttachPhoto,
               child: SvgPicture.asset(
                 AppAssets.image,
                 width: 20,
                 height: 20,
-                colorFilter: const ColorFilter.mode(
-                  AppColors.textSecondary,
+                colorFilter: ColorFilter.mode(
+                  context.colors.textSecondary,
                   BlendMode.srcIn,
                 ),
               ),
@@ -65,7 +65,7 @@ class ChatComposer extends StatelessWidget {
                 constraints: const BoxConstraints(minHeight: 44),
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceSoft,
+                  color: context.colors.surfaceSoft,
                   borderRadius: BorderRadius.circular(22),
                 ),
                 alignment: Alignment.centerLeft,
@@ -78,20 +78,20 @@ class ChatComposer extends StatelessWidget {
                   maxLength: maxLength,
                   keyboardType: TextInputType.multiline,
                   textCapitalization: TextCapitalization.sentences,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: 'Type a message…',
                     border: InputBorder.none,
                     isDense: true,
                     counterText: '',
-                    contentPadding: EdgeInsets.symmetric(vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
                     hintStyle: TextStyle(
-                      color: AppColors.textMuted,
+                      color: context.colors.textMuted,
                       fontSize: 14,
                     ),
                   ),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                 ),
               ),
@@ -104,15 +104,15 @@ class ChatComposer extends StatelessWidget {
                 return _RoundButton(
                   label: 'Send',
                   color: canSend
-                      ? AppColors.purple
-                      : AppColors.purple.withValues(alpha: 0.4),
+                      ? context.colors.purple
+                      : context.colors.purple.withValues(alpha: 0.4),
                   onTap: canSend ? onSend : null,
                   child: SvgPicture.asset(
                     AppAssets.send,
                     width: 18,
                     height: 18,
-                    colorFilter: const ColorFilter.mode(
-                      Colors.white,
+                    colorFilter: ColorFilter.mode(
+                      context.colors.onAccent,
                       BlendMode.srcIn,
                     ),
                   ),

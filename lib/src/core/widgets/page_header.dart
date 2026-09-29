@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_colors.dart';
+import '../theme/kinvo_colors.dart';
 
 class PageHeader extends StatelessWidget {
   const PageHeader({
@@ -32,21 +32,21 @@ class PageHeader extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.5,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                 ),
                 if (subtitle != null) ...[
                   const SizedBox(height: 4),
                   Text(
                     subtitle!,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12.5,
                       height: 1.45,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                 ],
@@ -82,7 +82,7 @@ class HeaderBackButton extends StatelessWidget {
             child: Icon(
               Icons.arrow_back_rounded,
               size: 22,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
           ),
         ),
@@ -95,14 +95,16 @@ class HeaderCircleIcon extends StatelessWidget {
   const HeaderCircleIcon({
     required this.child,
     this.onTap,
-    this.background = Colors.white,
+    this.background,
     this.size = 40,
     super.key,
   });
 
   final Widget child;
   final VoidCallback? onTap;
-  final Color background;
+
+  /// The surface unless given.
+  final Color? background;
   final double size;
 
   @override
@@ -114,9 +116,9 @@ class HeaderCircleIcon extends StatelessWidget {
         width: size,
         height: size,
         decoration: BoxDecoration(
-          color: background,
+          color: background ?? context.colors.surface,
           shape: BoxShape.circle,
-          border: Border.all(color: AppColors.divider),
+          border: Border.all(color: context.colors.divider),
         ),
         child: Center(child: child),
       ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../domain/person_photos.dart';
 import 'person_photo.dart';
 
@@ -166,11 +167,14 @@ class _Progress extends StatelessWidget {
                   height: 3,
                   decoration: BoxDecoration(
                     color: index == shown
-                        ? Colors.white
-                        : Colors.white.withValues(alpha: 0.4),
+                        ? OverlayColors.content
+                        : OverlayColors.content.withValues(alpha: 0.4),
                     borderRadius: BorderRadius.circular(999),
-                    boxShadow: const [
-                      BoxShadow(color: Color(0x33000000), blurRadius: 2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: OverlayColors.shade.withValues(alpha: 0.2),
+                        blurRadius: 2,
+                      ),
                     ],
                   ),
                 ),

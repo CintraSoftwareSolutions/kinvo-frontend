@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../controllers/call_ringtone_controller.dart';
 
 /// The ringtone an incoming call rings with, and the way to change it.
@@ -20,11 +20,11 @@ class CallRingtoneRow extends ConsumerWidget {
     // A Material rather than a decorated box, so the row's ripple shows on the
     // card instead of being painted underneath it.
     return Material(
-      color: Colors.white,
+      color: context.colors.surface,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppColors.border),
+        side: BorderSide(color: context.colors.border),
       ),
       child: switch (ringtone) {
         AsyncValue(value: final ringtone?) => _Row(ringtone: ringtone),
@@ -57,31 +57,25 @@ class _Row extends ConsumerWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         ListTile(
-          leading: const Icon(
-            Icons.music_note_rounded,
-            color: AppColors.purple,
-          ),
-          title: const Text(
+          leading: Icon(Icons.music_note_rounded, color: context.colors.purple),
+          title: Text(
             'Call ringtone',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
           ),
           subtitle: Text(
             ringtone.canChoose
                 ? ringtone.title
                 : 'Your iPhone decides what a call sounds like.',
-            style: const TextStyle(
-              fontSize: 12,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
           ),
           trailing: ringtone.canChoose
-              ? const Icon(
+              ? Icon(
                   Icons.chevron_right_rounded,
-                  color: AppColors.textMuted,
+                  color: context.colors.textMuted,
                 )
               : null,
           onTap: ringtone.canChoose ? controller.choose : null,
@@ -94,7 +88,7 @@ class _Row extends ConsumerWidget {
               child: TextButton(
                 onPressed: controller.useDefault,
                 style: TextButton.styleFrom(
-                  foregroundColor: AppColors.purple,
+                  foregroundColor: context.colors.purple,
                   padding: EdgeInsets.zero,
                   minimumSize: const Size(0, 32),
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -106,15 +100,15 @@ class _Row extends ConsumerWidget {
               ),
             ),
           ),
-        const Padding(
-          padding: EdgeInsets.fromLTRB(16, 0, 16, 12),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
           child: Text(
             'A call rings with this, and follows your phone: silent stays '
             'silent, vibrate only vibrates.',
             style: TextStyle(
               fontSize: 11.5,
               height: 1.4,
-              color: AppColors.textMuted,
+              color: context.colors.textMuted,
             ),
           ),
         ),

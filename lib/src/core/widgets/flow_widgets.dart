@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../assets/app_assets.dart';
-import '../theme/app_colors.dart';
+import '../theme/kinvo_colors.dart';
+import '../theme/motion.dart';
 
 class AppBackButton extends StatelessWidget {
   const AppBackButton({
@@ -25,9 +26,9 @@ class AppBackButton extends StatelessWidget {
         width: size,
         height: size,
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.6),
+          color: context.colors.surface.withValues(alpha: 0.6),
           shape: BoxShape.circle,
-          border: Border.all(color: AppColors.divider),
+          border: Border.all(color: context.colors.divider),
         ),
         child: Center(
           child: SvgPicture.asset(
@@ -95,7 +96,7 @@ class FlowPageLayout extends StatelessWidget {
                   height: 1.1,
                   letterSpacing: -0.8,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
           ),
           SizedBox(height: titleSpacing),
@@ -106,7 +107,7 @@ class FlowPageLayout extends StatelessWidget {
                 Theme.of(context).textTheme.bodyLarge?.copyWith(
                   fontSize: 13,
                   height: 1.55,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
           ),
           SizedBox(height: subtitleSpacing),
@@ -144,7 +145,7 @@ class AppBadge extends StatelessWidget {
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(radius),
       ),
       child: Row(
@@ -155,15 +156,15 @@ class AppBadge extends StatelessWidget {
               assetName!,
               width: iconSize,
               height: iconSize,
-              colorFilter: const ColorFilter.mode(
-                AppColors.purple,
+              colorFilter: ColorFilter.mode(
+                context.colors.purple,
                 BlendMode.srcIn,
               ),
             ),
             SizedBox(width: gap),
           ],
           if (icon != null) ...[
-            Icon(icon, size: iconSize + 2, color: AppColors.purple),
+            Icon(icon, size: iconSize + 2, color: context.colors.purple),
             SizedBox(width: gap),
           ],
           Text(
@@ -171,7 +172,7 @@ class AppBadge extends StatelessWidget {
             style:
                 textStyle ??
                 Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: AppColors.purple,
+                  color: context.colors.purple,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),
@@ -201,14 +202,14 @@ class SurfaceCard extends StatelessWidget {
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: backgroundColor ?? Colors.white,
+        color: backgroundColor ?? context.colors.surface,
         borderRadius: BorderRadius.circular(borderRadius),
-        border: Border.all(color: AppColors.divider),
-        boxShadow: const [
+        border: Border.all(color: context.colors.divider),
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0A0C132A),
+            color: context.colors.shadow,
             blurRadius: 18,
-            offset: Offset(0, 6),
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -222,8 +223,8 @@ class InfoBanner extends StatelessWidget {
     required this.title,
     required this.description,
     this.assetName = AppAssets.shield,
-    this.iconColor = AppColors.blue,
-    this.backgroundColor = AppColors.surfaceSoft,
+    this.iconColor,
+    this.backgroundColor,
     this.borderRadius = 14,
     this.padding = const EdgeInsets.fromLTRB(12, 12, 12, 12),
     this.iconSize = 16,
@@ -235,8 +236,12 @@ class InfoBanner extends StatelessWidget {
   final String title;
   final String description;
   final String assetName;
+
+  /// Blue unless given.
   final Color? iconColor;
-  final Color backgroundColor;
+
+  /// Drawn at a fifth of its strength. The soft surface unless given.
+  final Color? backgroundColor;
   final double borderRadius;
   final EdgeInsetsGeometry padding;
   final double iconSize;
@@ -245,10 +250,11 @@ class InfoBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: backgroundColor.withValues(alpha: .2),
+        color: (backgroundColor ?? colors.surfaceSoft).withValues(alpha: .2),
         borderRadius: BorderRadius.circular(borderRadius),
       ),
       child: Row(
@@ -260,9 +266,10 @@ class InfoBanner extends StatelessWidget {
               assetName,
               width: iconSize,
               height: iconSize,
-              colorFilter: iconColor == null
-                  ? null
-                  : ColorFilter.mode(iconColor!, BlendMode.srcIn),
+              colorFilter: ColorFilter.mode(
+                iconColor ?? colors.blue,
+                BlendMode.srcIn,
+              ),
             ),
           ),
           const SizedBox(width: 10),
@@ -277,7 +284,7 @@ class InfoBanner extends StatelessWidget {
                       Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                       ),
                 ),
                 const SizedBox(height: 4),
@@ -288,7 +295,7 @@ class InfoBanner extends StatelessWidget {
                       Theme.of(context).textTheme.bodyLarge?.copyWith(
                         fontSize: 11.5,
                         height: 1.45,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                 ),
               ],
@@ -385,8 +392,8 @@ class AppInputCard extends StatelessWidget {
                 assetName!,
                 width: iconSize,
                 height: iconSize,
-                colorFilter: const ColorFilter.mode(
-                  AppColors.textSecondary,
+                colorFilter: ColorFilter.mode(
+                  context.colors.textSecondary,
                   BlendMode.srcIn,
                 ),
               ),
@@ -415,7 +422,7 @@ class AppInputCard extends StatelessWidget {
                   contentPadding: EdgeInsets.zero,
                   hintText: hintText,
                   hintStyle: _inputValueStyle(context)?.copyWith(
-                    color: AppColors.textMuted,
+                    color: context.colors.textMuted,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -487,7 +494,7 @@ class _PasswordInputCardState extends State<PasswordInputCard> {
           _hidden ? Icons.visibility_outlined : Icons.visibility_off_outlined,
         ),
         iconSize: 18,
-        color: AppColors.textSecondary,
+        color: context.colors.textSecondary,
         padding: EdgeInsets.zero,
         // No taller than the label and value beside it, so this card is the
         // same height as the others.
@@ -545,7 +552,7 @@ class AppPickerCard extends StatelessWidget {
             value: Row(
               children: [
                 if (icon != null) ...[
-                  Icon(icon, size: 14, color: AppColors.textSecondary),
+                  Icon(icon, size: 14, color: context.colors.textSecondary),
                   const SizedBox(width: 8),
                 ],
                 Expanded(
@@ -554,7 +561,7 @@ class AppPickerCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: value == null
-                        ? valueStyle?.copyWith(color: AppColors.textMuted)
+                        ? valueStyle?.copyWith(color: context.colors.textMuted)
                         : valueStyle,
                   ),
                 ),
@@ -596,7 +603,7 @@ class _InputCard extends StatelessWidget {
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: AppColors.surfaceSoft,
+        color: context.colors.surfaceSoft,
         borderRadius: radius,
       ),
       // Painted over the card, so an error doesn't change its size. Always
@@ -605,7 +612,7 @@ class _InputCard extends StatelessWidget {
       foregroundDecoration: BoxDecoration(
         borderRadius: radius,
         border: Border.all(
-          color: hasError ? AppColors.danger : Colors.transparent,
+          color: hasError ? context.colors.danger : Colors.transparent,
         ),
       ),
       child: Row(
@@ -621,7 +628,7 @@ class _InputCard extends StatelessWidget {
                     style:
                         labelStyle ??
                         Theme.of(context).textTheme.labelLarge?.copyWith(
-                          color: AppColors.textMuted,
+                          color: context.colors.textMuted,
                           fontSize: 9.5,
                           letterSpacing: 1.4,
                           fontWeight: FontWeight.w700,
@@ -664,7 +671,7 @@ class _FieldWithError extends StatelessWidget {
               child: Text(
                 errorText,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.danger,
+                  color: context.colors.danger,
                   fontSize: 11.5,
                   height: 1.35,
                   fontWeight: FontWeight.w500,
@@ -681,7 +688,7 @@ TextStyle? _inputValueStyle(BuildContext context) {
   return Theme.of(context).textTheme.titleLarge?.copyWith(
     fontSize: 13.5,
     fontWeight: FontWeight.w600,
-    color: AppColors.textPrimary,
+    color: context.colors.textPrimary,
   );
 }
 
@@ -699,18 +706,18 @@ class FormErrorBanner extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppColors.dangerSoft,
+          color: context.colors.dangerSoft,
           borderRadius: BorderRadius.circular(14),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
-              padding: EdgeInsets.only(top: 1),
+            Padding(
+              padding: const EdgeInsets.only(top: 1),
               child: Icon(
                 Icons.error_outline_rounded,
                 size: 16,
-                color: AppColors.danger,
+                color: context.colors.danger,
               ),
             ),
             const SizedBox(width: 10),
@@ -718,7 +725,7 @@ class FormErrorBanner extends StatelessWidget {
               child: Text(
                 message,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppColors.danger,
+                  color: context.colors.danger,
                   fontSize: 12.5,
                   height: 1.45,
                   fontWeight: FontWeight.w500,
@@ -741,8 +748,8 @@ class PrimaryActionButton extends StatelessWidget {
     this.padding = const EdgeInsets.symmetric(vertical: 14),
     this.minHeight = 0,
     this.textStyle,
-    this.backgroundColor = AppColors.purple,
-    this.foregroundColor = Colors.white,
+    this.backgroundColor,
+    this.foregroundColor,
     super.key,
   });
 
@@ -756,11 +763,17 @@ class PrimaryActionButton extends StatelessWidget {
   final EdgeInsetsGeometry padding;
   final double minHeight;
   final TextStyle? textStyle;
-  final Color backgroundColor;
-  final Color foregroundColor;
+
+  /// The accent unless given.
+  final Color? backgroundColor;
+
+  /// What reads on the accent unless given.
+  final Color? foregroundColor;
 
   @override
   Widget build(BuildContext context) {
+    final backgroundColor = this.backgroundColor ?? context.colors.purple;
+    final foregroundColor = this.foregroundColor ?? context.colors.onAccent;
     return SizedBox(
       width: double.infinity,
       child: ConstrainedBox(
@@ -819,7 +832,7 @@ class OutlineActionButton extends StatelessWidget {
   const OutlineActionButton({
     required this.label,
     required this.onPressed,
-    this.foregroundColor = Colors.white,
+    this.foregroundColor,
     this.backgroundColor,
     this.borderColor,
     super.key,
@@ -827,12 +840,15 @@ class OutlineActionButton extends StatelessWidget {
 
   final String label;
   final VoidCallback? onPressed;
-  final Color foregroundColor;
+
+  /// The accent unless given.
+  final Color? foregroundColor;
   final Color? backgroundColor;
   final Color? borderColor;
 
   @override
   Widget build(BuildContext context) {
+    final foregroundColor = this.foregroundColor ?? context.colors.purple;
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton(
@@ -864,11 +880,10 @@ class OptionChip extends StatelessWidget {
     required this.label,
     required this.selected,
     this.onTap,
-    this.selectedColor = AppColors.purple,
-    this.selectedBackground = AppColors.purple,
-    this.unselectedBackground = AppColors.surfaceSoft,
-    this.selectedTextColor = Colors.white,
-    this.unselectedTextColor = AppColors.textSecondary,
+    this.selectedBackground,
+    this.unselectedBackground,
+    this.selectedTextColor,
+    this.unselectedTextColor,
     this.padding = const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
     this.radius = 999,
     this.textStyle,
@@ -878,17 +893,31 @@ class OptionChip extends StatelessWidget {
   final String label;
   final bool selected;
   final VoidCallback? onTap;
-  final Color selectedColor;
-  final Color selectedBackground;
-  final Color unselectedBackground;
-  final Color selectedTextColor;
-  final Color unselectedTextColor;
+
+  /// The accent unless given.
+  final Color? selectedBackground;
+
+  /// The soft surface unless given.
+  final Color? unselectedBackground;
+
+  /// What reads on the accent unless given.
+  final Color? selectedTextColor;
+
+  /// Secondary text unless given.
+  final Color? unselectedTextColor;
   final EdgeInsetsGeometry padding;
   final double radius;
   final TextStyle? textStyle;
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+    final background = selected
+        ? selectedBackground ?? colors.purple
+        : unselectedBackground ?? colors.surfaceSoft;
+    final foreground = selected
+        ? selectedTextColor ?? colors.onAccent
+        : unselectedTextColor ?? colors.textSecondary;
     // Announced as a button that is selected or not, like a toggle.
     return MergeSemantics(
       child: Semantics(
@@ -900,7 +929,7 @@ class OptionChip extends StatelessWidget {
           child: Container(
             padding: padding,
             decoration: BoxDecoration(
-              color: selected ? selectedBackground : unselectedBackground,
+              color: background,
               borderRadius: BorderRadius.circular(radius),
             ),
             child: Text(
@@ -908,7 +937,7 @@ class OptionChip extends StatelessWidget {
               style:
                   textStyle ??
                   Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: selected ? selectedTextColor : unselectedTextColor,
+                    color: foreground,
                     fontSize: 12.5,
                     fontWeight: FontWeight.w600,
                   ),
@@ -934,14 +963,14 @@ class CircleToggle extends StatelessWidget {
     return GestureDetector(
       onTap: onChanged == null ? null : () => onChanged(!value),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
+        duration: context.motion(const Duration(milliseconds: 150)),
         width: 18,
         height: 18,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: value ? AppColors.purple : Colors.transparent,
+          color: value ? context.colors.purple : Colors.transparent,
           border: Border.all(
-            color: value ? AppColors.purple : AppColors.textMuted,
+            color: value ? context.colors.purple : context.colors.textMuted,
             width: 1.5,
           ),
         ),
@@ -950,8 +979,8 @@ class CircleToggle extends StatelessWidget {
                 child: Container(
                   width: 6,
                   height: 6,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
+                  decoration: BoxDecoration(
+                    color: context.colors.onAccent,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -978,7 +1007,7 @@ class SectionDivider extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const Expanded(child: Divider(color: AppColors.divider, height: 1)),
+        Expanded(child: Divider(color: context.colors.divider, height: 1)),
         Padding(
           padding: EdgeInsets.symmetric(horizontal: horizontalGap),
           child: Text(
@@ -986,14 +1015,14 @@ class SectionDivider extends StatelessWidget {
             style:
                 textStyle ??
                 Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: AppColors.textMuted,
+                  color: context.colors.textMuted,
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1.6,
                 ),
           ),
         ),
-        const Expanded(child: Divider(color: AppColors.divider, height: 1)),
+        Expanded(child: Divider(color: context.colors.divider, height: 1)),
       ],
     );
   }
@@ -1007,8 +1036,8 @@ class SocialActionCard extends StatelessWidget {
     this.onTap,
     this.padding = const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
     this.borderRadius = 14,
-    this.borderColor = AppColors.divider,
-    this.backgroundColor = Colors.white,
+    this.borderColor,
+    this.backgroundColor,
     this.iconSize = 22,
     this.titleStyle,
     this.subtitleStyle,
@@ -1021,8 +1050,12 @@ class SocialActionCard extends StatelessWidget {
   final VoidCallback? onTap;
   final EdgeInsetsGeometry padding;
   final double borderRadius;
-  final Color borderColor;
-  final Color backgroundColor;
+
+  /// The divider colour unless given.
+  final Color? borderColor;
+
+  /// The surface unless given.
+  final Color? backgroundColor;
   final double iconSize;
   final TextStyle? titleStyle;
   final TextStyle? subtitleStyle;
@@ -1035,9 +1068,9 @@ class SocialActionCard extends StatelessWidget {
       child: Container(
         padding: padding,
         decoration: BoxDecoration(
-          color: backgroundColor,
+          color: backgroundColor ?? context.colors.surface,
           borderRadius: BorderRadius.circular(borderRadius),
-          border: Border.all(color: borderColor),
+          border: Border.all(color: borderColor ?? context.colors.divider),
         ),
         child: Row(
           children: [
@@ -1052,7 +1085,7 @@ class SocialActionCard extends StatelessWidget {
                         Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontSize: 13.5,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
+                          color: context.colors.textPrimary,
                         ),
                   ),
                   const SizedBox(height: 3),
@@ -1063,7 +1096,7 @@ class SocialActionCard extends StatelessWidget {
                         Theme.of(context).textTheme.bodyLarge?.copyWith(
                           fontSize: 11.5,
                           height: 1.4,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                         ),
                   ),
                 ],
@@ -1098,7 +1131,7 @@ class SmallInfoCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
         decoration: BoxDecoration(
-          color: AppColors.surfaceSoft.withValues(alpha: .2),
+          color: context.colors.surfaceSoft.withValues(alpha: .2),
           borderRadius: BorderRadius.circular(14),
         ),
         child: Column(
@@ -1109,7 +1142,7 @@ class SmallInfoCard extends StatelessWidget {
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
             ),
             const SizedBox(height: 4),
@@ -1118,7 +1151,7 @@ class SmallInfoCard extends StatelessWidget {
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 fontSize: 11,
                 height: 1.4,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
           ],

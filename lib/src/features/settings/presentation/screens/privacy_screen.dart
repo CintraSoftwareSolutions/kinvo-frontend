@@ -7,7 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/forms/form_errors.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/network/api_exception.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/widgets/flow_widgets.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../../../core/widgets/settings_group.dart';
@@ -26,7 +26,7 @@ class PrivacyScreen extends ConsumerWidget {
     final settings = ref.watch(userSettingsProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -211,12 +211,12 @@ class _BreakCardState extends ConsumerState<BreakCard> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: onBreak ? AppColors.purpleSoft : Colors.white,
+        color: onBreak ? context.colors.purpleSoft : context.colors.surface,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: onBreak
-              ? AppColors.purple.withValues(alpha: 0.3)
-              : AppColors.divider,
+              ? context.colors.purple.withValues(alpha: 0.3)
+              : context.colors.divider,
         ),
       ),
       child: Column(
@@ -228,7 +228,7 @@ class _BreakCardState extends ConsumerState<BreakCard> {
                 onBreak
                     ? Icons.pause_circle_rounded
                     : Icons.pause_circle_outline_rounded,
-                color: AppColors.purple,
+                color: context.colors.purple,
                 size: 22,
               ),
               const SizedBox(width: 10),
@@ -237,10 +237,10 @@ class _BreakCardState extends ConsumerState<BreakCard> {
                   header: true,
                   child: Text(
                     onBreak ? "You're taking a break" : 'Take a break',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                     ),
                   ),
                 ),
@@ -254,10 +254,10 @@ class _BreakCardState extends ConsumerState<BreakCard> {
                       'carry on as normal.'
                 : 'Hide your profile from Discover for a while. Your matches '
                       'and chats carry on as normal.',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12.5,
               height: 1.45,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ),
           const SizedBox(height: 14),
@@ -272,8 +272,8 @@ class _BreakCardState extends ConsumerState<BreakCard> {
             OutlineActionButton(
               label: 'Take a break',
               onPressed: _saving ? null : _takeBreak,
-              foregroundColor: AppColors.purple,
-              borderColor: AppColors.purple,
+              foregroundColor: context.colors.purple,
+              borderColor: context.colors.purple,
             ),
         ],
       ),

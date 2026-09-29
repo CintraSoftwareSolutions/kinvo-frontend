@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/assets/app_assets.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 
 /// The top of Discover: which mode is showing, filters and notifications.
 class DiscoverHeader extends StatelessWidget {
@@ -77,9 +77,9 @@ class _ModePill extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: context.colors.surface,
             borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: AppColors.divider),
+            border: Border.all(color: context.colors.divider),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -95,19 +95,19 @@ class _ModePill extends StatelessWidget {
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                 ),
               ),
               if (onTap != null) ...[
                 const SizedBox(width: 4),
-                const Icon(
+                Icon(
                   Icons.keyboard_arrow_down_rounded,
                   size: 18,
-                  color: AppColors.textMuted,
+                  color: context.colors.textMuted,
                 ),
               ],
             ],
@@ -151,9 +151,9 @@ class _CircleIconButton extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: context.colors.surface,
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.divider),
+                  border: Border.all(color: context.colors.divider),
                 ),
                 child: Center(
                   child: SvgPicture.asset(
@@ -162,8 +162,8 @@ class _CircleIconButton extends StatelessWidget {
                     height: 18,
                     colorFilter: ColorFilter.mode(
                       onTap == null
-                          ? AppColors.textMuted
-                          : AppColors.textPrimary,
+                          ? context.colors.textMuted
+                          : context.colors.textPrimary,
                       BlendMode.srcIn,
                     ),
                   ),
@@ -183,16 +183,19 @@ class _CircleIconButton extends StatelessWidget {
                       minHeight: 16,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEF4458),
+                      color: context.colors.danger,
                       borderRadius: BorderRadius.circular(999),
-                      border: Border.all(color: Colors.white, width: 1.5),
+                      border: Border.all(
+                        color: context.colors.surface,
+                        width: 1.5,
+                      ),
                     ),
                     child: Center(
                       child: Text(
                         '$badgeCount',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: context.colors.onAccent,
                           fontSize: 9.5,
                           fontWeight: FontWeight.w700,
                           height: 1,

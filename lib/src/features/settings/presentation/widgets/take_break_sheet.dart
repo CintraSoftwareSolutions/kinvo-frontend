@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 
 /// How long a break from Discover lasts.
 enum BreakLength {
@@ -21,7 +21,7 @@ enum BreakLength {
 Future<BreakLength?> showTakeBreakSheet(BuildContext context) {
   return showModalBottomSheet<BreakLength>(
     context: context,
-    backgroundColor: Colors.white,
+    backgroundColor: context.colors.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
@@ -38,28 +38,28 @@ Future<BreakLength?> showTakeBreakSheet(BuildContext context) {
                 width: 38,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.border,
+                  color: sheet.colors.border,
                   borderRadius: BorderRadius.circular(999),
                 ),
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Take a break',
               style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: sheet.colors.textPrimary,
               ),
             ),
             const SizedBox(height: 6),
-            const Text(
+            Text(
               "Nobody new sees you in Discover while you're away. You can "
               'come back at any time.',
               style: TextStyle(
                 fontSize: 13,
                 height: 1.45,
-                color: AppColors.textSecondary,
+                color: sheet.colors.textSecondary,
               ),
             ),
             const SizedBox(height: 8),
@@ -71,7 +71,7 @@ Future<BreakLength?> showTakeBreakSheet(BuildContext context) {
                   length == BreakLength.untilBack
                       ? Icons.all_inclusive_rounded
                       : Icons.schedule_rounded,
-                  color: AppColors.purple,
+                  color: sheet.colors.purple,
                 ),
                 title: Text(length.label),
               ),

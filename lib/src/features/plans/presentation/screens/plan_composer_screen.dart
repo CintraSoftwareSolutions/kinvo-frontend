@@ -6,7 +6,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/network/api_exception.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/time/clock.dart';
 import '../../../../core/widgets/flow_widgets.dart';
 import '../../../../core/widgets/page_header.dart';
@@ -44,7 +45,7 @@ class PlanComposerScreen extends ConsumerWidget {
     final planId = this.planId;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -300,7 +301,7 @@ class _ComposerFormState extends ConsumerState<_ComposerForm> {
           Expanded(
             child: OutlinedButton.icon(
               onPressed: _pickVenue,
-              style: _outlined,
+              style: _outlined(context),
               icon: const Icon(Icons.search_rounded, size: 18),
               label: const Text('Find a place'),
             ),
@@ -309,7 +310,7 @@ class _ComposerFormState extends ConsumerState<_ComposerForm> {
           Expanded(
             child: OutlinedButton.icon(
               onPressed: () => setState(() => _typingPlace = true),
-              style: _outlined,
+              style: _outlined(context),
               icon: const Icon(Icons.edit_outlined, size: 18),
               label: const Text('Type a place'),
             ),
@@ -334,7 +335,7 @@ class _ComposerFormState extends ConsumerState<_ComposerForm> {
         Text(
           '$name will be told about the change.',
           textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+          style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
         ),
       ];
     }
@@ -348,14 +349,14 @@ class _ComposerFormState extends ConsumerState<_ComposerForm> {
       const SizedBox(height: 10),
       OutlinedButton(
         onPressed: _saving ? null : () => _submit(send: false),
-        style: _outlined,
+        style: _outlined(context),
         child: Text(existing == null ? 'Save as draft' : 'Save draft'),
       ),
       const SizedBox(height: 8),
-      const Text(
+      Text(
         'Only you can see a draft until you send it.',
         textAlign: TextAlign.center,
-        style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+        style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
       ),
     ];
   }
@@ -535,14 +536,20 @@ class _ComposerFormState extends ConsumerState<_ComposerForm> {
     });
   }
 
-  static final _outlined = OutlinedButton.styleFrom(
-    foregroundColor: AppColors.textPrimary,
-    side: const BorderSide(color: AppColors.divider),
-    backgroundColor: Colors.white,
-    padding: const EdgeInsets.symmetric(vertical: 13),
-    shape: const StadiumBorder(),
-    textStyle: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700),
-  );
+  static ButtonStyle _outlined(BuildContext context) {
+    return OutlinedButton.styleFrom(
+      foregroundColor: context.colors.textPrimary,
+      side: BorderSide(color: context.colors.divider),
+      backgroundColor: context.colors.surface,
+      padding: const EdgeInsets.symmetric(vertical: 13),
+      shape: const StadiumBorder(),
+      textStyle: const TextStyle(
+        fontFamily: AppTheme.fontFamily,
+        fontSize: 13.5,
+        fontWeight: FontWeight.w700,
+      ),
+    );
+  }
 }
 
 class _SectionTitle extends StatelessWidget {
@@ -556,11 +563,11 @@ class _SectionTitle extends StatelessWidget {
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(
         text,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 11.5,
           fontWeight: FontWeight.w700,
           letterSpacing: 0.6,
-          color: AppColors.textMuted,
+          color: context.colors.textMuted,
         ),
       ),
     );
@@ -578,7 +585,7 @@ class _ErrorText extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(4, 6, 4, 0),
       child: Text(
         message,
-        style: const TextStyle(fontSize: 12, color: AppColors.danger),
+        style: TextStyle(fontSize: 12, color: context.colors.danger),
       ),
     );
   }
@@ -613,7 +620,7 @@ class _WhoCard extends StatelessWidget {
               child: PersonPhoto(
                 url: who.user.photoUrl,
                 name: who.user.displayName,
-                color: modeColors(who.mode).primary,
+                color: context.colors.mode(who.mode).color,
                 initialSize: 18,
               ),
             ),
@@ -624,10 +631,10 @@ class _WhoCard extends StatelessWidget {
               who.user.displayName,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
             ),
           ),
@@ -656,12 +663,12 @@ class _MatchPicker extends ConsumerWidget {
         return SurfaceCard(
           child: Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
                   "Your matches didn't load.",
                   style: TextStyle(
                     fontSize: 13,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
               ),
@@ -685,14 +692,14 @@ class _MatchPicker extends ConsumerWidget {
         if (match.isWritable) match,
     ];
     if (open.isEmpty) {
-      return const SurfaceCard(
+      return SurfaceCard(
         child: Text(
           'Plans are made with matches. When you match with someone, you can '
           'suggest a plan here.',
           style: TextStyle(
             fontSize: 13,
             height: 1.45,
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
         ),
       );
@@ -733,7 +740,7 @@ class _MatchPicker extends ConsumerWidget {
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: selected
-                                ? AppColors.purple
+                                ? context.colors.purple
                                 : Colors.transparent,
                             width: 2.5,
                           ),
@@ -742,7 +749,7 @@ class _MatchPicker extends ConsumerWidget {
                           child: PersonPhoto(
                             url: match.user.photoUrl,
                             name: match.user.displayName,
-                            color: modeColors(match.mode).primary,
+                            color: context.colors.mode(match.mode).color,
                             initialSize: 20,
                           ),
                         ),
@@ -758,8 +765,8 @@ class _MatchPicker extends ConsumerWidget {
                               ? FontWeight.w700
                               : FontWeight.w500,
                           color: selected
-                              ? AppColors.textPrimary
-                              : AppColors.textSecondary,
+                              ? context.colors.textPrimary
+                              : context.colors.textSecondary,
                         ),
                       ),
                     ],
@@ -789,38 +796,38 @@ class _Suggestions extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Material(
-        color: Colors.white,
+        color: context.colors.surface,
         clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppColors.divider),
+          side: BorderSide(color: context.colors.divider),
         ),
         child: Column(
           children: [
             for (final (index, venue) in venues.take(4).indexed) ...[
               if (index > 0)
-                const Divider(height: 1, indent: 60, color: AppColors.divider),
+                Divider(height: 1, indent: 60, color: context.colors.divider),
               ListTile(
                 onTap: () => onChosen(venue),
                 leading: Icon(
                   venueIcon(venue.category),
-                  color: AppColors.purple,
+                  color: context.colors.purple,
                 ),
                 title: Text(
                   venue.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                 ),
                 subtitle: Text(
                   venue.category.label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
               ),
@@ -853,13 +860,13 @@ class _ChosenVenue extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: AppColors.purpleSoft,
+              color: context.colors.purpleSoft,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               venueIcon(venue.category),
               size: 20,
-              color: AppColors.purple,
+              color: context.colors.purple,
             ),
           ),
           const SizedBox(width: 12),
@@ -871,10 +878,10 @@ class _ChosenVenue extends StatelessWidget {
                   venue.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14.5,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                 ),
                 if (address != null)
@@ -882,9 +889,9 @@ class _ChosenVenue extends StatelessWidget {
                     address,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                   ),
               ],
@@ -916,23 +923,23 @@ class _Unavailable extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
           child: Column(
             children: [
-              const Text(
+              Text(
                 "This plan can't be changed",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 message,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   height: 1.5,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ),
               const SizedBox(height: 18),

@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kinvo/src/core/assets/app_assets.dart';
 import 'package:kinvo/src/core/navigation/app_routes.dart';
-import 'package:kinvo/src/core/theme/app_colors.dart';
 import 'package:kinvo/src/core/widgets/flow_widgets.dart';
 import 'package:kinvo/src/core/widgets/gradient_scaffold.dart';
 
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../data/password_reset_service.dart';
 import '../controllers/new_password_controller.dart';
 import '../controllers/password_reset_controller.dart';
@@ -47,7 +47,7 @@ class NewPasswordScreen extends ConsumerWidget {
     }
 
     return GradientScaffold(
-      background: AppColors.lightBackground,
+      background: context.colors.backgroundGradient,
       child: FlowPageLayout(
         badgeText: 'Account recovery',
         badgeAsset: AppAssets.lock,
@@ -106,7 +106,7 @@ class NewPasswordScreen extends ConsumerWidget {
                 child: TextButton(
                   onPressed: form.isBusy ? null : controller.resend,
                   style: TextButton.styleFrom(
-                    foregroundColor: AppColors.purple,
+                    foregroundColor: context.colors.purple,
                     textStyle: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -138,18 +138,18 @@ class _Notice extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppColors.greenSoft.withValues(alpha: 0.35),
+          color: context.colors.greenSoft.withValues(alpha: 0.35),
           borderRadius: BorderRadius.circular(14),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
-              padding: EdgeInsets.only(top: 1),
+            Padding(
+              padding: const EdgeInsets.only(top: 1),
               child: Icon(
                 Icons.check_circle_outline_rounded,
                 size: 16,
-                color: AppColors.green,
+                color: context.colors.green,
               ),
             ),
             const SizedBox(width: 10),
@@ -157,7 +157,7 @@ class _Notice extends StatelessWidget {
               child: Text(
                 message,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppColors.green,
+                  color: context.colors.green,
                   fontSize: 12.5,
                   height: 1.45,
                   fontWeight: FontWeight.w500,

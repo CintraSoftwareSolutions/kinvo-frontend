@@ -8,7 +8,8 @@ import '../../../../core/ads/ads_controller.dart';
 import '../../../../core/forms/form_errors.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/network/api_exception.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
+import '../../../../core/theme/motion.dart';
 import '../../../../core/time/clock.dart';
 import '../../../../core/widgets/flow_widgets.dart';
 import '../../../../core/widgets/paywall_sheet.dart';
@@ -52,8 +53,8 @@ class DiscoverScreen extends ConsumerWidget {
         DiscoverHeader(
           modeLabel: mode?.label ?? 'Discover',
           modeColor: mode == null
-              ? AppColors.purple
-              : modeColors(mode.value).primary,
+              ? context.colors.purple
+              : context.colors.mode(mode.value).color,
           notificationCount:
               ref.watch(notificationUnreadCountProvider).value ?? 0,
           // Always, once the modes are known: even with one mode on, this is
@@ -66,7 +67,7 @@ class DiscoverScreen extends ConsumerWidget {
               : () => showFiltersSheet(context, mode),
           onNotificationsTap: () => context.push(AppRoutes.notifications),
         ),
-        const Divider(height: 1, color: Color(0xFFEDEFF5)),
+        Divider(height: 1, color: context.colors.divider),
         const _PausedBanner(),
         Expanded(
           child: active.hasValue
@@ -159,7 +160,7 @@ class _ModeDeck extends ConsumerWidget {
     final isStartingBoost = ref.watch(boostControllerProvider(mode.value));
     final interestLabels = ref.watch(interestLabelsProvider);
     final now = ref.watch(clockProvider)();
-    final colors = modeColors(mode.value);
+    final modeTint = context.colors.mode(mode.value);
 
     String interestLabel(String slug) => interestLabels[slug] ?? humanise(slug);
 
@@ -209,8 +210,8 @@ class _ModeDeck extends ConsumerWidget {
           children: [
             DeckSummaryCard(
               modeLabel: mode.label,
-              modeColor: colors.primary,
-              modeSoftColor: colors.soft,
+              modeColor: modeTint.color,
+              modeSoftColor: modeTint.soft,
               allowance: deck.value?.allowance ?? stats.value?.allowance,
               boost: stats.value?.boost,
               isStartingBoost: isStartingBoost,
@@ -274,7 +275,7 @@ class _DeckBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(deckControllerProvider(mode.value).notifier);
-    final colors = modeColors(mode.value);
+    final modeTint = context.colors.mode(mode.value);
     final card = state.current;
 
     if (card == null) {
@@ -319,7 +320,7 @@ class _DeckBody extends ConsumerWidget {
       children: [
         _PrecacheNext(card: state.cards.elementAtOrNull(1)),
         AnimatedSwitcher(
-          duration: const Duration(milliseconds: 220),
+          duration: context.motion(const Duration(milliseconds: 220)),
           transitionBuilder: (child, animation) => FadeTransition(
             opacity: animation,
             child: ScaleTransition(
@@ -332,14 +333,14 @@ class _DeckBody extends ConsumerWidget {
             card: card,
             modeLabel: mode.label,
             modeIcon: modeIconAsset(mode.value),
-            modeColor: colors.primary,
+            modeColor: modeTint.color,
             interestLabel: interestLabel,
             now: now,
             distanceUnit: ref.watch(distanceUnitProvider),
             onOpenProfile: () => showProfileSheet<void>(
               context,
               user: card.user,
-              accent: colors.primary,
+              accent: modeTint.color,
             ),
             onPreviousMode: canSwitch ? () => switchMode(-1) : null,
             onNextMode: canSwitch ? () => switchMode(1) : null,
@@ -350,7 +351,7 @@ class _DeckBody extends ConsumerWidget {
           likeLabel: mode.likeLabel,
           superLikeLabel: mode.superLikeLabel,
           modeIcon: modeIconAsset(mode.value),
-          modeColor: colors.primary,
+          modeColor: modeTint.color,
           enabled: !state.isSwiping && !isReloading,
           onRewind: () => _rewind(context, ref, mode),
           onPass: () => _swipe(context, ref, mode, SwipeAction.pass),
@@ -381,13 +382,13 @@ class _DeckBody extends ConsumerWidget {
         );
         // The Matches tab shows the new match next time it's opened.
         ref.invalidate(matchesListProvider(false));
-        final colors = modeColors(mode.value);
+        final modeTint = context.colors.mode(mode.value);
         final choice = await showMatchDialog(
           context,
           user: card.user,
           modeLabel: mode.label,
-          modeColor: colors.primary,
-          modeSoftColor: colors.soft,
+          modeColor: modeTint.color,
+          modeSoftColor: modeTint.soft,
         );
         if (choice == MatchDialogChoice.seeMatches && context.mounted) {
           context.go(AppRoutes.matches);
@@ -479,11 +480,11 @@ class _CardPlaceholder extends StatelessWidget {
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(22),
-      child: const AspectRatio(
+      child: AspectRatio(
         aspectRatio: 0.78,
         child: ColoredBox(
-          color: AppColors.surfaceSoft,
-          child: Center(child: CircularProgressIndicator()),
+          color: context.colors.surfaceSoft,
+          child: const Center(child: CircularProgressIndicator()),
         ),
       ),
     );
@@ -509,9 +510,9 @@ class _Message extends StatelessWidget {
       margin: const EdgeInsets.all(18),
       padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.divider),
+        border: Border.all(color: context.colors.divider),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -519,20 +520,20 @@ class _Message extends StatelessWidget {
           Text(
             title,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             message,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               height: 1.5,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ),
           const SizedBox(height: 18),
@@ -652,24 +653,24 @@ class _PausedBanner extends ConsumerWidget {
     if (!paused) return const SizedBox.shrink();
 
     return Material(
-      color: AppColors.purpleSoft,
+      color: context.colors.purpleSoft,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 6, 8, 6),
         child: Row(
           children: [
-            const Icon(
+            Icon(
               Icons.pause_circle_outline_rounded,
               size: 18,
-              color: AppColors.purple,
+              color: context.colors.purple,
             ),
             const SizedBox(width: 8),
-            const Expanded(
+            Expanded(
               child: Text(
                 'New matches are paused',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.purple,
+                  color: context.colors.purple,
                 ),
               ),
             ),

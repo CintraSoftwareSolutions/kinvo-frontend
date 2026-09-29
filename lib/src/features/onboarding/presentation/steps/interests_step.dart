@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/config/server_config.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/widgets/flow_widgets.dart';
 import '../../../modes/presentation/mode_presentation.dart';
 import '../controllers/interests_step_controller.dart';
@@ -45,7 +45,7 @@ class InterestsStep extends ConsumerWidget {
               '${form.selected.length} of ${form.maxInterests} chosen',
               style: textTheme.bodyMedium?.copyWith(
                 fontSize: 12,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
           ),
@@ -60,7 +60,7 @@ class InterestsStep extends ConsumerWidget {
                 style: textTheme.titleLarge?.copyWith(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
             ),

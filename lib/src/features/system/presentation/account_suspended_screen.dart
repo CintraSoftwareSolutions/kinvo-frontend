@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/assets/app_assets.dart';
 import '../../../core/auth/auth_providers.dart';
 import '../../../core/auth/session_status.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/kinvo_colors.dart';
 import '../../../core/widgets/flow_widgets.dart';
 import '../../../core/widgets/gradient_scaffold.dart';
 
@@ -24,7 +24,7 @@ class AccountSuspendedScreen extends ConsumerWidget {
         : _defaultMessage;
 
     return GradientScaffold(
-      background: AppColors.lightBackground,
+      background: context.colors.backgroundGradient,
       child: FlowPageLayout(
         backButton: const SizedBox.shrink(),
         backButtonSpacing: 0,

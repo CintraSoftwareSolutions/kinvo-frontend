@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/api_exception.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/time/clock.dart';
 import '../../../../core/time/relative_time.dart';
 import '../../../../core/widgets/flow_widgets.dart';
@@ -24,7 +25,7 @@ class NotificationsScreen extends ConsumerWidget {
     final hasUnread = list?.items.any((each) => each.isUnread) ?? false;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -110,14 +111,14 @@ class _Feed extends ConsumerWidget {
             else
               DecoratedBox(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: context.colors.surface,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.divider),
-                  boxShadow: const [
+                  border: Border.all(color: context.colors.divider),
+                  boxShadow: [
                     BoxShadow(
-                      color: Color(0x0A0C132A),
+                      color: context.colors.shadow,
                       blurRadius: 12,
-                      offset: Offset(0, 4),
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
@@ -140,9 +141,9 @@ class _Feed extends ConsumerWidget {
                           },
                         ),
                         if (index < notifications.length - 1)
-                          const Divider(
+                          Divider(
                             height: 1,
-                            color: AppColors.divider,
+                            color: context.colors.divider,
                             indent: 76,
                             endIndent: 14,
                           ),
@@ -182,14 +183,14 @@ class _Header extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(14, 14, 12, 18),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.colors.surface,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.divider),
-          boxShadow: const [
+          border: Border.all(color: context.colors.divider),
+          boxShadow: [
             BoxShadow(
-              color: Color(0x0A0C132A),
+              color: context.colors.shadow,
               blurRadius: 12,
-              offset: Offset(0, 4),
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -208,23 +209,23 @@ class _Header extends StatelessWidget {
                   child: Container(
                     width: 38,
                     height: 38,
-                    decoration: const BoxDecoration(
-                      color: AppColors.surfaceSoft,
+                    decoration: BoxDecoration(
+                      color: context.colors.surfaceSoft,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.arrow_back_rounded,
                       size: 20,
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                     ),
                   ),
                 ),
               ),
             ),
             const SizedBox(width: 12),
-            const Expanded(
+            Expanded(
               child: Padding(
-                padding: EdgeInsets.only(top: 4),
+                padding: const EdgeInsets.only(top: 4),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -234,16 +235,16 @@ class _Header extends StatelessWidget {
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
                         letterSpacing: -0.5,
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
                       'Matches, messages, plans and updates about your account',
                       style: TextStyle(
                         fontSize: 12.5,
                         height: 1.45,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ],
@@ -254,8 +255,9 @@ class _Header extends StatelessWidget {
               TextButton(
                 onPressed: onMarkAllRead,
                 style: TextButton.styleFrom(
-                  foregroundColor: AppColors.purple,
+                  foregroundColor: context.colors.purple,
                   textStyle: const TextStyle(
+                    fontFamily: AppTheme.fontFamily,
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                   ),
@@ -298,7 +300,7 @@ class _NotificationTile extends StatelessWidget {
         onTap: onTap,
         child: Container(
           color: unread
-              ? AppColors.purpleChip.withValues(alpha: 0.25)
+              ? context.colors.purpleChip.withValues(alpha: 0.25)
               : Colors.transparent,
           padding: const EdgeInsets.all(14),
           child: Row(
@@ -313,10 +315,10 @@ class _NotificationTile extends StatelessWidget {
                       notification.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -324,18 +326,18 @@ class _NotificationTile extends StatelessWidget {
                       notification.body,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12.5,
                         height: 1.35,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 3),
                     Text(
                       when,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
-                        color: AppColors.textMuted,
+                        color: context.colors.textMuted,
                       ),
                     ),
                   ],
@@ -346,8 +348,8 @@ class _NotificationTile extends StatelessWidget {
                 Container(
                   width: 8,
                   height: 8,
-                  decoration: const BoxDecoration(
-                    color: AppColors.purple,
+                  decoration: BoxDecoration(
+                    color: context.colors.purple,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -370,53 +372,53 @@ class _CategoryIcon extends StatelessWidget {
     final (icon, color, background) = switch (category) {
       NotificationCategory.newMatch => (
         Icons.favorite_rounded,
-        AppColors.danger,
-        const Color(0xFFFCE7F0),
+        context.colors.danger,
+        context.colors.tint(Hue.pink).soft,
       ),
       NotificationCategory.newLike => (
         Icons.star_rounded,
-        const Color(0xFFD97706),
-        const Color(0xFFFEF3C7),
+        context.colors.tint(Hue.amber).onSoft,
+        context.colors.tint(Hue.amber).soft,
       ),
       NotificationCategory.newMessage => (
         Icons.chat_bubble_rounded,
-        AppColors.blue,
-        const Color(0xFFDBEAFE),
+        context.colors.blue,
+        context.colors.tint(Hue.blue).soft,
       ),
       NotificationCategory.planUpdate => (
         Icons.calendar_month_rounded,
-        const Color(0xFF10B981),
-        const Color(0xFFD1FAE5),
+        context.colors.tint(Hue.green).color,
+        context.colors.tint(Hue.green).soft,
       ),
       NotificationCategory.call => (
         Icons.videocam_rounded,
-        AppColors.purple,
-        AppColors.purpleSoft,
+        context.colors.purple,
+        context.colors.purpleSoft,
       ),
       NotificationCategory.safety => (
         Icons.shield_rounded,
-        AppColors.danger,
-        AppColors.dangerSoft,
+        context.colors.danger,
+        context.colors.dangerSoft,
       ),
       NotificationCategory.moderation => (
         Icons.verified_user_rounded,
-        AppColors.purple,
-        AppColors.purpleSoft,
+        context.colors.purple,
+        context.colors.purpleSoft,
       ),
       NotificationCategory.verification => (
         Icons.verified_rounded,
-        AppColors.purple,
-        AppColors.purpleSoft,
+        context.colors.purple,
+        context.colors.purpleSoft,
       ),
       NotificationCategory.subscription => (
         Icons.workspace_premium_rounded,
-        const Color(0xFFD97706),
-        const Color(0xFFFEF3C7),
+        context.colors.tint(Hue.amber).onSoft,
+        context.colors.tint(Hue.amber).soft,
       ),
       NotificationCategory.system || NotificationCategory.unknown => (
         Icons.notifications_rounded,
-        AppColors.textSecondary,
-        AppColors.surfaceSoft,
+        context.colors.textSecondary,
+        context.colors.surfaceSoft,
       ),
     };
 
@@ -437,35 +439,35 @@ class _CaughtUp extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 38, horizontal: 24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.divider),
+        border: Border.all(color: context.colors.divider),
       ),
-      child: const Column(
+      child: Column(
         children: [
           Icon(
             Icons.notifications_none_rounded,
             size: 32,
-            color: AppColors.textMuted,
+            color: context.colors.textMuted,
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           Text(
             "You're all caught up",
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
           ),
-          SizedBox(height: 4),
+          const SizedBox(height: 4),
           Text(
             'New matches, messages and plans show up here.',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 12,
               height: 1.45,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ),
         ],
@@ -488,23 +490,23 @@ class _Failed extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
+            Text(
               "Your notifications didn't load",
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 height: 1.5,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
             const SizedBox(height: 18),

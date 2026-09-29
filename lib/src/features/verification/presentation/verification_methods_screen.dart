@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/assets/app_assets.dart';
 import '../../../core/navigation/app_routes.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/kinvo_colors.dart';
 import '../../../core/time/clock.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/time/relative_time.dart';
@@ -30,7 +30,7 @@ class VerificationMethodsScreen extends ConsumerWidget {
     final verification = ref.watch(verificationProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -54,7 +54,7 @@ class VerificationMethodsScreen extends ConsumerWidget {
                 _ => 0,
               },
             ),
-            const Divider(height: 1, color: AppColors.divider),
+            Divider(height: 1, color: context.colors.divider),
             Expanded(
               child: switch (verification) {
                 AsyncValue(:final error?) when !verification.hasValue =>
@@ -129,37 +129,37 @@ class _Methods extends ConsumerWidget {
 
     return Column(
       children: [
-        const VerificationBadge(
+        VerificationBadge(
           asset: AppAssets.shield,
-          background: Color(0xFFE0E7FF),
-          foreground: Color(0xFF6366F1),
+          background: context.colors.tint(Hue.indigo).soft,
+          foreground: context.colors.tint(Hue.indigo).color,
           size: 68,
         ),
         const SizedBox(height: 14),
-        const Text(
+        Text(
           'Get verified',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
         const SizedBox(height: 6),
-        const Text(
+        Text(
           'A moderator checks it by hand, so only you and they ever see what '
           'you send.',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 13,
             height: 1.5,
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
         ),
         const SizedBox(height: 22),
         VerificationMethodCard(
           icon: AppAssets.camera,
-          iconBackground: const Color(0xFFE0E7FF),
-          iconColor: const Color(0xFF6366F1),
+          iconBackground: context.colors.tint(Hue.indigo).soft,
+          iconColor: context.colors.tint(Hue.indigo).color,
           title: 'Photo verification',
           subtitle: 'Take a selfie. It is checked against your photos.',
           meta: 'Recommended · about 2 minutes',
@@ -168,8 +168,8 @@ class _Methods extends ConsumerWidget {
         const SizedBox(height: 10),
         VerificationMethodCard(
           icon: AppAssets.upload,
-          iconBackground: const Color(0xFFEDE9FE),
-          iconColor: AppColors.purple,
+          iconBackground: context.colors.tint(Hue.purple).soft,
+          iconColor: context.colors.purple,
           title: 'ID verification',
           subtitle: 'A passport, driving licence or ID card.',
           meta: 'Use this if your photos are hard to match',
@@ -178,11 +178,11 @@ class _Methods extends ConsumerWidget {
               : () => unawaited(start(VerificationMethod.governmentId)),
         ),
         const SizedBox(height: 16),
-        const VerificationTips(
+        VerificationTips(
           title: 'What happens to it',
-          background: Color(0xFFF1F5F9),
-          titleColor: AppColors.textPrimary,
-          tips: [
+          background: context.colors.surfaceSoft,
+          titleColor: context.colors.textPrimary,
+          tips: const [
             'It is stored apart from your photos and never appears on your '
                 'profile.',
             'Only a Kinvo moderator sees it, to decide yes or no.',
@@ -204,18 +204,18 @@ class _Unfinished extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const VerificationBadge(
+        VerificationBadge(
           asset: AppAssets.shield,
-          background: Color(0xFFE0E7FF),
-          foreground: Color(0xFF6366F1),
+          background: context.colors.tint(Hue.indigo).soft,
+          foreground: context.colors.tint(Hue.indigo).color,
         ),
         const SizedBox(height: 18),
-        const Text(
+        Text(
           'Finish your verification',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
@@ -228,10 +228,10 @@ class _Unfinished extends StatelessWidget {
                   'off.',
           },
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
             height: 1.5,
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
         ),
         const SizedBox(height: 20),
@@ -257,18 +257,18 @@ class _AwaitingReview extends ConsumerWidget {
 
     return Column(
       children: [
-        const VerificationBadge(
+        VerificationBadge(
           asset: AppAssets.shield,
-          background: Color(0xFFE0E7FF),
-          foreground: Color(0xFF6366F1),
+          background: context.colors.tint(Hue.indigo).soft,
+          foreground: context.colors.tint(Hue.indigo).color,
         ),
         const SizedBox(height: 18),
-        const Text(
+        Text(
           'Waiting to be checked',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
@@ -278,18 +278,18 @@ class _AwaitingReview extends ConsumerWidget {
               : 'Sent ${timeAgo(sentAt, ref.watch(clockProvider)())}. A '
                     'moderator will look at it shortly.',
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
             height: 1.5,
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
         ),
         const SizedBox(height: 18),
-        const VerificationTips(
+        VerificationTips(
           title: 'What happens next',
-          background: Color(0xFFF1F5F9),
-          titleColor: AppColors.textPrimary,
-          tips: [
+          background: context.colors.surfaceSoft,
+          titleColor: context.colors.textPrimary,
+          tips: const [
             'We tell you either way, by notification.',
             'Approved, and the badge appears on your profile straight away.',
             'You can keep using Kinvo while you wait.',
@@ -314,29 +314,29 @@ class _Verified extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const VerificationBadge(
+        VerificationBadge(
           asset: AppAssets.checkCircle,
-          background: Color(0xFFD1FAE5),
-          foreground: Color(0xFF10B981),
+          background: context.colors.tint(Hue.green).soft,
+          foreground: context.colors.tint(Hue.green).color,
         ),
         const SizedBox(height: 18),
-        const Text(
+        Text(
           "You're verified",
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
-        const Text(
+        Text(
           'People see a badge on your profile, and you appear for anyone '
           'looking only for verified people.',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 13,
             height: 1.5,
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
         ),
         const SizedBox(height: 20),
@@ -358,19 +358,19 @@ class _Rejected extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 22),
       child: Column(
         children: [
-          const VerificationBadge(
+          VerificationBadge(
             asset: AppAssets.triangleAlert,
-            background: Color(0xFFFEE2E2),
-            foreground: Color(0xFFB91C1C),
+            background: context.colors.dangerSoft,
+            foreground: context.colors.dangerStrong,
             size: 68,
           ),
           const SizedBox(height: 14),
-          const Text(
+          Text(
             'Not approved',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
@@ -379,10 +379,10 @@ class _Rejected extends StatelessWidget {
                 'The moderator could not confirm it from what was sent. You '
                     'can try again below.',
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               height: 1.5,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ),
         ],
@@ -409,10 +409,10 @@ class _Failed extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 height: 1.45,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
             const SizedBox(height: 12),

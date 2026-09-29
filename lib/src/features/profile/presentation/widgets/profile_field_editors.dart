@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/forms/form_errors.dart';
 import '../../../../core/network/api_exception.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/widgets/flow_widgets.dart';
 import '../../domain/profile_fields.dart';
 import '../../domain/profile_rules.dart';
@@ -21,7 +21,7 @@ Future<void> showProfileFieldEditor(
 }) {
   return showModalBottomSheet<void>(
     context: context,
-    backgroundColor: Colors.white,
+    backgroundColor: context.colors.surface,
     isScrollControlled: true,
     useSafeArea: true,
     shape: const RoundedRectangleBorder(
@@ -77,7 +77,7 @@ class _EditorFrame extends StatelessWidget {
                 width: 38,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.border,
+                  color: context.colors.border,
                   borderRadius: BorderRadius.circular(999),
                 ),
               ),
@@ -87,10 +87,10 @@ class _EditorFrame extends StatelessWidget {
               header: true,
               child: Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
             ),
@@ -98,10 +98,10 @@ class _EditorFrame extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 description,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   height: 1.45,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ),
             ],
@@ -272,9 +272,12 @@ class _OptionEditorState extends ConsumerState<_OptionEditor> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (options.isEmpty)
-            const Text(
+            Text(
               "These answers couldn't be loaded. Please try again later.",
-              style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+              style: TextStyle(
+                fontSize: 13,
+                color: context.colors.textSecondary,
+              ),
             ),
           RadioGroup<String>(
             groupValue: widget.current,
@@ -288,7 +291,7 @@ class _OptionEditorState extends ConsumerState<_OptionEditor> {
                     value: option,
                     enabled: _saving == null,
                     contentPadding: EdgeInsets.zero,
-                    activeColor: AppColors.purple,
+                    activeColor: context.colors.purple,
                     title: Text(profileOptionLabel(field, option)),
                     secondary: _saving == option
                         ? const SizedBox.square(
@@ -312,7 +315,7 @@ class _OptionEditorState extends ConsumerState<_OptionEditor> {
                   : const Icon(Icons.remove_circle_outline_rounded),
               label: const Text('Take it off my profile'),
               style: TextButton.styleFrom(
-                foregroundColor: AppColors.textSecondary,
+                foregroundColor: context.colors.textSecondary,
               ),
             ),
           ],
@@ -379,10 +382,10 @@ class _HeightEditorState extends ConsumerState<_HeightEditor> {
           Center(
             child: Text(
               heightLabel(_height),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
             ),
           ),
@@ -391,7 +394,7 @@ class _HeightEditorState extends ConsumerState<_HeightEditor> {
             min: ProfileRules.minHeightCm.toDouble(),
             max: ProfileRules.maxHeightCm.toDouble(),
             divisions: ProfileRules.maxHeightCm - ProfileRules.minHeightCm,
-            activeColor: AppColors.purple,
+            activeColor: context.colors.purple,
             label: heightLabel(_height),
             semanticFormatterCallback: (value) => heightLabel(value.round()),
             onChanged: _saving
@@ -412,7 +415,7 @@ class _HeightEditorState extends ConsumerState<_HeightEditor> {
             TextButton(
               onPressed: _saving ? null : () => _saveHeight(null),
               style: TextButton.styleFrom(
-                foregroundColor: AppColors.textSecondary,
+                foregroundColor: context.colors.textSecondary,
               ),
               child: const Text('Take it off my profile'),
             ),

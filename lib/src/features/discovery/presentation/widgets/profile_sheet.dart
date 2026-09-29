@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/api_exception.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/widgets/flow_widgets.dart';
 import '../../../profile/domain/user_summary.dart';
 import '../../../profile/presentation/widgets/public_profile_view.dart';
@@ -21,7 +21,7 @@ Future<T?> showProfileSheet<T>(
 }) {
   return showModalBottomSheet<T>(
     context: context,
-    backgroundColor: Colors.white,
+    backgroundColor: context.colors.surface,
     isScrollControlled: true,
     useSafeArea: true,
     shape: const RoundedRectangleBorder(
@@ -66,7 +66,7 @@ class ProfileSheet extends ConsumerWidget {
                       width: 38,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFE5E7EB),
+                        color: context.colors.handle,
                         borderRadius: BorderRadius.circular(999),
                       ),
                     ),
@@ -102,9 +102,11 @@ class ProfileSheet extends ConsumerWidget {
                 top: false,
                 child: Container(
                   padding: const EdgeInsets.fromLTRB(18, 12, 18, 12),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    border: Border(top: BorderSide(color: AppColors.divider)),
+                  decoration: BoxDecoration(
+                    color: context.colors.surface,
+                    border: Border(
+                      top: BorderSide(color: context.colors.divider),
+                    ),
                   ),
                   child: actions(context),
                 ),
@@ -133,8 +135,8 @@ class _LoadFailure extends StatelessWidget {
           OutlineActionButton(
             label: 'Try again',
             onPressed: onRetry,
-            foregroundColor: AppColors.textPrimary,
-            borderColor: AppColors.divider,
+            foregroundColor: context.colors.textPrimary,
+            borderColor: context.colors.divider,
           ),
         ],
       ),

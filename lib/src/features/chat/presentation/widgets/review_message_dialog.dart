@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/kinvo_colors.dart';
 
 /// What the user chose after being asked to look at a message again.
 enum ReviewChoice { edit, sendAnyway }
@@ -36,7 +37,7 @@ class ReviewMessageDialog extends StatelessWidget {
         : warnings;
 
     return Dialog(
-      backgroundColor: Colors.white,
+      backgroundColor: context.colors.surface,
       insetPadding: const EdgeInsets.symmetric(horizontal: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
@@ -49,7 +50,7 @@ class ReviewMessageDialog extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -58,16 +59,16 @@ class ReviewMessageDialog extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
+                            color: context.colors.textPrimary,
                           ),
                         ),
-                        SizedBox(height: 4),
+                        const SizedBox(height: 4),
                         Text(
                           'Kinvo spotted something that could put you at risk.',
                           style: TextStyle(
                             fontSize: 11.5,
                             height: 1.45,
-                            color: AppColors.textSecondary,
+                            color: context.colors.textSecondary,
                           ),
                         ),
                       ],
@@ -78,9 +79,9 @@ class ReviewMessageDialog extends StatelessWidget {
                       context,
                     ).closeButtonTooltip,
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.close_rounded,
-                      color: AppColors.textMuted,
+                      color: context.colors.textMuted,
                       size: 20,
                     ),
                   ),
@@ -90,17 +91,17 @@ class ReviewMessageDialog extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
                 decoration: BoxDecoration(
-                  color: AppColors.dangerSoft,
+                  color: context.colors.dangerSoft,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
                   text,
                   maxLines: 6,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFFB91C1C),
+                    color: context.colors.dangerStrong,
                   ),
                 ),
               ),
@@ -109,15 +110,15 @@ class ReviewMessageDialog extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
                   decoration: BoxDecoration(
-                    color: AppColors.surfaceSoft.withValues(alpha: 0.55),
+                    color: context.colors.surfaceSoft.withValues(alpha: 0.55),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
                     warning,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       height: 1.45,
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                     ),
                   ),
                 ),
@@ -131,10 +132,11 @@ class ReviewMessageDialog extends StatelessWidget {
                           Navigator.of(context).pop(ReviewChoice.edit),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        side: const BorderSide(color: AppColors.divider),
+                        side: BorderSide(color: context.colors.divider),
                         shape: const StadiumBorder(),
-                        foregroundColor: AppColors.textPrimary,
+                        foregroundColor: context.colors.textPrimary,
                         textStyle: const TextStyle(
+                          fontFamily: AppTheme.fontFamily,
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                         ),
@@ -148,11 +150,12 @@ class ReviewMessageDialog extends StatelessWidget {
                       onPressed: () =>
                           Navigator.of(context).pop(ReviewChoice.sendAnyway),
                       style: FilledButton.styleFrom(
-                        backgroundColor: AppColors.purple,
-                        foregroundColor: Colors.white,
+                        backgroundColor: context.colors.purple,
+                        foregroundColor: context.colors.onAccent,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: const StadiumBorder(),
                         textStyle: const TextStyle(
+                          fontFamily: AppTheme.fontFamily,
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                         ),
