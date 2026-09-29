@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/theme/kinvo_colors.dart';
+import '../../../../core/widgets/count_badge.dart';
 
 class HomeNavItem {
   const HomeNavItem({required this.icon, required this.label, this.badge = 0});
   final String icon;
   final String label;
+
+  /// How many things on the tab want attention, such as unread messages.
   final int badge;
 }
 
@@ -74,82 +77,62 @@ class _NavCell extends StatelessWidget {
     final Color color = selected
         ? context.colors.purple
         : context.colors.textMuted;
-    return GestureDetector(
+    // One node per tab for screen readers, saying which tab it is, whether
+    // it's the one showing, and what's waiting on it.
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: item.badge > 0 ? '${item.label}, ${item.badge} new' : item.label,
       onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 2),
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
-        decoration: BoxDecoration(
-          color: selected
-              ? context.colors.purpleChip.withValues(alpha: 0.65)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(
-              width: 28,
-              height: 24,
-              child: Stack(
-                clipBehavior: Clip.none,
-                alignment: Alignment.center,
-                children: [
-                  SvgPicture.asset(
-                    item.icon,
-                    width: 22,
-                    height: 22,
-                    colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
-                  ),
-                  if (item.badge > 0)
-                    Positioned(
-                      top: -4,
-                      right: -6,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 4,
-                          vertical: 1,
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 15,
-                          minHeight: 15,
-                        ),
-                        decoration: BoxDecoration(
-                          color: context.colors.danger,
-                          borderRadius: BorderRadius.circular(999),
-                          border: Border.all(
-                            color: context.colors.surface,
-                            width: 1.5,
-                          ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            '${item.badge}',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: context.colors.onAccent,
-                              fontSize: 9,
-                              fontWeight: FontWeight.w700,
-                              height: 1,
-                            ),
-                          ),
-                        ),
-                      ),
+      excludeSemantics: true,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 2),
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+          decoration: BoxDecoration(
+            color: selected
+                ? context.colors.purpleChip.withValues(alpha: 0.65)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 28,
+                height: 24,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.center,
+                  children: [
+                    SvgPicture.asset(
+                      item.icon,
+                      width: 22,
+                      height: 22,
+                      colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
                     ),
-                ],
+                    if (item.badge > 0)
+                      Positioned(
+                        top: -4,
+                        right: -6,
+                        child: CountBadge(item.badge),
+                      ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              item.label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                color: color,
+              const SizedBox(height: 4),
+              Text(
+                item.label,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                  color: color,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

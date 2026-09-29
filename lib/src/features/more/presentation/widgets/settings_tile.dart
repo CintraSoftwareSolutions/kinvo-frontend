@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/theme/kinvo_colors.dart';
+import '../../../../core/widgets/count_badge.dart';
 
+/// A row that opens somewhere: an icon, a title, a line about it, and an
+/// arrow — with a count beside the arrow when something there is waiting.
 class SettingsTile extends StatelessWidget {
   const SettingsTile({
     required this.title,
@@ -11,7 +14,7 @@ class SettingsTile extends StatelessWidget {
     this.iconWidget,
     this.iconColor,
     this.iconBg,
-    this.trailing,
+    this.badgeCount = 0,
     this.onTap,
     this.danger = false,
     super.key,
@@ -23,131 +26,112 @@ class SettingsTile extends StatelessWidget {
   final Widget? iconWidget;
   final Color? iconColor;
   final Color? iconBg;
-  final Widget? trailing;
+
+  /// How many things behind the row want attention, such as unread
+  /// notifications.
+  final int badgeCount;
   final VoidCallback? onTap;
   final bool danger;
 
   @override
   Widget build(BuildContext context) {
     final hasIcon = icon != null || iconWidget != null;
-    return GestureDetector(
+    // One node for screen readers: what the row is, and what's waiting there.
+    return Semantics(
+      button: onTap != null,
+      label: [
+        title,
+        ?subtitle,
+        if (badgeCount > 0) '$badgeCount new',
+      ].join(', '),
       onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
-        decoration: BoxDecoration(
-          color: danger ? context.colors.dangerSoft : context.colors.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: danger
-                ? context.colors.danger.withValues(alpha: 0.3)
-                : context.colors.divider,
+      excludeSemantics: true,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+          decoration: BoxDecoration(
+            color: danger ? context.colors.dangerSoft : context.colors.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: danger
+                  ? context.colors.danger.withValues(alpha: 0.3)
+                  : context.colors.divider,
+            ),
           ),
-        ),
-        child: Row(
-          children: [
-            if (hasIcon) ...[
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: iconBg ?? context.colors.surfaceSoft,
-                  borderRadius: BorderRadius.circular(10),
+          child: Row(
+            children: [
+              if (hasIcon) ...[
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: iconBg ?? context.colors.surfaceSoft,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Center(
+                    child:
+                        iconWidget ??
+                        SvgPicture.asset(
+                          icon!,
+                          width: 18,
+                          height: 18,
+                          colorFilter: ColorFilter.mode(
+                            iconColor ??
+                                (danger
+                                    ? context.colors.danger
+                                    : context.colors.textPrimary),
+                            BlendMode.srcIn,
+                          ),
+                        ),
+                  ),
                 ),
-                child: Center(
-                  child:
-                      iconWidget ??
-                      SvgPicture.asset(
-                        icon!,
-                        width: 18,
-                        height: 18,
-                        colorFilter: ColorFilter.mode(
-                          iconColor ??
-                              (danger
-                                  ? context.colors.danger
-                                  : context.colors.textPrimary),
-                          BlendMode.srcIn,
+                const SizedBox(width: 12),
+              ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                        color: danger
+                            ? context.colors.danger
+                            : context.colors.textPrimary,
+                      ),
+                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle!,
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          height: 1.4,
+                          color: context.colors.textSecondary,
                         ),
                       ),
+                    ],
+                  ],
                 ),
               ),
-              const SizedBox(width: 12),
+              if (badgeCount > 0) ...[
+                const SizedBox(width: 10),
+                CountBadge(badgeCount, size: CountBadgeSize.large),
+              ],
+              if (onTap != null) ...[
+                SizedBox(width: badgeCount > 0 ? 4 : 10),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: 18,
+                  color: danger
+                      ? context.colors.danger
+                      : context.colors.textMuted,
+                ),
+              ],
             ],
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w700,
-                      color: danger
-                          ? context.colors.danger
-                          : context.colors.textPrimary,
-                    ),
-                  ),
-                  if (subtitle != null) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle!,
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        height: 1.4,
-                        color: context.colors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            if (trailing != null) ...[
-              const SizedBox(width: 10),
-              trailing!,
-            ] else if (onTap != null) ...[
-              const SizedBox(width: 10),
-              Icon(
-                Icons.chevron_right_rounded,
-                size: 18,
-                color: danger
-                    ? context.colors.danger
-                    : context.colors.textMuted,
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class OnOffToggle extends StatelessWidget {
-  const OnOffToggle({required this.value, required this.onChanged, super.key});
-
-  final bool value;
-  final ValueChanged<bool> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => onChanged(!value),
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          color: value
-              ? context.colors.tint(Hue.green).soft
-              : context.colors.surfaceSoft,
-          borderRadius: BorderRadius.circular(999),
-        ),
-        child: Text(
-          value ? 'On' : 'Off',
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            color: value
-                ? context.colors.tint(Hue.green).color
-                : context.colors.textMuted,
           ),
         ),
       ),

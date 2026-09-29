@@ -9,6 +9,7 @@ import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/kinvo_colors.dart';
 import '../../../../core/time/clock.dart';
 import '../../../../core/time/relative_time.dart';
+import '../../../../core/widgets/count_badge.dart';
 import '../../../../core/widgets/flow_widgets.dart';
 import '../../../../core/widgets/page_header.dart';
 import '../../../../core/widgets/paywall_sheet.dart';
@@ -903,26 +904,7 @@ class _Avatar extends StatelessWidget {
             Positioned(
               top: -2,
               right: -2,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
-                decoration: BoxDecoration(
-                  color: context.colors.danger,
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: context.colors.surface, width: 2),
-                ),
-                child: Center(
-                  child: Text(
-                    unread > 99 ? '99+' : '$unread',
-                    style: TextStyle(
-                      color: context.colors.onAccent,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      height: 1,
-                    ),
-                  ),
-                ),
-              ),
+              child: CountBadge(unread, size: CountBadgeSize.large),
             ),
           if (user.isOnline)
             Positioned(

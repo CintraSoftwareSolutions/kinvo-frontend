@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/assets/app_assets.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/theme/kinvo_colors.dart';
+import '../../../notifications/presentation/controllers/notifications_controllers.dart';
 import '../../../premium/domain/plans.dart';
 import '../../../premium/presentation/controllers/premium_controllers.dart';
 import '../../../profile/presentation/controllers/profile_controllers.dart';
+import '../../../profile/presentation/widgets/person_photo.dart';
 import '../widgets/settings_tile.dart';
 
 class MoreScreen extends StatelessWidget {
@@ -39,14 +40,7 @@ class MoreScreen extends StatelessWidget {
                   onTap: () => context.push(AppRoutes.safetyCenter),
                 ),
                 const SizedBox(height: 10),
-                SettingsTile(
-                  icon: AppAssets.bell,
-                  iconBg: context.colors.dangerSoft,
-                  iconColor: context.colors.danger,
-                  title: 'Notifications',
-                  subtitle: 'Check match, message, and plan alerts.',
-                  onTap: () => context.push(AppRoutes.notifications),
-                ),
+                const _NotificationsTile(),
                 const SizedBox(height: 10),
                 SettingsTile(
                   icon: AppAssets.video,
@@ -128,18 +122,21 @@ class _MoreHeader extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'More',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w700,
-                letterSpacing: -0.5,
-                color: context.colors.textPrimary,
+            Semantics(
+              header: true,
+              child: Text(
+                'More',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.5,
+                  color: context.colors.textPrimary,
+                ),
               ),
             ),
             const SizedBox(height: 4),
             Text(
-              'Account hub, safety, support, and premium entry',
+              'Your account, safety, settings and support',
               style: TextStyle(
                 fontSize: 12.5,
                 color: context.colors.textSecondary,
@@ -188,7 +185,28 @@ class _PlanTile extends ConsumerWidget {
   }
 }
 
-/// Who is signed in, whether they are verified, and what plan they are on.
+/// The way into the notifications, with how many are unread: the same count
+/// as on the More tab, so the tab's number leads here.
+class _NotificationsTile extends ConsumerWidget {
+  const _NotificationsTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final unread = ref.watch(notificationUnreadCountProvider).value ?? 0;
+    return SettingsTile(
+      icon: AppAssets.bell,
+      iconBg: context.colors.dangerSoft,
+      iconColor: context.colors.danger,
+      title: 'Notifications',
+      subtitle: 'Check match, message, and plan alerts.',
+      badgeCount: unread,
+      onTap: () => context.push(AppRoutes.notifications),
+    );
+  }
+}
+
+/// Who is signed in: their photo, their name, whether they are verified and
+/// what plan they are on. Opens their profile as other people see it.
 class _IdentityCard extends ConsumerWidget {
   const _IdentityCard();
 
@@ -205,144 +223,110 @@ class _IdentityCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.colors;
     final profile = ref.watch(ownProfileProvider).value;
     final plan = ref.watch(currentPlanProvider).value;
+    final photo = ref.watch(ownMainPhotoProvider);
+    final name = profile?.displayName ?? 'Your profile';
     final details = [
       if (profile?.isVerified ?? false) 'Verified profile',
       ?_planLine(plan),
     ].join(' | ');
+    void open() => context.push(AppRoutes.profileReview);
 
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: context.colors.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: context.colors.divider),
-        boxShadow: [
-          BoxShadow(
-            color: context.colors.shadow,
-            blurRadius: 18,
-            offset: const Offset(0, 6),
+    return Semantics(
+      button: true,
+      label: details.isEmpty ? name : '$name, $details',
+      hint: 'Shows your profile as other people see it',
+      onTap: open,
+      excludeSemantics: true,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: colors.shadow,
+              blurRadius: 18,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Material(
+          color: colors.surface,
+          clipBehavior: Clip.antiAlias,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+            side: BorderSide(color: colors.divider),
           ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: context.colors.tint(Hue.purple).soft,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Icon(
-                    Icons.person_outline_rounded,
-                    color: context.colors.purple,
+          child: InkWell(
+            onTap: open,
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Row(
+                children: [
+                  ClipOval(
+                    child: SizedBox.square(
+                      dimension: 48,
+                      child: PersonPhoto(
+                        url: photo?.url,
+                        name: name,
+                        color: colors.purpleLight,
+                        initialSize: 20,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      profile?.displayName ?? 'Your profile',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: colors.textPrimary,
+                          ),
+                        ),
+                        if (details.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            details,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: colors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: colors.surfaceSoft,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(
+                      'View',
                       style: TextStyle(
-                        fontSize: 15,
+                        fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: context.colors.textPrimary,
+                        color: colors.textPrimary,
                       ),
                     ),
-                    if (details.isNotEmpty) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        details,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: context.colors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
+                  ),
+                ],
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: context.colors.surfaceSoft,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  'View',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: context.colors.textPrimary,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: context.colors.surfaceSoft.withValues(alpha: 0.55),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 2),
-                  child: SvgPicture.asset(
-                    AppAssets.sparkles,
-                    width: 18,
-                    height: 18,
-                    colorFilter: ColorFilter.mode(
-                      context.colors.purple,
-                      BlendMode.srcIn,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Workspace status',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: context.colors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Discovery, plans, profile, safety, and notifications all have local working paths.',
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          height: 1.45,
-                          color: context.colors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

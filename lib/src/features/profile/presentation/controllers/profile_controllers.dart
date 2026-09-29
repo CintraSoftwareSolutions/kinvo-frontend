@@ -133,6 +133,16 @@ final profilePhotosProvider =
       ProfilePhotosController.new,
     );
 
+/// The photo that stands for the signed-in user: their primary photo, or
+/// their first while none is marked primary. `null` while their photos load,
+/// when they have none, and when they can't be read, so whatever shows it
+/// falls back to their initial.
+final ownMainPhotoProvider = Provider.autoDispose<ProfilePhoto?>((ref) {
+  final photos = ref.watch(profilePhotosProvider).value?.photos ?? const [];
+  return photos.where((photo) => photo.isPrimary).firstOrNull ??
+      photos.firstOrNull;
+});
+
 final photoEditsProvider =
     NotifierProvider.autoDispose<PhotoEditsController, PhotoEdits>(
       PhotoEditsController.new,

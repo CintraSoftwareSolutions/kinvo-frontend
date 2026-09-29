@@ -23,21 +23,38 @@ class PersonPhoto extends StatelessWidget {
   /// The size of the initial shown in place of a photo.
   final double initialSize;
 
+  /// How much wider than it's drawn a photo is decoded, so one that's
+  /// landscape still covers a square without being stretched.
+  static const _decodeMargin = 1.5;
+
   @override
   Widget build(BuildContext context) {
     final fallback = _Initial(name: name, color: color, size: initialSize);
     final url = this.url;
 
     if (url == null) return fallback;
-    return Image.network(
-      url.toString(),
-      fit: BoxFit.cover,
-      // No photo is shown half-loaded or as a broken image.
-      frameBuilder: (_, child, frame, wasSynchronouslyLoaded) {
-        if (wasSynchronouslyLoaded || frame != null) return child;
-        return fallback;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Decoded at the size it's drawn, not the size it was uploaded: a
+        // photo is up to 1600 pixels a side, and a list of avatars decoded
+        // at that size fills the image cache.
+        final side = constraints.biggest.longestSide;
+        final decodeWidth = side.isFinite
+            ? (side * MediaQuery.devicePixelRatioOf(context) * _decodeMargin)
+                  .round()
+            : null;
+        return Image.network(
+          url.toString(),
+          fit: BoxFit.cover,
+          cacheWidth: decodeWidth,
+          // No photo is shown half-loaded or as a broken image.
+          frameBuilder: (_, child, frame, wasSynchronouslyLoaded) {
+            if (wasSynchronouslyLoaded || frame != null) return child;
+            return fallback;
+          },
+          errorBuilder: (_, _, _) => fallback,
+        );
       },
-      errorBuilder: (_, _, _) => fallback,
     );
   }
 }

@@ -53,7 +53,12 @@ String shownPhoto(WidgetTester tester, {Finder? within}) {
   final image = tester.widget<Image>(
     find.descendant(of: gallery, matching: find.byType(Image)),
   );
-  return (image.image as NetworkImage).url;
+  // Photos are decoded at the size they're drawn, which wraps the link.
+  return switch (image.image) {
+    ResizeImage(imageProvider: NetworkImage(:final url)) => url,
+    NetworkImage(:final url) => url,
+    final other => fail('Expected a photo from a link, got $other'),
+  };
 }
 
 /// Lets the image requests finish.

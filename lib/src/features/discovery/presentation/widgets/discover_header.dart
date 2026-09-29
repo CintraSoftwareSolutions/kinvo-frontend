@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/assets/app_assets.dart';
 import '../../../../core/theme/kinvo_colors.dart';
+import '../../../../core/widgets/count_badge.dart';
 
 /// The top of Discover: which mode is showing, filters and notifications.
 class DiscoverHeader extends StatelessWidget {
@@ -137,6 +138,7 @@ class _CircleIconButton extends StatelessWidget {
       button: true,
       enabled: onTap != null,
       label: badgeCount > 0 ? '$tooltip, $badgeCount new' : tooltip,
+      onTap: onTap,
       excludeSemantics: true,
       child: GestureDetector(
         onTap: onTap,
@@ -170,40 +172,7 @@ class _CircleIconButton extends StatelessWidget {
                 ),
               ),
               if (badgeCount > 0)
-                Positioned(
-                  top: -2,
-                  right: -2,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 5,
-                      vertical: 1,
-                    ),
-                    constraints: const BoxConstraints(
-                      minWidth: 16,
-                      minHeight: 16,
-                    ),
-                    decoration: BoxDecoration(
-                      color: context.colors.danger,
-                      borderRadius: BorderRadius.circular(999),
-                      border: Border.all(
-                        color: context.colors.surface,
-                        width: 1.5,
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        '$badgeCount',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: context.colors.onAccent,
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.w700,
-                          height: 1,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+                Positioned(top: -2, right: -2, child: CountBadge(badgeCount)),
             ],
           ),
         ),

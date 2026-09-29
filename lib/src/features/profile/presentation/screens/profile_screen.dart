@@ -88,10 +88,7 @@ class _ProfileBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final photos = ref.watch(profilePhotosProvider).value?.photos ?? const [];
-    final mainPhoto =
-        photos.where((photo) => photo.isPrimary).firstOrNull ??
-        photos.firstOrNull;
+    final mainPhoto = ref.watch(ownMainPhotoProvider);
     final modes = ref.watch(discoveryModesProvider).value?.length;
     final onBreak =
         ref.watch(
