@@ -83,6 +83,10 @@ abstract final class AppRoutes {
   /// the report is about.
   static const reportPath = '/report';
 
+  /// Your modes: which are on, and the main one. Opened from Discover's mode
+  /// switcher, Profile and Settings.
+  static const modes = '/modes';
+
   static const splashDestinationParameter = 'from';
 
   /// The splash screen, remembering [destination] so the app can continue

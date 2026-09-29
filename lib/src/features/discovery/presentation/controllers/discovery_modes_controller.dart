@@ -1,17 +1,39 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/async/wait_both.dart';
 import '../../../../core/auth/auth_providers.dart';
 import '../../../../core/config/server_config.dart';
 import '../../../../core/config/server_config_providers.dart';
+import '../../../modes/presentation/controllers/user_modes_controller.dart';
 import '../../data/discovery_repository.dart';
 import '../../domain/discovery_formatting.dart';
 import '../../domain/discovery_mode.dart';
 
 /// The modes Discover can show: the ones the user has switched on, main mode
-/// first.
-final discoveryModesProvider = FutureProvider.autoDispose<List<DiscoveryMode>>(
-  (ref) => ref.watch(discoveryRepositoryProvider).fetchModes(),
-);
+/// first, named from the server's catalogue.
+///
+/// Follows [userModesProvider], so a mode switched on or off anywhere in the
+/// app is on Discover at once.
+final discoveryModesProvider = FutureProvider.autoDispose<List<DiscoveryMode>>((
+  ref,
+) async {
+  // Both watched before anything is awaited: after an await the provider may
+  // already be gone, and watching then throws.
+  final (modes, config) = await waitBoth(
+    ref.watch(userModesProvider.future),
+    ref.watch(serverConfigProvider.future),
+  );
+  return discoveryModesFrom(modes, config);
+});
+
+/// Reads the modes again after a failure, and the catalogue too if that is
+/// what failed.
+void retryDiscoveryModes(WidgetRef ref) {
+  if (ref.read(serverConfigProvider).hasError) {
+    ref.invalidate(serverConfigProvider);
+  }
+  ref.invalidate(userModesProvider);
+}
 
 /// The mode the user last picked on Discover, by its API name, or `null`
 /// before they pick one.

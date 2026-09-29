@@ -15,6 +15,8 @@ import '../../../../core/widgets/paywall_sheet.dart';
 import '../../../matches/data/matches_repository.dart';
 import '../../../matches/presentation/controllers/matches_controllers.dart';
 import '../../../notifications/presentation/controllers/notifications_controllers.dart';
+import '../../../modes/presentation/controllers/user_modes_controller.dart';
+import '../../../modes/presentation/mode_change_feedback.dart';
 import '../../../modes/presentation/mode_presentation.dart';
 import '../../../settings/presentation/controllers/settings_controllers.dart';
 import '../../domain/deck_card.dart';
@@ -32,7 +34,7 @@ import '../widgets/discover_header.dart';
 import '../widgets/empty_deck.dart';
 import '../widgets/filters_sheet.dart';
 import '../widgets/match_dialog.dart';
-import '../widgets/mode_picker_sheet.dart';
+import '../widgets/mode_switcher_sheet.dart';
 import '../widgets/profile_sheet.dart';
 
 /// The Discover tab: today's deck for one of the user's modes.
@@ -54,9 +56,11 @@ class DiscoverScreen extends ConsumerWidget {
               : modeColors(mode.value).primary,
           notificationCount:
               ref.watch(notificationUnreadCountProvider).value ?? 0,
-          onModeTap: mode == null || modes.length < 2
+          // Always, once the modes are known: even with one mode on, this is
+          // where others are switched on.
+          onModeTap: mode == null
               ? null
-              : () => _pickMode(context, ref, modes, mode),
+              : () => unawaited(_switchMode(context, ref, mode)),
           onFiltersTap: mode == null
               ? null
               : () => showFiltersSheet(context, mode),
@@ -72,19 +76,22 @@ class DiscoverScreen extends ConsumerWidget {
                     mode: mode,
                     modes: modes,
                   ),
+                  // Onboarding rules this out, but another device can
+                  // switch every mode off.
                   null => _Message(
                     title: 'No modes switched on',
                     message:
                         'Discover shows people for the modes you use. '
                         'Switch one on to start.',
-                    onRetry: () => ref.invalidate(discoveryModesProvider),
+                    actionLabel: 'Choose a mode',
+                    onRetry: () => unawaited(context.push(AppRoutes.modes)),
                   ),
                 }
               : active.hasError
               ? _Message(
                   title: "Discover didn't load",
                   message: _messageFor(active.error),
-                  onRetry: () => ref.invalidate(discoveryModesProvider),
+                  onRetry: () => retryDiscoveryModes(ref),
                 )
               : const Center(child: CircularProgressIndicator()),
         ),
@@ -92,19 +99,48 @@ class DiscoverScreen extends ConsumerWidget {
     );
   }
 
-  static Future<void> _pickMode(
+  /// Opens the mode switcher, and does what was chosen there: shows a mode,
+  /// switches one on and shows it, points the way to verification, or opens
+  /// Your modes.
+  static Future<void> _switchMode(
     BuildContext context,
     WidgetRef ref,
-    List<DiscoveryMode> modes,
-    DiscoveryMode active,
+    DiscoveryMode showing,
   ) async {
-    final picked = await showModePickerSheet(
+    final choices = ref.read(modeChoicesProvider).value;
+    if (choices == null) return;
+
+    final picked = await showModeSwitcherSheet(
       context,
-      modes: modes,
-      activeMode: active.value,
+      choices: choices,
+      showing: showing.value,
     );
-    if (picked != null) {
-      ref.read(selectedDiscoveryModeProvider.notifier).select(picked.value);
+    if (picked == null || !context.mounted) return;
+
+    void show(String mode) {
+      ref.read(selectedDiscoveryModeProvider.notifier).select(mode);
+    }
+
+    switch (picked) {
+      case ShowMode(:final mode):
+        show(mode);
+      case TurnOnMode(:final choice):
+        if (!await confirmTurnOn(context, modeLabel: choice.label)) return;
+        final outcome = await ref
+            .read(userModesProvider.notifier)
+            .turnOn(choice.value);
+        if (outcome is ModeChanged) show(choice.value);
+        if (!context.mounted) return;
+        await showModeChangeOutcome(
+          context,
+          outcome,
+          modeLabel: choice.label,
+          done: '${choice.label} is on.',
+        );
+      case VerifyForMode(:final choice):
+        await offerVerification(context, modeLabel: choice.label);
+      case ManageModes():
+        await context.push<void>(AppRoutes.modes);
     }
   }
 }
@@ -459,11 +495,13 @@ class _Message extends StatelessWidget {
     required this.title,
     required this.message,
     required this.onRetry,
+    this.actionLabel = 'Try again',
   });
 
   final String title;
   final String message;
   final VoidCallback onRetry;
+  final String actionLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -498,7 +536,7 @@ class _Message extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 18),
-          PrimaryActionButton(label: 'Try again', onPressed: onRetry),
+          PrimaryActionButton(label: actionLabel, onPressed: onRetry),
         ],
       ),
     );

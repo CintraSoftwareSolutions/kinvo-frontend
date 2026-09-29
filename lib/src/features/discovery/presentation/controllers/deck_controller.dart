@@ -8,7 +8,7 @@ import '../../data/discovery_repository.dart';
 import '../../domain/deck_card.dart';
 import '../../domain/deck_stats.dart';
 import '../../domain/swipe.dart';
-import 'discovery_modes_controller.dart';
+import '../../../modes/presentation/controllers/user_modes_controller.dart';
 
 /// Today's deck for one mode, as the user works through it.
 @immutable
@@ -249,7 +249,7 @@ class DeckController extends AsyncNotifier<DeckState> {
   /// The mode was switched off on another device. Discover moves to one that
   /// is still on.
   SwipeOutcome _modeSwitchedOff(String message) {
-    ref.invalidate(discoveryModesProvider);
+    ref.invalidate(userModesProvider);
     return SwipeFailed(message);
   }
 

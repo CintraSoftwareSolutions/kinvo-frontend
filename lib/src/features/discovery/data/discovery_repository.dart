@@ -1,11 +1,6 @@
-import 'dart:async';
-
-// Riverpod's AsyncError would shadow the dart:async one that
-// ParallelWaitError reports.
-import 'package:flutter_riverpod/flutter_riverpod.dart' hide AsyncError;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/config/server_config.dart';
-import '../../../core/config/server_config_providers.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_client_provider.dart';
 import '../../../core/network/cursor_page.dart';
@@ -22,9 +17,6 @@ import '../domain/swipe.dart';
 /// Everything Discover reads from the server and sends to it. Failures are
 /// `ApiException`s.
 abstract interface class DiscoveryRepository {
-  /// The modes the signed-in user has switched on, main mode first.
-  Future<List<DiscoveryMode>> fetchModes();
-
   /// Saves who [mode]'s deck is built from, returning what the server holds.
   Future<ModeFilters> saveFilters(String mode, ModeFilters filters);
 
@@ -54,10 +46,8 @@ final class ApiDiscoveryRepository implements DiscoveryRepository {
   ApiDiscoveryRepository({
     required ApiClient api,
     required ModesRepository modes,
-    required Future<ServerConfig> Function() config,
   }) : _api = api,
-       _modes = modes,
-       _config = config;
+       _modes = modes;
 
   /// Cards per page. A day's deck is at most 50, so two pages cover most
   /// days without making the first card wait for all of them.
@@ -65,13 +55,6 @@ final class ApiDiscoveryRepository implements DiscoveryRepository {
 
   final ApiClient _api;
   final ModesRepository _modes;
-  final Future<ServerConfig> Function() _config;
-
-  @override
-  Future<List<DiscoveryMode>> fetchModes() async {
-    final (userModes, config) = await _both(_modes.fetch(), _config());
-    return discoveryModesFrom(userModes, config);
-  }
 
   @override
   Future<ModeFilters> saveFilters(String mode, ModeFilters filters) {
@@ -168,23 +151,10 @@ List<DiscoveryMode> discoveryModesFrom(
   ];
 }
 
-/// Waits for both, failing with whichever failed first rather than with the
-/// [ParallelWaitError] that hides it.
-Future<(A, B)> _both<A, B>(Future<A> a, Future<B> b) async {
-  try {
-    return await (a, b).wait;
-  } on ParallelWaitError<(A?, B?), (AsyncError?, AsyncError?)> catch (error) {
-    final (errorA, errorB) = error.errors;
-    final first = (errorA ?? errorB)!;
-    Error.throwWithStackTrace(first.error, first.stackTrace);
-  }
-}
-
 /// The repository Discover uses.
 final discoveryRepositoryProvider = Provider<DiscoveryRepository>((ref) {
   return ApiDiscoveryRepository(
     api: ref.watch(apiClientProvider),
     modes: ref.watch(modesRepositoryProvider),
-    config: () => ref.read(serverConfigProvider.future),
   );
 });

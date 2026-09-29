@@ -290,6 +290,31 @@ on (`GET /discovery/{mode}/deck`), starting on their main mode.
   on cards, profiles, matches, chats and live presence alike.
 - Tapping a card opens the full profile (`GET /users/{id}`).
 
+## Modes
+
+`userModesProvider` (`features/modes/`) holds the account's modes as
+`GET /modes` has them: which are on, the main one, and the plan's limit on
+modes at once. It's the one copy every screen reads — Discover's mode list
+(`discoveryModesProvider`) is derived from it — so a mode switched on
+anywhere is on Discover at once.
+
+- **The mode chip on Discover** opens every mode in the catalogue, even with
+  one on: that's where others are switched on. A mode that's on shows at
+  once; one that's off asks first ("Turn on Trading?") because turning it on
+  shows the user to everyone in that mode, then shows it.
+- **Your modes** (`/modes`, from the chip's sheet, Profile's Modes count and
+  Settings) switches modes on and off (`PATCH /modes/{mode}`) and makes one
+  the main mode (`POST /modes/{mode}/primary`).
+- Every rule is the server's, and the app says what it answers: the plan's
+  limit (Free 3, Basic 5, Premium unlimited) comes back as `PREMIUM_REQUIRED`
+  and opens the paywall; Cuddle needs a verified identity (`FORBIDDEN` with
+  `reason: verification_required`), and the app points the way to verifying.
+  Switching off the main mode makes another one main, as the server decides.
+- The app's one rule of its own: the last mode stays on, since Discover and
+  matching need one. It's refused without asking the server.
+- After every change the server's answer is kept, not a guess, and after a
+  failure the modes are read again, since part of it may have happened.
+
 ## Matches
 
 The Matches tab has three lists: matches (`GET /matches`), people who liked the

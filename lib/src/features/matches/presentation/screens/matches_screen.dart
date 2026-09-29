@@ -490,7 +490,7 @@ class _LikesTab extends ConsumerWidget {
         return _Message(
           title: "Your likes didn't load",
           message: _messageFor(active.error),
-          onRetry: () => ref.invalidate(discoveryModesProvider),
+          onRetry: () => retryDiscoveryModes(ref),
         );
       }
       if (active.hasValue) {

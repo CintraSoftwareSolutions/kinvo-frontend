@@ -202,7 +202,11 @@ class _ProfileBody extends ConsumerWidget {
                   ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: _StatBox(label: 'Modes', value: '${modes ?? '–'}'),
+                    child: _StatBox(
+                      label: 'Modes',
+                      value: '${modes ?? '–'}',
+                      onTap: () => context.push(AppRoutes.modes),
+                    ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -413,42 +417,54 @@ class _CompletionCard extends StatelessWidget {
 }
 
 class _StatBox extends StatelessWidget {
-  const _StatBox({required this.label, required this.value});
+  const _StatBox({required this.label, required this.value, this.onTap});
 
   final String label;
   final String value;
+
+  /// Opens where the number can be changed, when it can be.
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
       label: '$label: $value',
+      button: onTap != null,
       excludeSemantics: true,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceSoft.withValues(alpha: 0.55),
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Column(
-          children: [
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
-              ),
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: _box(),
+      ),
+    );
+  }
+
+  Widget _box() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceSoft.withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
             ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 10.5,
-                color: AppColors.textSecondary,
-              ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 10.5,
+              color: AppColors.textSecondary,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

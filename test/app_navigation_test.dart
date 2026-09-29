@@ -200,6 +200,7 @@ void main() {
       AppRoutes.settings,
       AppRoutes.notificationSettings,
       AppRoutes.reportPath,
+      AppRoutes.modes,
     ];
 
     for (final location in locations) {

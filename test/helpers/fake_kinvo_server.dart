@@ -2597,11 +2597,13 @@ final class FakeKinvoServer {
 
     if (body['is_enabled'] case final bool enable) {
       if (enable && !enabledModes.contains(mode)) {
+        // Both with the details the server sends, which the app acts on.
         if (mode == 'cuddle' && !isVerified) {
           return _error(
             403,
             'FORBIDDEN',
             'Verify your identity to use this mode.',
+            details: {'reason': 'verification_required', 'mode': mode},
           );
         }
         if (enabledModes.length >= maxModes) {
@@ -2609,6 +2611,11 @@ final class FakeKinvoServer {
             403,
             'PREMIUM_REQUIRED',
             'Your plan includes $maxModes modes at a time. Upgrade for more.',
+            details: {
+              'limit': maxModes,
+              'enabled': enabledModes.length,
+              'upgrade_available': true,
+            },
           );
         }
         enabledModes.add(mode);

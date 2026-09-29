@@ -63,6 +63,16 @@ class SettingsScreen extends ConsumerWidget {
                   SettingsGroup(
                     children: [
                       SettingsLink(
+                        icon: Icons.layers_outlined,
+                        title: 'Your modes',
+                        description: 'Which modes you use, and your main one',
+                        value: switch (modes.value?.length) {
+                          final count? => '$count on',
+                          null => null,
+                        },
+                        onTap: () => context.push(AppRoutes.modes),
+                      ),
+                      SettingsLink(
                         icon: Icons.tune_rounded,
                         title: 'Distance and age range',
                         description: 'Set for each mode',

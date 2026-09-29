@@ -8,7 +8,7 @@ import '../../../profile/domain/public_profile.dart';
 import '../../data/discovery_repository.dart';
 import '../../domain/deck_stats.dart';
 import 'deck_controller.dart';
-import 'discovery_modes_controller.dart';
+import '../../../modes/presentation/controllers/user_modes_controller.dart';
 
 /// How starting a boost turned out.
 @immutable
@@ -161,7 +161,7 @@ class FiltersFormController extends Notifier<FiltersForm> {
           .read(discoveryRepositoryProvider)
           .saveFilters(mode, state.draft);
       ref
-        ..invalidate(discoveryModesProvider)
+        ..invalidate(userModesProvider)
         ..invalidate(deckControllerProvider(mode))
         ..invalidate(deckStatsProvider(mode));
       if (ref.mounted) {

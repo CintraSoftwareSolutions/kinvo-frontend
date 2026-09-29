@@ -13,6 +13,7 @@ import '../../features/chat/presentation/screens/chat_screen.dart';
 import '../../features/discovery/presentation/screens/discover_screen.dart';
 import '../../features/home/presentation/screens/home_shell.dart';
 import '../../features/matches/presentation/screens/matches_screen.dart';
+import '../../features/modes/presentation/screens/modes_screen.dart';
 import '../../features/more/presentation/screens/more_screen.dart';
 import '../../features/premium/presentation/screens/premium_screen.dart';
 import '../../features/more/presentation/screens/report_screen.dart';
@@ -131,6 +132,9 @@ List<RouteBase> _routes(GlobalKey<NavigatorState> rootKey, Ref ref) {
         },
       ),
     ),
+    // Opened from Discover, Profile and Settings alike, so it covers the tabs
+    // and goes back to wherever it came from.
+    GoRoute(path: AppRoutes.modes, builder: (_, _) => const ModesScreen()),
     StatefulShellRoute.indexedStack(
       builder: (_, _, navigationShell) =>
           HomeShell(navigationShell: navigationShell),
