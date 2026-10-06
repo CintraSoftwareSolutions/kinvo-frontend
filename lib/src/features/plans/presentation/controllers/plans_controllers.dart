@@ -377,36 +377,75 @@ class VenueListController extends AsyncNotifier<List<Venue>> {
   @override
   Future<List<Venue>> build() {
     final repository = ref.watch(venuesRepositoryProvider);
+    final subscription = ref.watch(liveUpdatesProvider).stream.listen((update) {
+      if (update is SavedVenueChanged) _follow(update.venue);
+    });
+    ref.onDispose(() => unawaited(subscription.cancel()));
     if (query.savedOnly) return repository.fetchSaved();
     return repository.searchVenues(category: query.category);
   }
 
   /// Saves [venue] to the user's list, or takes it off. Shows the change at
-  /// once, and puts it back if the server refuses. Returns why it failed, or
-  /// `null`.
+  /// once, puts it back if the server refuses, and once the server agrees
+  /// tells the other lists. Returns why it failed, or `null`.
   Future<String?> toggleSaved(Venue venue) async {
-    final saving = !venue.isSaved;
-    _replace(venue.id, (shown) => shown.copyWith(isSaved: saving));
+    final changed = venue.copyWith(isSaved: !venue.isSaved);
+    // Read now: the user may have moved on to another list, closing this
+    // one, by the time the server answers.
+    final updates = ref.read(liveUpdatesProvider);
+    _show(changed);
     try {
-      if (saving) {
+      if (changed.isSaved) {
         await _repository.save(venue.id);
       } else {
         await _repository.unsave(venue.id);
       }
+      updates.publish(SavedVenueChanged(changed));
       return null;
     } on ApiException catch (error) {
-      if (ref.mounted) {
-        _replace(venue.id, (shown) => shown.copyWith(isSaved: !saving));
-      }
+      if (ref.mounted) _show(venue);
       return error.message;
     }
   }
 
-  void _replace(String venueId, Venue Function(Venue venue) change) {
+  /// Follows a place saved or taken off the user's list, in this list or
+  /// another.
+  void _follow(Venue changed) {
     final venues = state.value;
-    if (venues == null) return;
+    if (venues == null) {
+      // What is on its way may be from before the change.
+      ref.invalidateSelf();
+      return;
+    }
+    final isHere = venues.any((venue) => venue.id == changed.id);
+    if (query.savedOnly && !changed.isSaved) {
+      if (isHere) {
+        state = AsyncData([
+          for (final venue in venues)
+            if (venue.id != changed.id) venue,
+        ]);
+      }
+    } else if (query.savedOnly && !isHere) {
+      // Saved in another list: shown at once, then loaded again, as the
+      // server keeps it.
+      state = AsyncData([changed, ...venues]);
+      ref.invalidateSelf();
+    } else {
+      _show(changed);
+    }
+  }
+
+  /// Shows [changed] saved or not, if it is in this list.
+  void _show(Venue changed) {
+    final venues = state.value;
+    bool differs(Venue venue) =>
+        venue.id == changed.id && venue.isSaved != changed.isSaved;
+    if (venues == null || !venues.any(differs)) return;
     state = AsyncData([
-      for (final venue in venues) venue.id == venueId ? change(venue) : venue,
+      for (final venue in venues)
+        venue.id == changed.id
+            ? venue.copyWith(isSaved: changed.isSaved)
+            : venue,
     ]);
   }
 }

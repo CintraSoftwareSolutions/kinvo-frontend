@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../calls/domain/call.dart';
 import '../../matches/domain/match_summary.dart';
+import '../../plans/domain/venue.dart';
 import '../../profile/domain/user_summary.dart';
 import 'chat_message.dart';
 
@@ -115,6 +116,15 @@ final class PlanUpdated extends LiveUpdate {
   const PlanUpdated({this.planId});
 
   final String? planId;
+}
+
+/// The user saved a place to meet, or took it off their list, and the server
+/// agreed. Every list of places shows it, not only the one it was done in.
+final class SavedVenueChanged extends LiveUpdate {
+  const SavedVenueChanged(this.venue);
+
+  /// The place as it is now: [Venue.isSaved] says which way it went.
+  final Venue venue;
 }
 
 /// Someone is calling.

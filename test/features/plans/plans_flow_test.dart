@@ -255,6 +255,43 @@ void main() {
     expect(find.text('Powered by Geoapify'), findsNothing);
   });
 
+  testWidgets('a place saved while making a plan is under Saved, and one '
+      'taken off there is unsaved in the list', (tester) async {
+    final server = _server()
+      ..venues.addAll(const [
+        FakeVenue(id: 'v1', name: 'Blue Bottle', modes: ['study_buddy']),
+        FakeVenue(id: 'v2', name: 'Hyde Park', category: 'park'),
+      ]);
+    _matchWithSam(server);
+    final app = await _openPlans(tester, server);
+
+    await tester.tap(find.byTooltip('New plan'));
+    await app.pumpUntilFound(find.byType(PlanComposerScreen));
+    await app.pumpUntilLoaded();
+    await _scrollToAndTap(tester, find.text('Find a place'));
+    await app.pumpUntilFound(find.text('Blue Bottle'));
+
+    await tester.tap(find.byTooltip('Save place').first);
+    await app.pumpUntilLoaded();
+    expect(server.savedVenues, {'v1'});
+
+    await tester.tap(find.text('Saved'));
+    await app.pumpUntilLoaded();
+    expect(find.text('Blue Bottle'), findsOneWidget);
+    expect(find.text('Hyde Park'), findsNothing);
+
+    await tester.tap(find.byTooltip('Remove from saved'));
+    await app.pumpUntilLoaded();
+    expect(server.savedVenues, isEmpty);
+    expect(find.text('Blue Bottle'), findsNothing);
+    expect(find.text('No saved places'), findsOneWidget);
+
+    await tester.tap(find.text('All'));
+    await app.pumpUntilLoaded();
+    expect(find.text('Blue Bottle'), findsOneWidget);
+    expect(find.byTooltip('Remove from saved'), findsNothing);
+  });
+
   testWidgets('suggests a plan from the conversation, at a place from the '
       'list', (tester) async {
     final server = _server()

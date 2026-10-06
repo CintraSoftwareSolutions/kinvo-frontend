@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kinvo/src/core/auth/auth_providers.dart';
@@ -5,6 +7,7 @@ import 'package:kinvo/src/core/realtime/realtime_providers.dart';
 import 'package:kinvo/src/features/matches/presentation/controllers/matches_controllers.dart';
 import 'package:kinvo/src/features/plans/data/plans_repository.dart';
 import 'package:kinvo/src/features/plans/domain/plan.dart';
+import 'package:kinvo/src/features/plans/domain/venue.dart';
 import 'package:kinvo/src/features/plans/presentation/controllers/plans_controllers.dart';
 
 import '../../helpers/app_harness.dart';
@@ -258,5 +261,128 @@ void main() {
         .read(venueListProvider(query).notifier)
         .toggleSaved(venues.single);
     expect(server.savedVenues, {'v1'});
+  });
+
+  group('a saved place shows the same in every list', () {
+    const cafes = (category: VenueCategory.cafe, savedOnly: false);
+
+    setUp(() {
+      server.venues.addAll(const [
+        FakeVenue(id: 'v1', name: 'Blue Bottle'),
+        FakeVenue(id: 'v2', name: 'Hyde Park', category: 'park'),
+      ]);
+    });
+
+    Future<List<Venue>> load(VenueQuery query) {
+      container.listen(venueListProvider(query), (_, _) {});
+      return container.read(venueListProvider(query).future);
+    }
+
+    Venue shown(VenueQuery query, String id) {
+      return container
+          .read(venueListProvider(query))
+          .requireValue
+          .singleWhere((venue) => venue.id == id);
+    }
+
+    test(
+      'saved in one list, it is under Saved and saved in the rest',
+      () async {
+        final cafeList = await load(cafes);
+        expect(await load(nearbyVenues), hasLength(2));
+        expect(await load(savedVenues), isEmpty);
+
+        await container
+            .read(venueListProvider(cafes).notifier)
+            .toggleSaved(cafeList.single);
+        await settle();
+
+        final saved = await container.read(
+          venueListProvider(savedVenues).future,
+        );
+        expect([for (final venue in saved) venue.name], ['Blue Bottle']);
+        expect(shown(nearbyVenues, 'v1').isSaved, isTrue);
+        expect(shown(nearbyVenues, 'v2').isSaved, isFalse);
+        expect(shown(cafes, 'v1').isSaved, isTrue);
+      },
+    );
+
+    test(
+      'taken off under Saved, it leaves Saved and is unsaved in the rest',
+      () async {
+        server.savedVenues.add('v1');
+        final nearby = await load(nearbyVenues);
+        expect(nearby.first.isSaved, isTrue);
+        final saved = await load(savedVenues);
+
+        final unsaving = container
+            .read(venueListProvider(savedVenues).notifier)
+            .toggleSaved(saved.single);
+        // Until the server agrees it stays, so a mistaken tap can be undone.
+        expect(shown(savedVenues, 'v1').isSaved, isFalse);
+
+        expect(await unsaving, isNull);
+        await settle();
+        expect(server.savedVenues, isEmpty);
+        expect(
+          container.read(venueListProvider(savedVenues)).requireValue,
+          isEmpty,
+        );
+        expect(shown(nearbyVenues, 'v1').isSaved, isFalse);
+      },
+    );
+
+    test('a refused save changes no other list', () async {
+      final nearby = await load(nearbyVenues);
+      await load(savedVenues);
+      server.intercept = (options) async => options.path.endsWith('/save')
+          ? jsonResponse(
+              503,
+              errorEnvelope('SERVICE_UNAVAILABLE', 'Please try again shortly.'),
+            )
+          : null;
+
+      await container
+          .read(venueListProvider(nearbyVenues).notifier)
+          .toggleSaved(nearby.first);
+
+      expect(shown(nearbyVenues, 'v1').isSaved, isFalse);
+      expect(
+        container.read(venueListProvider(savedVenues)).requireValue,
+        isEmpty,
+      );
+    });
+
+    test(
+      'a save still lands under Saved when its list closes meanwhile',
+      () async {
+        final saving = Completer<void>();
+        server.intercept = (options) async {
+          if (options.path.endsWith('/save')) await saving.future;
+          return null;
+        };
+        final cafeSubscription = container.listen(
+          venueListProvider(cafes),
+          (_, _) {},
+        );
+        final cafeList = await container.read(venueListProvider(cafes).future);
+        await load(savedVenues);
+
+        final toggled = container
+            .read(venueListProvider(cafes).notifier)
+            .toggleSaved(cafeList.single);
+        // The user moves to another list while the save is on its way.
+        cafeSubscription.close();
+        await settle();
+        saving.complete();
+
+        expect(await toggled, isNull);
+        await settle();
+        final saved = await container.read(
+          venueListProvider(savedVenues).future,
+        );
+        expect([for (final venue in saved) venue.name], ['Blue Bottle']);
+      },
+    );
   });
 }
