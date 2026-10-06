@@ -39,6 +39,26 @@ enum VenueCategory {
   }
 }
 
+/// Where a venue came from: Kinvo's own list, or a places provider whose data
+/// has to be credited wherever it is shown.
+enum VenueSource {
+  curated('curated'),
+  geoapify('geoapify');
+
+  const VenueSource(this.wireValue);
+
+  final String wireValue;
+
+  /// Kinvo's own list for anything this version doesn't know, and for a
+  /// server that doesn't say.
+  static VenueSource fromWireValue(String? value) {
+    for (final source in values) {
+      if (source.wireValue == value) return source;
+    }
+    return curated;
+  }
+}
+
 /// A place from Kinvo's list, somewhere to meet.
 @immutable
 final class Venue {
@@ -54,6 +74,7 @@ final class Venue {
     required this.photoUrl,
     required this.distanceMetres,
     required this.isSaved,
+    this.source = VenueSource.curated,
   });
 
   /// Reads one venue, as the venues endpoints return it.
@@ -83,6 +104,9 @@ final class Venue {
         photoUrl: photoUrl == null ? null : Uri.tryParse(photoUrl),
         distanceMetres: distanceMetres?.toDouble(),
         isSaved: isSaved,
+        source: VenueSource.fromWireValue(
+          json['source'] is String ? json['source'] as String : null,
+        ),
       );
     }
     throw const FormatException(
@@ -112,6 +136,8 @@ final class Venue {
   /// Whether the user saved it to their list.
   final bool isSaved;
 
+  final VenueSource source;
+
   Venue copyWith({required bool isSaved}) {
     return Venue(
       id: id,
@@ -125,6 +151,7 @@ final class Venue {
       photoUrl: photoUrl,
       distanceMetres: distanceMetres,
       isSaved: isSaved,
+      source: source,
     );
   }
 }

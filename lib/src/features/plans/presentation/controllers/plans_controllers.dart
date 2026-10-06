@@ -411,6 +411,28 @@ class VenueListController extends AsyncNotifier<List<Venue>> {
   }
 }
 
+/// What "Find a place" opens on: Kinvo's places near the user, and the ones
+/// they saved.
+const VenueQuery nearbyVenues = (category: null, savedOnly: false);
+const VenueQuery savedVenues = (category: null, savedOnly: true);
+
+/// Whether "Find a place" has anything to show: Kinvo's places near the
+/// user, or places they saved.
+///
+/// `null` until that's known, and when it can't be — so the choice is only
+/// taken away when there is certainly nothing to choose, and a slow or failed
+/// request leaves it where it was. Reads the same lists the places screen
+/// shows, so opening it after this costs no second request.
+final placesToChooseFromProvider = Provider.autoDispose<bool?>((ref) {
+  final lists = [
+    ref.watch(venueListProvider(nearbyVenues)),
+    ref.watch(venueListProvider(savedVenues)),
+  ];
+  if (lists.any((list) => list.value?.isNotEmpty ?? false)) return true;
+  if (lists.every((list) => list.hasValue && !list.hasError)) return false;
+  return null;
+});
+
 /// Places suited to a match's mode, to suggest in its plan.
 final venueSuggestionsProvider = FutureProvider.autoDispose
     .family<List<Venue>, String>((ref, matchId) {

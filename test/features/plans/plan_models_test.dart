@@ -165,6 +165,33 @@ void main() {
     expect(venue.rating, 4.9);
     expect(venue.distanceMetres, 3400.5);
     expect(venue.isSaved, isTrue);
+    // A server from before venues had sources: they were all Kinvo's own.
+    expect(venue.source, VenueSource.curated);
+  });
+
+  test('a venue says where it came from', () {
+    Venue read(Object? source) {
+      return Venue.fromJson({
+        'id': 'v1',
+        'name': 'Chaaye Khana',
+        'category': 'cafe',
+        'description': null,
+        'address': null,
+        'city': 'Islamabad',
+        'rating': null,
+        'price_level': null,
+        'photo_url': null,
+        'distance_metres': 400,
+        'is_saved': false,
+        'source': source,
+      });
+    }
+
+    expect(read('geoapify').source, VenueSource.geoapify);
+    expect(read('curated').source, VenueSource.curated);
+    // Anything this version doesn't know is treated as Kinvo's own.
+    expect(read('somewhere_new').source, VenueSource.curated);
+    expect(read(null).source, VenueSource.curated);
   });
 
   test('lengths read naturally', () {

@@ -11,6 +11,7 @@ import '../../../settings/presentation/controllers/settings_controllers.dart';
 import '../../domain/venue.dart';
 import '../controllers/plans_controllers.dart';
 import '../plan_presentation.dart';
+import '../widgets/places_credit.dart';
 
 /// Places to meet near the user, to choose one for a plan. Closes with the
 /// place chosen.
@@ -103,22 +104,24 @@ class _VenueList extends ConsumerWidget {
       ),
       AsyncValue(value: final venues?) => ListView.separated(
         padding: const EdgeInsets.fromLTRB(18, 0, 18, 24),
-        itemCount: venues.length,
+        itemCount: venues.length + (PlacesCredit.needed(venues) ? 1 : 0),
         separatorBuilder: (_, _) => const SizedBox(height: 10),
-        itemBuilder: (context, index) => _VenueTile(
-          venue: venues[index],
-          onSave: () async {
-            final messenger = ScaffoldMessenger.of(context);
-            final error = await ref
-                .read(provider.notifier)
-                .toggleSaved(venues[index]);
-            if (error != null) {
-              messenger
-                ..hideCurrentSnackBar()
-                ..showSnackBar(SnackBar(content: Text(error)));
-            }
-          },
-        ),
+        itemBuilder: (context, index) => index == venues.length
+            ? PlacesCredit(venues: venues)
+            : _VenueTile(
+                venue: venues[index],
+                onSave: () async {
+                  final messenger = ScaffoldMessenger.of(context);
+                  final error = await ref
+                      .read(provider.notifier)
+                      .toggleSaved(venues[index]);
+                  if (error != null) {
+                    messenger
+                      ..hideCurrentSnackBar()
+                      ..showSnackBar(SnackBar(content: Text(error)));
+                  }
+                },
+              ),
       ),
       AsyncValue(:final error?) => ListView(
         padding: const EdgeInsets.fromLTRB(18, 0, 18, 24),

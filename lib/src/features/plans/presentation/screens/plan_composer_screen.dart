@@ -22,6 +22,7 @@ import '../../domain/plan.dart';
 import '../../domain/venue.dart';
 import '../controllers/plans_controllers.dart';
 import '../plan_presentation.dart';
+import '../widgets/places_credit.dart';
 
 /// The match a new plan was started from, such as its chat.
 final _startedFromProvider = FutureProvider.autoDispose
@@ -248,6 +249,10 @@ class _ComposerFormState extends ConsumerState<_ComposerForm> {
   }
 
   /// The place section: a place from Kinvo's list, or one typed in.
+  ///
+  /// Where Kinvo has no places near the user and they saved none, there's
+  /// nothing to find, so the place is simply typed: "Find a place" would only
+  /// open an empty list.
   List<Widget> _placeSection(
     _Who? who,
     String? placeProblem,
@@ -265,7 +270,8 @@ class _ComposerFormState extends ConsumerState<_ComposerForm> {
       ];
     }
 
-    if (_typingPlace) {
+    final canChoose = ref.watch(placesToChooseFromProvider);
+    if (_typingPlace || canChoose == false) {
       return [
         AppInputCard(
           label: 'Place',
@@ -284,13 +290,14 @@ class _ComposerFormState extends ConsumerState<_ComposerForm> {
           errorText: addressProblem,
           onChanged: (value) => _address = value,
         ),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: TextButton(
-            onPressed: () => setState(() => _typingPlace = false),
-            child: const Text('Choose from places instead'),
+        if (canChoose != false)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton(
+              onPressed: () => setState(() => _typingPlace = false),
+              child: const Text('Choose from places instead'),
+            ),
           ),
-        ),
       ];
     }
 
@@ -385,7 +392,9 @@ class _ComposerFormState extends ConsumerState<_ComposerForm> {
     final place = _place.trim();
     if (_venue == null) {
       if (place.isEmpty) {
-        problems['place'] = 'Choose a place, or type one.';
+        problems['place'] = ref.read(placesToChooseFromProvider) == false
+            ? 'Type the place you are meeting.'
+            : 'Choose a place, or type one.';
       } else if (place.length > 200) {
         problems['place'] = 'Keep the place under 200 characters.';
       }
@@ -793,47 +802,57 @@ class _Suggestions extends ConsumerWidget {
     final venues = ref.watch(venueSuggestionsProvider(matchId)).value;
     if (venues == null || venues.isEmpty) return const SizedBox.shrink();
 
+    final shown = venues.take(4).toList();
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: Material(
-        color: context.colors.surface,
-        clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: context.colors.divider),
-        ),
-        child: Column(
-          children: [
-            for (final (index, venue) in venues.take(4).indexed) ...[
-              if (index > 0)
-                Divider(height: 1, indent: 60, color: context.colors.divider),
-              ListTile(
-                onTap: () => onChosen(venue),
-                leading: Icon(
-                  venueIcon(venue.category),
-                  color: context.colors.purple,
-                ),
-                title: Text(
-                  venue.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: context.colors.textPrimary,
+      child: Column(
+        children: [
+          Material(
+            color: context.colors.surface,
+            clipBehavior: Clip.antiAlias,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(color: context.colors.divider),
+            ),
+            child: Column(
+              children: [
+                for (final (index, venue) in shown.indexed) ...[
+                  if (index > 0)
+                    Divider(
+                      height: 1,
+                      indent: 60,
+                      color: context.colors.divider,
+                    ),
+                  ListTile(
+                    onTap: () => onChosen(venue),
+                    leading: Icon(
+                      venueIcon(venue.category),
+                      color: context.colors.purple,
+                    ),
+                    title: Text(
+                      venue.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: context.colors.textPrimary,
+                      ),
+                    ),
+                    subtitle: Text(
+                      venue.category.label,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: context.colors.textSecondary,
+                      ),
+                    ),
                   ),
-                ),
-                subtitle: Text(
-                  venue.category.label,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: context.colors.textSecondary,
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
+                ],
+              ],
+            ),
+          ),
+          PlacesCredit(venues: shown),
+        ],
       ),
     );
   }

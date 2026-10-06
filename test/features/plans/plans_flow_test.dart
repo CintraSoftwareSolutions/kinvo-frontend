@@ -150,9 +150,8 @@ void main() {
     await app.pumpUntilLoaded();
   });
 
-  testWidgets('makes a plan with a match, with a place typed in', (
-    tester,
-  ) async {
+  testWidgets('makes a plan with a match, with a place typed in where Kinvo '
+      'has no places nearby', (tester) async {
     final server = _server();
     _matchWithSam(server);
     final app = await _openPlans(tester, server);
@@ -161,15 +160,19 @@ void main() {
     await app.pumpUntilFound(find.byType(PlanComposerScreen));
     await app.pumpUntilLoaded();
 
+    // With nothing to find, the place is typed straight away.
+    expect(find.text('Find a place'), findsNothing);
+    expect(find.text('Choose from places instead'), findsNothing);
+
     // Nothing chosen yet.
     await _scrollToAndTap(tester, find.text('Send plan'));
     await tester.pump();
     expect(find.text('Choose who the plan is with.'), findsOneWidget);
-    expect(find.text('Choose a place, or type one.'), findsOneWidget);
+    expect(find.text('Type the place you are meeting.'), findsOneWidget);
     expect(find.text('Choose a day and a time to send it.'), findsOneWidget);
 
     await _scrollToAndTap(tester, find.text('Sam'));
-    await _scrollToAndTap(tester, find.text('Type a place'));
+    await tester.ensureVisible(_field('Place'));
     await tester.pump();
     await tester.enterText(_field('Place'), 'The ramen bar');
     await tester.enterText(_field('Address (optional)'), '12 King Street');
@@ -187,6 +190,69 @@ void main() {
     expect(plan.customAddress, '12 King Street');
     expect(plan.durationMinutes, 60);
     expect(plan.scheduledAt, _tomorrowEvening(server).toUtc());
+  });
+
+  testWidgets('offers places to find where Kinvo has some, and typing one '
+      'as well', (tester) async {
+    final server = _server()
+      ..venues.add(
+        const FakeVenue(
+          id: 'v1',
+          name: 'Blue Bottle',
+          address: '8 Kingly Street',
+          modes: ['study_buddy'],
+        ),
+      );
+    _matchWithSam(server);
+    final app = await _openPlans(tester, server);
+
+    await tester.tap(find.byTooltip('New plan'));
+    await app.pumpUntilFound(find.byType(PlanComposerScreen));
+    await app.pumpUntilLoaded();
+    expect(find.text('Find a place'), findsOneWidget);
+
+    await _scrollToAndTap(tester, find.text('Type a place'));
+    await tester.pump();
+    expect(_field('Place'), findsOneWidget);
+    expect(find.text('Choose from places instead'), findsOneWidget);
+
+    await _scrollToAndTap(tester, find.text('Send plan'));
+    await tester.pump();
+    expect(find.text('Choose a place, or type one.'), findsOneWidget);
+  });
+
+  testWidgets('credits Geoapify and OpenStreetMap under their places, and '
+      'only then', (tester) async {
+    final server = _server()
+      ..venues.addAll(const [
+        FakeVenue(id: 'v1', name: 'Kinvo pick', modes: ['study_buddy']),
+        FakeVenue(
+          id: 'v2',
+          name: 'Chaaye Khana',
+          modes: ['study_buddy'],
+          source: 'geoapify',
+        ),
+      ]);
+    _matchWithSam(server);
+    final app = await _openPlans(tester, server);
+
+    await tester.tap(find.byTooltip('New plan'));
+    await app.pumpUntilFound(find.byType(PlanComposerScreen));
+    await app.pumpUntilLoaded();
+    await _scrollToAndTap(tester, find.text('Find a place'));
+    await app.pumpUntilFound(find.text('Chaaye Khana'));
+
+    await tester.tap(find.text('Powered by Geoapify'));
+    await tester.pump();
+    expect(app.backend.externalLinks.pages, [
+      Uri.parse('https://www.geoapify.com/'),
+    ]);
+    expect(find.text('© OpenStreetMap contributors'), findsOneWidget);
+
+    // Saved places here are only Kinvo's own, so nothing to credit.
+    await tester.tap(find.text('Saved'));
+    await app.pumpUntilLoaded();
+    expect(find.text('Powered by Geoapify'), findsNothing);
   });
 
   testWidgets('suggests a plan from the conversation, at a place from the '
@@ -244,8 +310,6 @@ void main() {
     await app.pumpUntilFound(find.byType(PlanComposerScreen));
     await app.pumpUntilLoaded();
 
-    await _scrollToAndTap(tester, find.text('Type a place'));
-    await tester.pump();
     await tester.enterText(_field('Place'), 'Riverside walk');
     await _scrollToAndTap(tester, find.text('Save as draft'));
     await app.pumpUntilFound(find.byType(PlanDetailScreen));

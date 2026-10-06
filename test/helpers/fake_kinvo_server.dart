@@ -3371,6 +3371,7 @@ final class FakeVenue {
     this.address,
     this.distanceMetres = 1200,
     this.modes = const ['dating'],
+    this.source = 'curated',
   });
 
   final String id;
@@ -3379,6 +3380,9 @@ final class FakeVenue {
   final String? address;
   final int distanceMetres;
   final List<String> modes;
+
+  /// `curated`, Kinvo's own, or `geoapify`, from the places provider.
+  final String source;
 
   Map<String, Object?> toJson({required bool saved}) {
     return {
@@ -3393,6 +3397,7 @@ final class FakeVenue {
       'photo_url': null,
       'website_url': null,
       'modes': modes,
+      'source': source,
       'distance_metres': distanceMetres,
       'is_saved': saved,
     };

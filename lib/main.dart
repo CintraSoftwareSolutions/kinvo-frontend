@@ -21,6 +21,7 @@ void main() {
   }
 
   _registerFontLicence();
+  _registerPlacesCredit();
 
   runApp(const ProviderScope(retry: apiRetryPolicy, child: KinvoApp()));
 }
@@ -35,5 +36,18 @@ void _registerFontLicence() {
   LicenseRegistry.addLicense(() async* {
     final licence = await rootBundle.loadString('assets/fonts/OFL.txt');
     yield LicenseEntryWithLineBreaks(const [AppTheme.fontFamily], licence);
+  });
+}
+
+/// Credits the places offered for plans, which come from Geoapify and
+/// OpenStreetMap, alongside the credit shown under each list of them.
+void _registerPlacesCredit() {
+  LicenseRegistry.addLicense(() async* {
+    yield const LicenseEntryWithLineBreaks(
+      ['Places (Geoapify, OpenStreetMap)'],
+      'Places to meet are powered by Geoapify (https://www.geoapify.com/).\n\n'
+      'Map data © OpenStreetMap contributors, available under the Open '
+      'Database License (https://www.openstreetmap.org/copyright).',
+    );
   });
 }
