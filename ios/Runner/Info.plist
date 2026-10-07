@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
@@ -24,6 +26,16 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-3940256099942544~1458002511</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Kinvo uses your camera so you can take profile photos, a verification selfie, and video calls with your matches.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Kinvo uses your approximate location to show you people nearby. Others only see how far away you are, never where you are.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Kinvo uses your microphone so your match can hear you on a video call.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Kinvo uses your photo library so you can add profile photos and attach images to a report.</string>
 	<key>SKAdNetworkItems</key>
 	<array>
 		<dict>
@@ -31,16 +43,29 @@
 			<string>cstr6suwn9.skadnetwork</string>
 		</dict>
 	</array>
-	<key>LSRequiresIPhoneOS</key>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+		<key>UISceneConfigurations</key>
+		<dict>
+			<key>UIWindowSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneClassName</key>
+					<string>UIWindowScene</string>
+					<key>UISceneConfigurationName</key>
+					<string>flutter</string>
+					<key>UISceneDelegateClassName</key>
+					<string>FlutterSceneDelegate</string>
+					<key>UISceneStoryboardFile</key>
+					<string>Main</string>
+				</dict>
+			</array>
+		</dict>
+	</dict>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-	<key>NSCameraUsageDescription</key>
-	<string>Kinvo uses your camera so you can take profile photos, a verification selfie, and video calls with your matches.</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>Kinvo uses your microphone so your match can hear you on a video call.</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Kinvo uses your approximate location to show you people nearby. Others only see how far away you are, never where you are.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Kinvo uses your photo library so you can add profile photos and attach images to a report.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -58,9 +83,5 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
 </dict>
 </plist>
