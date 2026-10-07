@@ -498,7 +498,7 @@ all out.
 Beyond the keys:
 
 - The Firebase apps must use the app's real application ID and bundle ID.
-  `com.example.kinvo` is a placeholder that the stores refuse.
+  `com.kinvo.app` is a placeholder that the stores refuse.
 - iOS: upload an APNs authentication key to the Firebase project (Project
   settings → Cloud Messaging). `Runner.entitlements` turns on push
   notifications. Its `aps-environment` says `development`, and Xcode signs

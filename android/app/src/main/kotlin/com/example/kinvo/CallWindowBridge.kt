@@ -1,4 +1,4 @@
-package com.example.kinvo
+package com.kinvo.app
 
 import android.app.Activity
 import android.app.KeyguardManager

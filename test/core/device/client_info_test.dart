@@ -8,7 +8,7 @@ import '../../helpers/in_memory_key_value_store.dart';
 PackageInfo _packageInfo({String version = '1.4.0', String buildNumber = '7'}) {
   return PackageInfo(
     appName: 'Kinvo',
-    packageName: 'com.example.kinvo',
+    packageName: 'com.kinvo.app',
     version: version,
     buildNumber: buildNumber,
   );
